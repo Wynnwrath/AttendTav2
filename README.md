@@ -1,51 +1,78 @@
-# C# BaseCode
-## _ASI Bridge/JumpStart Program BaseCode_
+# AttendTa — Event & Attendance Management System
+## _Group 7 (Master Data Management & Officer Console)_
 
-This is the base code that will be used during the bridge and jumpstart program.
-```
-```
-## Quick Setup for New Clones
+ASP.NET Core MVC web application for student organization event registration, attendance tracking, member directories, and facility management.
 
-### 1. Database Setup (SQL Server LocalDB)
-The application expects `AsiBasecodeDB` on `(localdb)\MSSQLLocalDB`. Run the provided setup script once in PowerShell:
+---
+
+## 🚀 Quick Setup & Run (For Any PC / Cloners)
+
+### Step 1: Clone and Enter the Directory
+Open PowerShell or your preferred terminal:
+```powershell
+git clone https://github.com/Wynnwrath/AttendTav2.git
+cd AttendTav2
+```
+
+---
+
+### Step 2: Initialize Database (SQL Server LocalDB)
+The application connects to `(localdb)\MSSQLLocalDB` and uses database `AsiBasecodeDB`. Run the provided setup script once:
 ```powershell
 sqlcmd -S "(localdb)\MSSQLLocalDB" -i "setup-db.sql"
 ```
-*(Or execute `setup-db.sql` in SQL Server Management Studio / Azure Data Studio).*
+> **Alternative (SSMS / Azure Data Studio):** If you prefer a GUI, simply open `setup-db.sql` in SQL Server Management Studio or Azure Data Studio and click **Execute**.
 
-### 2. Build & Run
-If using modern .NET 10 SDK with this .NET 9 project, enable major version roll-forward:
-```powershell
-$env:DOTNET_ROLL_FORWARD = "LatestMajor"
-dotnet build ASI.Basecode.sln
-dotnet run --project "ASI.Basecode.WebApp\ASI.Basecode.WebApp.csproj"
-```
-Then navigate to `http://localhost:5000/Account/Login` in your browser. Any credentials will log in to the demo officer console.
+This creates the database, schema (`members`, `venues`, `event_types`, `Users`), and seeds initial demo data and accounts.
 
-## Visual Studio 2022 / 2025 Setup
-1. Open `ASI.Basecode.sln`.
-2. Ensure connection string in `ASI.Basecode.WebApp\appsettings.json` matches your local server:
-   `Server=(localdb)\MSSQLLocalDB; Database=AsiBasecodeDB; Trusted_Connection=True; MultipleActiveResultSets=true; TrustServerCertificate=True`
-3. Set `ASI.Basecode.WebApp` as the Startup Project.
-4. Press `F5` or `Ctrl+F5` to run.
+---
 
-## Code Structure
+### Step 3: Run the Application
 
-- `ASI.Basecode.Data`
-    - This project contains the repositories and other logics that involves with database.
-    - Make sure that the repository is for db processing only.
-    - If it involves additional logic, move the logic into the service file.
-- `ASI.Basecode.Resources`
-    - This project is dedicated to storing messages, labels, and other resources used by the website.
-    - It serves as a centralized location for managing static content that is displayed to users.
-    - Store all messages, labels, translations, and any non-code assets required for the site in this project.
-- `ASI.Basecode.Services`
-    - This project contains the services and other processing logics before connecting to the repository.
-    - This can also contains classes that can be use by the WebApp project with/without db processing.
-- `ASI.Basecode.WebApp`
-    - This project contains the main codes especially the `Controllers` and `Views`.
-    - This is where you put the connection logic to the APIs.
-    - Make sure that the controllers are clean and no other logic should involve.
-    - If it involves additional logic, move the logic into the service file.
-```
-```
+#### Option A: Running from Visual Studio 2022 / 2025 (Recommended for UI)
+1. Double-click `ASI.Basecode.sln` to open in Visual Studio.
+2. In **Solution Explorer**, right-click **`ASI.Basecode.WebApp`** ➔ **Set as Startup Project**.
+3. Press **`Ctrl + F5`** (or click the Green Play button ▶).
+
+#### Option B: Running from Terminal / VS Code
+Because this project targets .NET 9, depending on what SDK version is installed on your machine:
+
+- **Standard Run (.NET 9 installed as default):**
+  ```powershell
+  dotnet run --project "ASI.Basecode.WebApp\ASI.Basecode.WebApp.csproj"
+  ```
+- **If your machine has .NET 10 installed (Roll-Forward enabled):**
+  ```powershell
+  $env:DOTNET_ROLL_FORWARD = "LatestMajor"
+  dotnet run --project "ASI.Basecode.WebApp\ASI.Basecode.WebApp.csproj"
+  ```
+- **If your system `PATH` points to another drive (e.g. `D:\`) while .NET is in `C:\`:**
+  Specify your exact dotnet executable path (e.g.):
+  ```powershell
+  & "C:\Program Files\dotnet\dotnet.exe" run --project "ASI.Basecode.WebApp\ASI.Basecode.WebApp.csproj"
+  ```
+
+Once running, navigate to: **`http://localhost:5000/Account/Login`**
+
+---
+
+## 🔑 Demo Login Accounts
+
+On the sign-in page, you can use the **1-click quick-fill buttons** or enter these credentials:
+
+| Role | User ID / Student Number | Password |
+|---|---|---|
+| **Administrator** | `admin` | `Password123!` |
+| **Officer** | `officer` | `Password123!` |
+| **Student Member** | `2023-10482` | `Password123!` |
+
+---
+
+## 🏛️ Clean Code Architecture
+
+This project strictly follows an N-Layer Clean Architecture with separated responsibilities:
+
+- **`ASI.Basecode.Data`**: EF Core 9 `AsiBasecodeDBContext`, entity models, and repository implementations (`BaseRepository`, `UnitOfWork`). No business logic.
+- **`ASI.Basecode.Services`**: Business services (`MemberService`, `VenueService`, `EventTypeService`), business exceptions, and DTO viewmodels (`MemberViewModel`, etc.).
+- **`ASI.Basecode.WebApp`**: Controllers (`MemberController`, etc.), Razor views (`.cshtml`), layout shells, and static assets (`wwwroot/css/tokens.css`, `components.css`).
+- **`ASI.Basecode.Resources`**: Centralized string constants, localized error messages, and enums.
