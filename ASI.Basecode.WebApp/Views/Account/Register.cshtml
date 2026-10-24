@@ -73,6 +73,26 @@
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div class="field">
+                            <label class="field-label" for="CourseYear">Program &amp; Year Level</label>
+                            <input class="input" id="CourseYear" name="CourseYear" type="text" asp-for="CourseYear"
+                                   placeholder="e.g. BSIT 1st Year">
+                        </div>
+
+                        <div class="field">
+                            <label class="field-label" for="Section">Section</label>
+                            <input class="input" id="Section" name="Section" type="text" asp-for="Section"
+                                   placeholder="e.g. 1-A">
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="field-label" for="Email">Institutional Email</label>
+                        <input class="input" id="Email" name="Email" type="email" asp-for="Email"
+                               placeholder="e.g. student@ustp.edu.ph">
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="field">
                             <label class="field-label field-required" for="Password">Password</label>
                             <input class="input" id="Password" name="Password" type="password" asp-for="Password" autocomplete="new-password" required placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;">
                             <span asp-validation-for="Password" class="text-xs text-status-rose"></span>

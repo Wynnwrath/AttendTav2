@@ -58,7 +58,7 @@
                         <svg class="icon" aria-hidden="true"><use href="/images/icons.svg#i-calendar"></use></svg>
                         <span>Events</span>
                     </a>
-                    <a class="sidenav__link" href="#" title="Approvals (Auth Module)">
+                    <a class="sidenav__link @(currentAction == "Approvals" ? "active" : "")" asp-controller="Account" asp-action="Approvals" title="Membership Approvals">
                         <svg class="icon" aria-hidden="true"><use href="/images/icons.svg#i-check-circle"></use></svg>
                         <span>Approvals</span>
                     </a>
@@ -90,9 +90,9 @@
 
                 <div class="sidenav__group">
                     <div class="sidenav__group-label">System</div>
-                    <a class="sidenav__link" href="#" title="Users (Admin Module)">
+                    <a class="sidenav__link @(currentController == "Admin" ? "active" : "")" asp-controller="Admin" asp-action="Index" title="Administration & Governance">
                         <svg class="icon" aria-hidden="true"><use href="/images/icons.svg#i-shield"></use></svg>
-                        <span>Users</span>
+                        <span>Users &amp; Roles</span>
                     </a>
                     <a class="sidenav__link" href="#" title="Audit Logs (Admin Module)">
                         <svg class="icon" aria-hidden="true"><use href="/images/icons.svg#i-clock"></use></svg>

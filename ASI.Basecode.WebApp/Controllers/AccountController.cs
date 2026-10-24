@@ -83,13 +83,32 @@ namespace ASI.Basecode.WebApp.Controllers
         {
             this._session.SetString("HasSession", "Exist");
 
+            if (_userService.IsPendingApproval(model.UserId))
+            {
+                TempData["ErrorMessage"] = "Your account registration is currently pending officer review and approval.";
+                return View(model);
+            }
+
             User user = null;
             var loginResult = _userService.AuthenticateUser(model.UserId, model.Password, ref user);
             if (loginResult == LoginResult.Success)
             {
                 await this._signInManager.SignInAsync(user);
                 this._session.SetString("UserName", user.Name);
-                return RedirectToAction("Index", "Member");
+                this._session.SetString("UserId", user.UserId);
+
+                if (user.UserId.Equals("admin", StringComparison.OrdinalIgnoreCase))
+                {
+                    return RedirectToAction("Index", "Admin");
+                }
+                else if (user.UserId.StartsWith("20", StringComparison.OrdinalIgnoreCase) || user.UserId.Contains("-"))
+                {
+                    return RedirectToAction("Index", "Student");
+                }
+                else
+                {
+                    return RedirectToAction("Index", "Member");
+                }
             }
             else
             {
@@ -111,18 +130,51 @@ namespace ASI.Basecode.WebApp.Controllers
         {
             try
             {
-                _userService.AddUser(model);
+                _userService.RegisterApplicant(model);
+                TempData["SuccessMessage"] = "Membership request submitted successfully! An officer will review your application.";
                 return RedirectToAction("Login", "Account");
             }
             catch(InvalidDataException ex)
             {
                 TempData["ErrorMessage"] = ex.Message;
             }
-            catch(Exception ex)
+            catch(Exception)
             {
                 TempData["ErrorMessage"] = Resources.Messages.Errors.ServerError;
             }
-            return View();
+            return View(model);
+        }
+
+        /// <summary>
+        /// Officer Workstation: Membership Approvals
+        /// </summary>
+        [HttpGet]
+        public IActionResult Approvals()
+        {
+            var pending = _userService.GetPendingApplicants();
+            return View(pending);
+        }
+
+        [HttpPost]
+        public IActionResult Approve(string studentNumber)
+        {
+            if (!string.IsNullOrWhiteSpace(studentNumber))
+            {
+                _userService.ApproveApplicant(studentNumber);
+                TempData["SuccessMessage"] = $"Applicant {studentNumber} has been approved and activated in the Member directory!";
+            }
+            return RedirectToAction("Approvals");
+        }
+
+        [HttpPost]
+        public IActionResult Reject(string studentNumber)
+        {
+            if (!string.IsNullOrWhiteSpace(studentNumber))
+            {
+                _userService.RejectApplicant(studentNumber);
+                TempData["SuccessMessage"] = $"Application for {studentNumber} has been rejected.";
+            }
+            return RedirectToAction("Approvals");
         }
 
         /// <summary>
