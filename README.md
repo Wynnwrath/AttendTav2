@@ -4,12 +4,30 @@
 This is the base code that will be used during the bridge and jumpstart program.
 ```
 ```
-## Installation
-1.  Open the `.sln` file.
-    _※Use Visual Studio 2022_
-2.  Change connection strings on the `appsettings.json` base on your server
-3.  Set `ASI.Basecode.WebApp` as the Startup project.
-4.  Clean and ReBuild the solution.
+## Quick Setup for New Clones
+
+### 1. Database Setup (SQL Server LocalDB)
+The application expects `AsiBasecodeDB` on `(localdb)\MSSQLLocalDB`. Run the provided setup script once in PowerShell:
+```powershell
+sqlcmd -S "(localdb)\MSSQLLocalDB" -i "setup-db.sql"
+```
+*(Or execute `setup-db.sql` in SQL Server Management Studio / Azure Data Studio).*
+
+### 2. Build & Run
+If using modern .NET 10 SDK with this .NET 9 project, enable major version roll-forward:
+```powershell
+$env:DOTNET_ROLL_FORWARD = "LatestMajor"
+dotnet build ASI.Basecode.sln
+dotnet run --project "ASI.Basecode.WebApp\ASI.Basecode.WebApp.csproj"
+```
+Then navigate to `http://localhost:5000/Account/Login` in your browser. Any credentials will log in to the demo officer console.
+
+## Visual Studio 2022 / 2025 Setup
+1. Open `ASI.Basecode.sln`.
+2. Ensure connection string in `ASI.Basecode.WebApp\appsettings.json` matches your local server:
+   `Server=(localdb)\MSSQLLocalDB; Database=AsiBasecodeDB; Trusted_Connection=True; MultipleActiveResultSets=true; TrustServerCertificate=True`
+3. Set `ASI.Basecode.WebApp` as the Startup Project.
+4. Press `F5` or `Ctrl+F5` to run.
 
 ## Code Structure
 
