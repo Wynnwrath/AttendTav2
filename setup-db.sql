@@ -106,3 +106,26 @@ BEGIN
     ('Recognition Ceremony', 'Honoring organization achievements, officers, and active student members.');
 END
 GO
+
+-- Seed Demo Users for Login
+IF NOT EXISTS (SELECT * FROM Users WHERE UserId = 'admin')
+BEGIN
+    INSERT INTO Users (UserId, Name, Password, CreatedBy, CreatedTime, UpdatedBy, UpdatedTime)
+    VALUES ('admin', 'System Administrator', 'val7y+TYrn1BgwyjGz2wxQ==', 'System', GETDATE(), 'System', GETDATE());
+END
+GO
+
+IF NOT EXISTS (SELECT * FROM Users WHERE UserId = 'officer')
+BEGIN
+    INSERT INTO Users (UserId, Name, Password, CreatedBy, CreatedTime, UpdatedBy, UpdatedTime)
+    VALUES ('officer', 'Danica Mae Navarro (Officer)', 'val7y+TYrn1BgwyjGz2wxQ==', 'System', GETDATE(), 'System', GETDATE());
+END
+GO
+
+IF NOT EXISTS (SELECT * FROM Users WHERE UserId = '2023-10482')
+BEGIN
+    INSERT INTO Users (UserId, Name, Password, CreatedBy, CreatedTime, UpdatedBy, UpdatedTime)
+    VALUES ('2023-10482', 'Maria Clara Santos (Student)', 'val7y+TYrn1BgwyjGz2wxQ==', 'System', GETDATE(), 'System', GETDATE());
+END
+GO
+

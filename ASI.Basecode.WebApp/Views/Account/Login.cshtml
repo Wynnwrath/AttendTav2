@@ -42,6 +42,15 @@
                     </div>
                 }
 
+                <div class="mb-5 pb-4 border-b border-slate-100">
+                    <p class="text-xs font-medium text-ink-muted mb-2">Demo personas &mdash; tap to fill identifier &amp; password:</p>
+                    <div class="flex flex-wrap gap-2">
+                        <button type="button" class="btn btn--secondary btn--sm text-xs" onclick="fillPersona('admin', 'Password123!')">Admin</button>
+                        <button type="button" class="btn btn--secondary btn--sm text-xs" onclick="fillPersona('officer', 'Password123!')">Officer</button>
+                        <button type="button" class="btn btn--secondary btn--sm text-xs" onclick="fillPersona('2023-10482', 'Password123!')">Student</button>
+                    </div>
+                </div>
+
                 <form id="login-form" asp-controller="Account" asp-action="Login" asp-route-returnurl="@ViewData["ReturnUrl"]" method="post" class="space-y-4" autocomplete="on">
                     <div asp-validation-summary="ModelOnly" class="text-xs text-status-rose"></div>
 
@@ -75,5 +84,11 @@
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+    <script>
+        function fillPersona(userId, password) {
+            document.getElementById('UserId').value = userId;
+            document.getElementById('Password').value = password;
+        }
+    </script>
 </body>
 </html>
