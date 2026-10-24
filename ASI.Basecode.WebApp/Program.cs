@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using ASI.Basecode.Data;
 using ASI.Basecode.WebApp;
 using ASI.Basecode.WebApp.Extensions.Configuration;
@@ -29,6 +29,20 @@ configurer.ConfigureServices(appBuilder.Services);
 var app = appBuilder.Build();
 
 configurer.ConfigureApp(app, app.Environment);
+
+// Ensure database tables exist on startup
+using (var scope = app.Services.CreateScope())
+{
+    try
+    {
+        var db = scope.ServiceProvider.GetRequiredService<AsiBasecodeDBContext>();
+        db.Database.EnsureCreated();
+    }
+    catch
+    {
+        // Fail gracefully if LocalDB connection is handled externally via setup-db.sql
+    }
+}
 
 app.MapControllerRoute(
     name: "default",

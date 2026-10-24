@@ -14,27 +14,27 @@ git clone https://github.com/Wynnwrath/AttendTav2.git
 cd AttendTav2
 ```
 
----
-
-### Step 2: Initialize Database (SQL Server LocalDB)
-The application connects to `(localdb)\MSSQLLocalDB` and uses database `AsiBasecodeDB`. Run the provided setup script once:
+### Step 2: 1-Click Launch (Easiest for Everyone)
+Simply run or double-click `run.bat` (or `./run.ps1` in PowerShell):
 ```powershell
-sqlcmd -S "(localdb)\MSSQLLocalDB" -i "setup-db.sql"
+.\run.bat
 ```
-> **Alternative (SSMS / Azure Data Studio):** If you prefer a GUI, simply open `setup-db.sql` in SQL Server Management Studio or Azure Data Studio and click **Execute**.
-
-This creates the database, schema (`members`, `venues`, `event_types`, `Users`), and seeds initial demo data and accounts.
+This launcher automatically:
+- Checks and auto-initializes your local database and demo accounts.
+- Auto-detects the best .NET SDK on your computer (resolving drive letter and PATH conflicts).
+- Starts the web server and outputs the local URL: **`http://localhost:5000`**.
 
 ---
 
-### Step 3: Run the Application
+### Step 3: Manual Run (Visual Studio / Custom)
+If you prefer running through your IDE or custom terminal:
 
-#### Option A: Running from Visual Studio 2022 / 2025 (Recommended for UI)
-1. Double-click `ASI.Basecode.sln` to open in Visual Studio.
+#### In Visual Studio 2022 / 2025:
+1. Double-click `ASI.Basecode.sln` to open.
 2. In **Solution Explorer**, right-click **`ASI.Basecode.WebApp`** ➔ **Set as Startup Project**.
 3. Press **`Ctrl + F5`** (or click the Green Play button ▶).
 
-#### Option B: Running from Terminal / VS Code
+#### In VS Code / Command Line:
 Because this project targets .NET 9, depending on what SDK version is installed on your machine:
 
 - **Standard Run (.NET 9 installed as default):**
