@@ -62,6 +62,17 @@ namespace ASI.Basecode.WebApp.Mvc
         }
 
         /// <summary>
+        /// Gets the authenticated database user ID for audit fields.
+        /// Returns zero for the repository's placeholder login so services can
+        /// reject writes that cannot satisfy the MVP user foreign keys.
+        /// </summary>
+        protected int GetActorUserId()
+        {
+            var claimValue = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            return int.TryParse(claimValue, out var userId) ? userId : 0;
+        }
+
+        /// <summary>
         /// Get UserName.
         /// </summary>
         public string UserName

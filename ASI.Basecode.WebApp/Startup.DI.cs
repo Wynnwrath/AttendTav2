@@ -6,6 +6,7 @@ using ASI.Basecode.Services.ServiceModels;
 using ASI.Basecode.Services.Services;
 using ASI.Basecode.WebApp.Authentication;
 using ASI.Basecode.WebApp.Models;
+using ASI.Basecode.WebApp.Storage;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Configuration;
@@ -35,10 +36,18 @@ namespace ASI.Basecode.WebApp
             // Services
             this._services.TryAddSingleton<TokenValidationParametersFactory>();
             this._services.AddScoped<IUserService, UserService>();
-          
+            this._services.AddScoped<IMemberService, MemberService>();
+            this._services.AddScoped<IEventTypeService, EventTypeService>();
+            this._services.AddScoped<IVenueService, VenueService>();
 
             // Repositories
             this._services.AddScoped<IUserRepository, UserRepository>();
+            this._services.AddScoped<IMemberRepository, MemberRepository>();
+            this._services.AddScoped<IEventTypeRepository, EventTypeRepository>();
+            this._services.AddScoped<IVenueRepository, VenueRepository>();
+
+            // Local, private venue-photo storage.
+            this._services.AddScoped<IVenueImageStorage, VenueImageStorage>();
 
             // Manager Class
             this._services.AddScoped<SignInManager>();
