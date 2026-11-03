@@ -1,0 +1,37 @@
+@model MemberViewModel
+
+<div class="form-group mb-3">
+    <label asp-for="StudentNumber" class="form-label"></label>
+    <input asp-for="StudentNumber" class="form-control" />
+    <span asp-validation-for="StudentNumber" class="text-danger"></span>
+</div>
+<div class="form-group mb-3">
+    <label asp-for="Course" class="form-label"></label>
+    <input asp-for="Course" class="form-control" />
+    <span asp-validation-for="Course" class="text-danger"></span>
+</div>
+<div class="form-group mb-3">
+    <label asp-for="YearLevel" class="form-label"></label>
+    <input asp-for="YearLevel" type="number" class="form-control" min="1" />
+    <span asp-validation-for="YearLevel" class="text-danger"></span>
+</div>
+<div class="form-group mb-3">
+    <label asp-for="Section" class="form-label"></label>
+    <input asp-for="Section" class="form-control" />
+    <span asp-validation-for="Section" class="text-danger"></span>
+</div>
+<div class="form-group mb-3">
+    <label asp-for="MobileNumber" class="form-label"></label>
+    <input asp-for="MobileNumber" class="form-control" />
+</div>
+<div class="form-group mb-3">
+    <label asp-for="MembershipType" class="form-label"></label>
+    <input asp-for="MembershipType" class="form-control" />
+</div>
+<div class="form-group mb-3">
+    <label asp-for="Status" class="form-label"></label>
+    <select asp-for="Status" class="form-control">
+        <option value="active">Active</option>
+        <option value="inactive">Inactive</option>
+    </select>
+</div>

@@ -1,0 +1,29 @@
+@model VenueViewModel
+
+<div class="form-group mb-3">
+    <label asp-for="RoomName" class="form-label"></label>
+    <input asp-for="RoomName" class="form-control" />
+    <span asp-validation-for="RoomName" class="text-danger"></span>
+</div>
+<div class="form-group mb-3">
+    <label asp-for="Capacity" class="form-label"></label>
+    <input asp-for="Capacity" type="number" class="form-control" />
+    <span asp-validation-for="Capacity" class="text-danger"></span>
+</div>
+<div class="form-group mb-3">
+    <label asp-for="Location" class="form-label"></label>
+    <input asp-for="Location" class="form-control" />
+</div>
+<div class="form-group mb-3">
+    <label asp-for="AvailabilityNotes" class="form-label"></label>
+    <textarea asp-for="AvailabilityNotes" class="form-control" rows="3"></textarea>
+</div>
+<div class="form-group mb-3">
+    <label asp-for="ContactPerson" class="form-label"></label>
+    <input asp-for="ContactPerson" class="form-control" />
+</div>
+<div class="form-group mb-3">
+    <label for="photo" class="form-label">Venue photo</label>
+    <input id="photo" name="photo" type="file" accept="image/png,image/jpeg" class="form-control" />
+    <small class="form-text text-muted">A JPEG or PNG photo is required when creating a venue. Select a new photo to replace the existing one.</small>
+</div>

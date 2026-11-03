@@ -1,4 +1,5 @@
 ﻿@using static ASI.Basecode.Resources.Views.Screen
+@using System.Text.Json
 
 <!DOCTYPE html>
 <html lang="en">
@@ -42,6 +43,10 @@
             closeButton: true,
             progressBar: true
         };
+        var successMessage = @Html.Raw(JsonSerializer.Serialize(TempData["SuccessMessage"]));
+        var errorMessage = @Html.Raw(JsonSerializer.Serialize(TempData["ErrorMessage"]));
+        if (successMessage) { toastr.success(successMessage); }
+        if (errorMessage) { toastr.error(errorMessage); }
     </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
