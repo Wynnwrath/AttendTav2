@@ -200,3 +200,5 @@ node_modules
 
 # Local documentation
 docs-local/
+
+__pycache__/
