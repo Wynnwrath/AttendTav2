@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="drawio" version="31.7.0">
+  <diagram name="BMad progress" id="bmad-progress">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="1250" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="title" value="&lt;b&gt;AttendTa — BMad progress&lt;/b&gt; · 2026-11-04 · active initiative: initiative-attendta" style="text;html=1;fontSize=19;align=left;verticalAlign=middle;fontColor=#1a1a1a;" vertex="1" parent="1">
+          <mxGeometry x="40" y="15" width="1060" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="b1" value="1 · Analysis — DONE" style="swimlane;startSize=30;html=1;fillColor=#fafafa;strokeColor=#9aa0a6;fontStyle=1;fontSize=13;align=left;spacingLeft=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="70" width="1060" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="a1" value="&lt;b&gt;Prototype (frozen)&lt;/b&gt;&lt;br&gt;static HTML + vanilla JS&lt;br&gt;localStorage seed data&lt;br&gt;Razor views port from it" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;spacingLeft=10;verticalAlign=top;spacingTop=6;fontSize=11;" vertex="1" parent="b1">
+          <mxGeometry x="25" y="45" width="250" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="a2" value="&lt;b&gt;Requirements baseline&lt;/b&gt;&lt;br&gt;SPEC v2.1 · UC · HLD · WBS&lt;br&gt;Project Plan · ERD/DBML · sequence diagrams&lt;br&gt;in docsss/" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;spacingLeft=10;verticalAlign=top;spacingTop=6;fontSize=11;" vertex="1" parent="b1">
+          <mxGeometry x="295" y="45" width="420" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="a3" value="&lt;b&gt;bmad-project-context&lt;/b&gt;&lt;br&gt;AGENTS.md verified&lt;br&gt;against f65b054" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;spacingLeft=10;verticalAlign=top;spacingTop=6;fontSize=11;" vertex="1" parent="b1">
+          <mxGeometry x="735" y="45" width="230" height="85" as="geometry" />
+        </mxCell>
+
+        <mxCell id="b2" value="2 · Planning — IN PROGRESS" style="swimlane;startSize=30;html=1;fillColor=#fafafa;strokeColor=#9aa0a6;fontStyle=1;fontSize=13;align=left;spacingLeft=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="245" width="1060" height="290" as="geometry" />
+        </mxCell>
+        <mxCell id="p1" value="&lt;b&gt;bmad-prd — DONE&lt;/b&gt;&lt;br&gt;prd-attendta.md + addendum.md&lt;br&gt;36 FRs · 7 NFRs · 5 UJs&lt;br&gt;§9 source decisions" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;spacingLeft=10;verticalAlign=top;spacingTop=6;fontSize=11;" vertex="1" parent="b2">
+          <mxGeometry x="25" y="45" width="180" height="95" as="geometry" />
+        </mxCell>
+        <mxCell id="p2" value="&lt;b&gt;NEXT → Sofia (bmad-agent-po)&lt;/b&gt;&lt;br&gt;write initiative Requirements&lt;br&gt;from the PRD&lt;br&gt;initiative-attendta.md is&lt;br&gt;frontmatter only today" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;strokeWidth=3;align=left;spacingLeft=10;verticalAlign=top;spacingTop=6;fontSize=11;" vertex="1" parent="b2">
+          <mxGeometry x="230" y="45" width="180" height="95" as="geometry" />
+        </mxCell>
+        <mxCell id="p3" value="&lt;b&gt;Sofia&lt;/b&gt; — slice into&lt;br&gt;thin epics&lt;br&gt;(refined: false)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;align=left;spacingLeft=10;verticalAlign=top;spacingTop=6;fontSize=11;" vertex="1" parent="b2">
+          <mxGeometry x="435" y="45" width="165" height="95" as="geometry" />
+        </mxCell>
+        <mxCell id="p4" value="&lt;b&gt;bmad-architecture&lt;/b&gt;&lt;br&gt;reads the initiative&lt;br&gt;stack · contracts · hosting" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;align=left;spacingLeft=10;verticalAlign=top;spacingTop=6;fontSize=11;" vertex="1" parent="b2">
+          <mxGeometry x="625" y="45" width="165" height="95" as="geometry" />
+        </mxCell>
+        <mxCell id="p5" value="&lt;b&gt;Sofia&lt;/b&gt; — refine epics,&lt;br&gt;then plan stories&lt;br&gt;entries → tickets.toml" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;align=left;spacingLeft=10;verticalAlign=top;spacingTop=6;fontSize=11;" vertex="1" parent="b2">
+          <mxGeometry x="815" y="45" width="220" height="95" as="geometry" />
+        </mxCell>
+        <mxCell id="p6" value="&lt;b&gt;bmad-ux&lt;/b&gt;&lt;br&gt;optional: before or after the PRD" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#999999;dashed=1;align=left;spacingLeft=10;verticalAlign=top;spacingTop=6;fontSize=11;" vertex="1" parent="b2">
+          <mxGeometry x="435" y="170" width="165" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="p7" value="Gate: every epic refined and its entries planned&lt;br&gt;→ ready for bmad-build" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;fontColor=#555555;" vertex="1" parent="b2">
+          <mxGeometry x="25" y="170" width="385" height="75" as="geometry" />
+        </mxCell>
+
+        <mxCell id="b3" value="3 · Implementation — NOT STARTED" style="swimlane;startSize=30;html=1;fillColor=#fafafa;strokeColor=#9aa0a6;fontStyle=1;fontSize=13;align=left;spacingLeft=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="560" width="1060" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="i1" value="&lt;b&gt;bmad-build per ticket&lt;/b&gt;&lt;br&gt;ASP.NET Core MVC + Razor&lt;br&gt;EF Core · SQL Server" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;align=left;spacingLeft=10;verticalAlign=top;spacingTop=6;fontSize=11;" vertex="1" parent="b3">
+          <mxGeometry x="25" y="45" width="430" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="i2" value="&lt;b&gt;bmad-build-auto&lt;/b&gt;&lt;br&gt;unattended runs" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#999999;dashed=1;align=left;spacingLeft=10;verticalAlign=top;spacingTop=6;fontSize=11;" vertex="1" parent="b3">
+          <mxGeometry x="475" y="45" width="220" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="i3" value="&lt;b&gt;bmad-qa-generate-e2e-tests&lt;/b&gt;&lt;br&gt;API + E2E coverage" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#999999;dashed=1;align=left;spacingLeft=10;verticalAlign=top;spacingTop=6;fontSize=11;" vertex="1" parent="b3">
+          <mxGeometry x="715" y="45" width="270" height="85" as="geometry" />
+        </mxCell>
+
+        <mxCell id="b4" value="4 · Validation — NOT STARTED" style="swimlane;startSize=30;html=1;fillColor=#fafafa;strokeColor=#9aa0a6;fontStyle=1;fontSize=13;align=left;spacingLeft=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="735" width="1060" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="v1" value="&lt;b&gt;bmad-code-review / bmad-walkthrough&lt;/b&gt;&lt;br&gt;≥1 peer approval per PR" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;align=left;spacingLeft=10;verticalAlign=top;spacingTop=6;fontSize=11;" vertex="1" parent="b4">
+          <mxGeometry x="25" y="45" width="420" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="v2" value="&lt;b&gt;Tier 3 manual E2E&lt;/b&gt;&lt;br&gt;on dev → merge to main" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;align=left;spacingLeft=10;verticalAlign=top;spacingTop=6;fontSize=11;" vertex="1" parent="b4">
+          <mxGeometry x="465" y="45" width="230" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="v3" value="&lt;b&gt;bmad-retrospective&lt;/b&gt;&lt;br&gt;→ Sofia closes the epic" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;align=left;spacingLeft=10;verticalAlign=top;spacingTop=6;fontSize=11;" vertex="1" parent="b4">
+          <mxGeometry x="715" y="45" width="270" height="85" as="geometry" />
+        </mxCell>
+
+        <mxCell id="banner" value="&lt;b&gt;NEXT STEP&lt;/b&gt; — ask Sofia (bmad-agent-po) to write the initiative's Requirements from the finalized PRD.&lt;br&gt;PRD: _bmad-output/initiative-attendta/prd-attendta/prd-attendta.md · file to fill: _bmad-output/initiative-attendta/initiative-attendta.md&lt;br&gt;Then: slice thin epics → bmad-architecture (epics share stack, contracts, hosting) → refine epics → plan stories → bmad-build." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;strokeWidth=3;align=left;spacingLeft=12;verticalAlign=middle;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="910" width="1060" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legend" value="Legend" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#666666;verticalAlign=top;fontStyle=1;align=left;spacingLeft=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="40" y="1005" width="380" height="126" as="geometry" />
+        </mxCell>
+        <mxCell id="l1s" value="" style="rounded=1;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="legend">
+          <mxGeometry x="12" y="30" width="30" height="16" as="geometry" />
+        </mxCell>
+        <mxCell id="l1t" value="Done" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;" vertex="1" parent="legend">
+          <mxGeometry x="52" y="28" width="300" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="l2s" value="" style="rounded=1;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;strokeWidth=3;" vertex="1" parent="legend">
+          <mxGeometry x="12" y="54" width="30" height="16" as="geometry" />
+        </mxCell>
+        <mxCell id="l2t" value="Next step" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;" vertex="1" parent="legend">
+          <mxGeometry x="52" y="52" width="300" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="l3s" value="" style="rounded=1;html=1;fillColor=#f5f5f5;strokeColor=#999999;" vertex="1" parent="legend">
+          <mxGeometry x="12" y="78" width="30" height="16" as="geometry" />
+        </mxCell>
+        <mxCell id="l3t" value="Not started" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;" vertex="1" parent="legend">
+          <mxGeometry x="52" y="76" width="300" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="l4s" value="" style="rounded=1;html=1;fillColor=#ffffff;strokeColor=#999999;dashed=1;" vertex="1" parent="legend">
+          <mxGeometry x="12" y="102" width="30" height="16" as="geometry" />
+        </mxCell>
+        <mxCell id="l4t" value="Optional / unattended" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;" vertex="1" parent="legend">
+          <mxGeometry x="52" y="100" width="300" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e1" value="inputs" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=10;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;endArrow=block;endSize=8;" edge="1" parent="1" source="a2" target="p1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;endArrow=block;endSize=8;" edge="1" parent="1" source="p1" target="p2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;endArrow=block;endSize=8;" edge="1" parent="1" source="p2" target="p3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;endArrow=block;endSize=8;" edge="1" parent="1" source="p3" target="p4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;endArrow=block;endSize=8;" edge="1" parent="1" source="p4" target="p5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;endArrow=block;endSize=8;" edge="1" parent="1" source="p5" target="i1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="950" y="505" />
+              <mxPoint x="280" y="505" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e7" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;endArrow=block;endSize=8;" edge="1" parent="1" source="i1" target="v1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

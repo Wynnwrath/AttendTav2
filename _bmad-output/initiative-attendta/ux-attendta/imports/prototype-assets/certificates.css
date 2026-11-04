@@ -1,0 +1,41 @@
+/* Keep review and issuance actions on the same baseline and right edge. */
+[data-queue-body] td:last-child {
+  min-width: 184px;
+  vertical-align: middle;
+}
+.certificate-row-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+[data-approve-eligibility],
+[data-open-decline-cert],
+[data-open-issue-confirm] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 8px 12px;
+  line-height: 18px;
+  border-radius: 8px;
+  box-sizing: border-box;
+  white-space: nowrap;
+}
+.certificate-dialog-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 16px;
+  border-top: var(--hairline-light);
+}
+.certificate-dialog-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 8px 14px;
+  line-height: 18px;
+}

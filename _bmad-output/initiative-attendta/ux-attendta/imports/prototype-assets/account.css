@@ -1,0 +1,38 @@
+/* Account settings and record editors use the existing v2 token system. */
+.profile-footer { padding: 12px !important; }
+.profile-menu--sidebar { width: 100%; min-width: 0; }
+.profile-trigger { display: flex; align-items: center; gap: 10px; width: 100%; min-width: 0; padding: 10px; border: 1px solid transparent; border-radius: 10px; text-align: left; font-size: 12px; font-weight: 600; color: #334155; background: transparent; }
+.profile-trigger:hover, .profile-trigger[aria-expanded="true"] { background: #f8fafc; border-color: #e2e8f0; }
+.profile-trigger:focus-visible { outline: 2px solid #64748b; outline-offset: 2px; }
+.profile-trigger > div { flex: 1; min-width: 0; }
+.profile-trigger [data-session-name] { white-space: normal; overflow-wrap: anywhere; line-height: 1.5; }
+.profile-trigger [data-session-role] { color: #64748b; font-size: 11px; margin-top: 2px; }
+.profile-chevron { flex-shrink: 0; margin-left: auto; }
+.profile-menu--sidebar .menu__panel { top: auto; bottom: calc(100% + 8px); left: 0; right: 0; }
+.profile-menu .menu__panel[hidden] { display: none; }
+.profile-menu-role { padding: 8px 10px; color: #64748b; font-size: 11px; border-bottom: 1px solid #e2e8f0; margin-bottom: 4px; }
+.profile-signout { color: #be123c; text-align: left; }
+.profile-mini-avatar { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 8px; background: #f1f5f9; color: #475569; font-size: 10px; }
+body[data-console-role="admin"] .console-role-label { color: #0f766e !important; font-size: 9px; letter-spacing: .06em; }
+body[data-console-role="admin"] [data-session-initials], body[data-console-role="admin"] .profile-mini-avatar { background: #0f766e !important; color: white !important; }
+body[data-console-role="admin"] .profile-trigger [data-session-role] { color: #0f766e; font-weight: 600; }
+body[data-console-role="admin"] aside nav a[aria-current="page"] { background: #f0fdfa !important; color: #115e59 !important; border-color: #99f6e4 !important; }
+body[data-console-role="admin"] aside nav a[aria-current="page"] svg { color: #0f766e !important; }
+.account-layout { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 48px; }
+.account-nav { display: flex; flex-direction: column; gap: 8px; align-self: start; }
+.account-nav a { padding: 12px 16px; border-radius: var(--radius-sm, 6px); color: var(--ink-secondary); font-weight: 600; }
+.account-nav a[aria-current="page"] { background: var(--canvas-subtle); color: var(--ink-primary); border-left: 3px solid var(--accent-amber-deep); }
+.account-section { padding: 24px 0; border-top: 1px solid var(--border-default, #e2e8f0); }
+.record-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.record-dialog { width: min(680px, calc(100vw - 32px)); max-height: calc(100dvh - 48px); overflow-y: auto; }
+.account-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 12px; padding-top: 24px; border-top: 1px solid var(--border-default, #e2e8f0); }
+.account-content { min-width: 0; }
+.account-content input[readonly] { background: var(--canvas-subtle); color: var(--ink-muted); }
+.account-content fieldset { min-width: 0; }
+.account-content fieldset:disabled { opacity: .6; }
+.account-nav a:focus-visible { outline: 2px solid var(--accent-amber-deep); outline-offset: 3px; }
+@media (max-width: 767px) {
+  .account-layout { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  .account-nav { flex-direction: row; flex-wrap: wrap; border-bottom: 1px solid var(--border-default, #e2e8f0); padding-bottom: 12px; }
+  .record-grid { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+}

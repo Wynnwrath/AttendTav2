@@ -1,0 +1,92 @@
+/* ==========================================================================
+   AttendTa v2 • ink-seam.css
+   "The Ink Seam" — the signature strip that seals the main→footer junction
+   on exactly 4 pages: index, account/login, account/register,
+   certificates/view. Pairs with assets/ink-seam.js and the host div
+   `.ink-seam[data-ink-seam]`. Ports together as the _InkSeam partial.
+
+   No-JS fallback: the script never sets [data-ink-seam-mounted], so the
+   container paints a static ink→parchment gradient with a 1px amber
+   seal-line. Reduced motion: drift animations are disabled by media query,
+   and ink-seam.js adds .ink-seam--static for the in-app preference; the
+   pointer bulge is never bound.
+   ========================================================================== */
+
+.ink-seam {
+  position: relative;
+  height: 160px;
+  overflow: hidden;
+  user-select: none;
+  --ink-seam-ground: var(--canvas-ground, #F8FAFC);
+}
+
+/* Static fallback — replaced by the mounted SVG art. */
+.ink-seam:not([data-ink-seam-mounted="true"]) {
+  background-color: var(--ink-seam-ground);
+  background-image:
+    linear-gradient(to bottom,
+      rgba(217, 119, 6, 0) calc(36% - 2px),
+      rgba(217, 119, 6, 0.9) calc(36% - 1px),
+      rgba(217, 119, 6, 0) calc(36% + 1px)),
+    linear-gradient(to bottom,
+      #0B1120 0%,
+      #0B1120 34%,
+      rgba(11, 17, 32, 0.72) 44%,
+      rgba(11, 17, 32, 0.38) 54%,
+      rgba(11, 17, 32, 0.14) 66%,
+      rgba(11, 17, 32, 0) 76%,
+      var(--ink-seam-ground) 88%,
+      var(--ink-seam-ground) 100%);
+}
+
+.ink-seam__art {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Idle layered drift — transform only, desynced per layer. */
+.ink-seam__drift {
+  animation-name: ink-drift;
+  animation-duration: 30s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+  will-change: transform;
+}
+.ink-seam__drift--deep {
+  --ink-amp: 40px;
+  animation-duration: 52s;
+  animation-delay: -23s;
+}
+.ink-seam__drift--mid {
+  --ink-amp: 30px;
+  animation-duration: 38s;
+  animation-delay: -9s;
+}
+.ink-seam__drift--front {
+  --ink-amp: 22px;
+  animation-duration: 29s;
+  animation-delay: -15s;
+}
+@keyframes ink-drift {
+  from { transform: translateX(calc(var(--ink-amp, 30px) * -1)); }
+  to { transform: translateX(var(--ink-amp, 30px)); }
+}
+
+/* Static under reduced motion — OS preference or in-app preference. */
+@media (prefers-reduced-motion: reduce) {
+  .ink-seam__drift {
+    animation: none;
+  }
+}
+.ink-seam--static .ink-seam__drift {
+  animation: none;
+}
+
+/* Never in print (certificates/view). */
+@media print {
+  .ink-seam {
+    display: none !important;
+  }
+}

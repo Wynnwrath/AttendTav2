@@ -1,0 +1,25 @@
+/* Browse Events uses the same neutral surfaces as the member workspace. */
+.browse-events .live-band {
+  background: var(--canvas-surface);
+  color: var(--ink-primary);
+  border-left-color: var(--accent-amber);
+  border-bottom: var(--hairline-light);
+  flex-wrap: wrap;
+}
+
+.browse-events .live-band__title {
+  color: var(--ink-primary);
+}
+
+.browse-events .live-band__label,
+.browse-events .live-band__meta {
+  color: var(--ink-muted);
+}
+
+.browse-events .live-band__dot {
+  animation: none;
+}
+
+.browse-events #event-grid > .card-hairline {
+  box-shadow: var(--shadow-tactile);
+}

@@ -1,0 +1,56 @@
+/* Shared visual contract: centered task dialogs; drawers are navigation only. */
+div[data-ta-modal] {
+  position: fixed; inset: 0; z-index: 1000;
+  align-items: center !important; justify-content: center !important;
+  padding: 24px !important; background: rgb(15 23 42 / .48) !important;
+  backdrop-filter: blur(3px);
+}
+div[data-ta-modal]:not(.hidden) { display: flex; }
+div[data-ta-modal].hidden { display: none !important; }
+[data-ta-panel], dialog.dialog {
+  box-sizing: border-box; position: relative;
+  width: min(480px, 100%) !important; max-width: 480px !important;
+  height: auto !important; max-height: calc(100dvh - 48px) !important;
+  border: 1px solid #e2e8f0 !important; border-radius: 16px !important;
+  background: #fff; box-shadow: 0 24px 64px rgb(15 23 42 / .2) !important;
+  overflow-y: auto; overflow-x: hidden; animation: none !important;
+}
+[data-ta-modal][data-dialog-size="record"] > [data-ta-panel], dialog.record-dialog {
+  width: min(680px, 100%) !important; max-width: 680px !important;
+}
+[data-ta-panel] > form.flex-1, [data-ta-panel] > .flex-1 { flex: 0 1 auto; min-height: 0; }
+[data-ta-panel] h2, [data-ta-panel] h3, dialog.dialog .dialog__title {
+  font-size: 18px !important; line-height: 1.4; font-weight: 700; padding-right: 36px;
+}
+[data-ta-panel] > .p-5, [data-ta-panel] > .p-6 { padding: 24px; }
+[data-ta-panel] > .border-t { padding: 16px 24px; gap: 8px; }
+#member-drawer [data-ta-panel] > .border-t, #venue-drawer [data-ta-panel] > .border-t {
+  display: grid; grid-template-columns: 1fr auto auto;
+}
+[data-record-cancel] { grid-column: 2; margin-left: 0 !important; }
+#edit-save-btn, #venue-save-btn { grid-column: 3; }
+[data-ta-panel] p { line-height: 1.6; }
+[data-ta-panel] input:not([type="hidden"]):not([type="file"]):not([type="checkbox"]),
+[data-ta-panel] select { min-height: 40px; }
+[data-ta-panel] textarea { min-height: 96px; resize: vertical; }
+[data-ta-panel] button:not(.ta-dialog-close) { min-height: 36px; }
+.ta-dialog-close {
+  position: absolute !important; top: 16px; right: 16px; z-index: 2;
+  display: grid; place-items: center; width: 32px; height: 32px; padding: 0 !important;
+  color: #64748b; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px;
+  cursor: pointer;
+}
+.ta-dialog-close:hover { color: #0f172a; background: #f8fafc; }
+.ta-dialog-close:focus-visible { outline: 2px solid #b45309; outline-offset: 3px; }
+[data-dialog-suspended] { visibility: hidden !important; pointer-events: none !important; }
+dialog.dialog::backdrop { background: rgb(15 23 42 / .48); backdrop-filter: blur(3px); }
+@media (max-width: 600px) {
+  div[data-ta-modal] { padding: 12px !important; }
+  [data-ta-panel], dialog.dialog { max-height: calc(100dvh - 24px) !important; }
+  [data-ta-panel] > .p-5, [data-ta-panel] > .p-6 { padding: 20px; }
+  [data-ta-panel] .grid-cols-2, [data-ta-panel] .grid-cols-3 { grid-template-columns: minmax(0, 1fr); }
+  [data-ta-panel] .flex { min-width: 0; }
+  [data-ta-panel] input, [data-ta-panel] select, [data-ta-panel] textarea { max-width: 100%; min-width: 0; }
+  [data-ta-panel] .border-t.flex { flex-wrap: wrap; gap: 8px; }
+  #edit-status-toggle-btn, #venue-status-toggle-btn { grid-column: 1 / -1; justify-self: start; }
+}
