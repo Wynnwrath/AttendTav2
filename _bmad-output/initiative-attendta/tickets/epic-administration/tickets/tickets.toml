@@ -1,0 +1,98 @@
+[[entry]]
+id = 1
+type = "story"
+title = "Console accounts list with role and status badges"
+description = "Renders the paged Accounts and Roles console for the Administrator policy, showing each account's name, email, role name (roles lookup via users.role_id), active status and action links, with the shared 25-row pager and Tailwind shell from epic-platform-access. Filters apply before counting."
+verify = "Given at least 26 user accounts seeded in the database, an Administrator logs in, opens Console Accounts & Roles, and sees a 25-row paged table of users with correct role and status badges, working page navigation, and functional search filtering."
+covers = ["R6"]
+after = ["1.1", "1.2", "1.6", "1.9"]
+hitl = false
+risk = "low"
+
+[[entry]]
+id = 2
+type = "story"
+title = "Role assignment with last-active-Administrator app lock"
+description = "Enables an Administrator to assign the Member, Officer, or Administrator Role to an Account with a mandatory reason (users.role_id, roles lookup) under the Administrator policy, in one ExecuteInTransactionAsync. When the target is an active Administrator and the new role is not Administrator, it first takes sp_getapplock 'attendta:last-admin' (Exclusive, owner Transaction, bounded @LockTimeout; a negative return throws Stale), then locks the target's users row, then re-reads the target and counts active Administrators; rejecting demotions of the last active Administrator with explanatory feedback. Each change appends one user.role_assigned Activity Log entry with old and new role codes in the same transaction."
+verify = "An integration test in ASI.Basecode.IntegrationTests (AD-17), with parallel connections against ATTENDTA_TEST_SQL, has two connections each demote one of two active Administrators; exactly one succeeds, the other is refused with explanatory feedback, and one Administrator stays active. A valid role change updates users.role_id, appends one activity_logs row in the same transaction, and the Administrator sees the new role badge on the Console Accounts list."
+covers = ["R2", "R4"]
+after = [1, "1.1", "1.2", "1.3"]
+hitl = false
+risk = "high"
+
+[[entry]]
+id = 3
+type = "story"
+title = "Upcoming registration impact preview for deactivation"
+description = "Adds the deactivation preview to the Account access screen: a GET endpoint and dialog that call IRegistrationCancellationService.PreviewUpcomingForUserAsync from epic-events-registration (AD-6) and list the upcoming, not-yet-started Registrations without Valid Attendance that the deactivation would cancel. The preview takes no lock and writes nothing; the Administration module adds no query of its own. Entry 6 reuses this endpoint for membership deactivation."
+verify = "In ASI.Basecode.IntegrationTests, requesting the deactivation preview for a user registered for two upcoming un-attended events and one already-attended event (with attendance verified via a seeded attendance row) displays a modal listing only the two affected upcoming registrations."
+covers = ["R3"]
+after = [1, "3.15"]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 4
+type = "story"
+title = "Account deactivation with registration cancellation cascade and session refusal"
+description = "Applies Account deactivation with a mandatory reason in one ExecuteInTransactionAsync under the Administrator policy. When the target is an active Administrator it takes the app lock attendta:last-admin (AD-4 step 1; refusing deactivation if the target is the last active Administrator), then locks the target's users row, then calls IRegistrationCancellationService.CancelUpcomingForUserAsync(userId, AccountDeactivated, reason) from epic-events-registration (AD-6), which cancels the upcoming Registrations, clears their QR tokens and locks their events in ascending order. It then sets users.is_active to false and appends one user.deactivated Activity Log entry. Session refusal on the next request comes from epic-platform-access's OnValidatePrincipal (AD-8); this entry adds no session code and only verifies it. The confirm step opens the entry 3 preview dialog."
+verify = "Executing the UJ-5 flow, deactivating an officer account with a valid reason cancels their upcoming registrations, releases their seats without auto-promoting waitlisted members, records an attributable activity log entry, and immediately refuses their active session on their next request. An integration test in ASI.Basecode.IntegrationTests with parallel connections runs two account deactivations of the two active Administrators at once; exactly one succeeds and one Administrator stays active."
+covers = ["R3", "R4"]
+after = [2, 3, "1.1", "3.15"]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 5
+type = "story"
+title = "Account reactivation restoring login access only"
+description = "Reactivates a deactivated Account with a mandatory reason under the Administrator policy in one ExecuteInTransactionAsync: locks the users row, sets users.is_active to true and appends one user.reactivated Activity Log entry. It restores login access only: cancelled Registrations stay Cancelled with no seats or QR tokens restored, and issued Certificates are untouched."
+verify = "Reactivating a deactivated account with a mandatory reason allows the user to log in again, their earlier cancelled Registrations stay Cancelled with no seats restored, and a pre-existing seeded certificate row in the database remains untouched."
+covers = ["R3", "R4"]
+after = [4]
+hitl = false
+risk = "low"
+
+[[entry]]
+id = 6
+type = "story"
+title = "Member membership deactivation with preview, reason and cancellation cascade"
+description = "Adds the membership deactivation action to the Management Member screen, whose status control epic-master-data removed (entry 2.6). The modal shows the preview from entry 3 and requires a non-empty reason. Submitting runs one ExecuteInTransactionAsync under the Management policy: it locks the member's users row (which also protects the members row, AD-4), sets members.membership_status_id to inactive, calls IRegistrationCancellationService.CancelUpcomingForUserAsync(userId, MembershipDeactivated, reason) from epic-events-registration (AD-6), and appends one member.membership_deactivated Activity Log entry. It takes no app lock and leaves users.is_active unchanged."
+verify = "Management opens a Member; the deactivation modal lists that member's upcoming Registrations, and submission with an empty reason is refused. With a reason entered, the membership status reads inactive, those Registrations show Cancelled with QR tokens cleared, the user can still log in, and the Activity Log holds one member.membership_deactivated entry."
+covers = ["R1", "R3", "R4"]
+after = [3, "2.6", "3.15"]
+hitl = false
+risk = "low"
+
+[[entry]]
+id = 7
+type = "story"
+title = "Member membership reactivation restoring eligibility only"
+description = "Reactivates a member's membership status with a reason under the Management policy in one ExecuteInTransactionAsync: locks the users row, sets members.membership_status_id to active, and appends one member.membership_reactivated Activity Log entry. It restores Eligible Participant status only, read through ParticipationFacts (AD-5). Cancelled Registrations stay Cancelled and users.is_active is unchanged."
+verify = "Reactivating an inactive member: after reactivation the member's profile shows membership status Active, and an officer can again approve one of their Pending Registrations, while their login works throughout and their previously cancelled Registrations stay Cancelled."
+covers = ["R1", "R4"]
+after = [6]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 8
+type = "story"
+title = "Read-only newest-first paged Activity Log viewer"
+description = "Builds the read-only Activity Log screen for the Administrator policy, paged with PageRequest and the shared _Pager at 25 rows (AD-13), ordered occurred_at DESC, log_id DESC. Each row shows occurred time through the shared Asia/Manila formatter (AD-11, epic-platform-access entry 1.4), actor name and type, action, affected entity type and id, and reason. The screen has no edit or delete control."
+verify = "Given at least 26 Activity Log rows seeded in the database, an Administrator opens the Activity Log at /admin/auditlogs and sees 25 rows per page, newest first with ties broken by log_id, Asia/Manila timestamps with a zone label, actor, action, affected record and reason, and no edit or delete controls. An Officer requesting the same route is refused."
+covers = ["R4", "R5", "R6"]
+after = ["1.3", "1.4", "1.6", "1.9"]
+hitl = false
+risk = "low"
+
+[[entry]]
+id = 10
+type = "story"
+title = "Refactor sweep"
+description = "Cleans up technical debt with scope set at its start from plans and review findings the epic deferred; cleanup only, removing dead administration controller, service and view-model code while leaving the audit writer and its JSON formatting to epic-platform-access (AD-7)."
+verify = "All unit and integration tests across administration and audit logging pass green; the solution builds with zero warnings and no unused administration controller, service or view-model type remains."
+covers = []
+after = [1, 2, 3, 4, 5, 6, 7, 8]
+hitl = false
+risk = "low"

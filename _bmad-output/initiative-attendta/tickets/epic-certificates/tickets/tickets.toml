@@ -1,0 +1,110 @@
+[[entry]]
+id = 1
+type = "story"
+title = "Playwright .NET setup and certificate PDF issuance tracer"
+description = "Pins Microsoft.Playwright 1.64.1 in ASI.Basecode.WebApp, with Chromium installed on the dev host, and adds the Services-side certificate renderer interface with its WebApp Playwright adapter; implements a minimal issuance path that renders the A4 landscape PDF to bytes, saves them to the temporary area, promotes them to certificates/ through IPrivateFileStore and streams the promoted file back through an authorized action that calls a Services use case, delivering the initial tracer path for R5 and R6 on the existing certificates mapping from epic-platform-access (1.2); as the tracer it intentionally skips the certificates row write, lock and audit, which arrive in entry 7."
+verify = "An Officer triggers the tracer action for a Confirmed Registration row inserted by a test SQL fixture; the action calls the issuance service, and the browser receives a landscape A4 PDF streamed as application/pdf from a relative certificates/ path whose bytes start with %PDF-."
+covers = ["R5", "R6"]
+after = ["1.1", "1.2", "2.2"]
+hitl = true
+risk = "high"
+
+[[entry]]
+id = 2
+type = "story"
+title = "Fixed-template landscape A4 Razor certificate rendering with embedded fonts"
+description = "Implements the fixed landscape A4 Razor certificate template in WebApp/Rendering with locally embedded Cinzel fonts, institutional branding, bindings for recipient name, Event title, Event start, issue date and the certificate number, dates formatted through the shared Asia/Manila formatter with its zone label (AD-11), and a visible development watermark until entry 3, delivering R5's fixed-template PDF part."
+verify = "Rendering a certificate from the Razor template produces a landscape A4 PDF with embedded Cinzel fonts, the snapshot values, the certificate number and dates shown in Asia/Manila with a label, a visible development watermark, and no external network requests."
+covers = ["R5"]
+after = [1, "1.4"]
+hitl = false
+risk = "high"
+
+[[entry]]
+id = 3
+type = "story"
+title = "Configure official authorized signatory details"
+description = "Configures the approved signatory name, title and signature image as non-secret application settings plus an embedded WebApp/Rendering asset used by the template, removes the development watermark, and delivers R5's official signatory requirement once Q1 is answered."
+verify = "Rendering the fixed template with the configured signatory produces a landscape A4 PDF showing the signatory name, title and signature image, with no development watermark."
+covers = ["R5"]
+after = [2]
+hitl = true
+risk = "medium"
+unknown = "Who is the authorized signatory (name, title, and signature image) for official certificate issuance?"
+
+[[entry]]
+id = 4
+type = "story"
+title = "Create certificate reviews in event completion transaction"
+description = "Implements IEventCompletionHandler, which epic-events-registration's completion transaction (3.12) declares and calls inside its own transaction, inserting through CertificateRepository a pending_approval certificate review for each Registration with Valid Attendance (ParticipationFacts, AD-5) under the event lock completion already holds, with created_by set to the completing officer and no file or PDF work, delivering R1."
+verify = "Completing an event creates pending_approval review rows for every Registration with Valid Attendance and none for absent or invalidated attendance, all in the completion's database transaction, and a completion that fails rolls back every review."
+covers = ["R1"]
+after = ["1.2", "1.3", "3.12", "4.3"]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 5
+type = "story"
+title = "Attendance invalidation review disqualification and issued-certificate lock"
+description = "Implements IAttendanceInvalidationHandler, which epic-check-in's invalidation transaction (4.6) declares and calls inside its own transaction: throws Forbidden when the registration's certificate is issued, and otherwise sets its pending_approval or eligible review to not_eligible with the correction reason, delivering R3."
+verify = "Invalidating an attendance record whose review is pending_approval or eligible sets that review to not_eligible with the reason recorded in the same commit; invalidating one whose certificate is issued is refused with a Forbidden outcome, and the attendance row stays valid."
+covers = ["R3"]
+after = [4, "4.6"]
+hitl = false
+risk = "high"
+
+[[entry]]
+id = 6
+type = "story"
+title = "Management certificate review queue and approval decisions"
+description = "Implements the 25-row paged review queue on the shared PageRequest and _Pager (AD-13), and the approve and decline decisions: each discovers its candidate, locks the owner's users row and then the event, rechecks pending_approval status and Valid Attendance through ParticipationFacts, and refuses as Stale a candidate that changed; decline displays the SPEC §14.2 warning that the decision cannot be reopened in this release and requires a non-blank reason validated inside the transaction; each decision appends a certificate.approved or certificate.declined entry, delivering R8, R4 and R7."
+verify = "An Officer approves a pending review to mark it eligible and declines another with a required reason to make it not_eligible; both append Activity Log entries, a decline without a reason is refused, the queue shows 25 rows per page, and a decision on a review invalidated since it was listed is refused as Stale."
+covers = ["R4", "R7", "R8"]
+after = [4, 5, "1.3", "1.6", "1.9"]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 7
+type = "story"
+title = "Transactional certificate issuance pipeline and audit"
+description = "Delivers the issuance use case for R5 and the paged issuance queue for R8 (AD-13) in this order: pre-checks and the existing issued state are read outside any lock; the fixed template renders to bytes with a unique certificate number (format decided by this story, Deferred); the bytes are saved to the temporary area and promoted to certificates/ through IPrivateFileStore, with server-generated names opened CreateNew; then one ExecuteInTransactionAsync locks the owner's users row, the event and the review through CertificateRepository.LockCertificateAsync(id), which this entry adds (AD-4 step 7), rechecks approval, Valid Attendance and Completed status, and sets certificate_number, the snapshots, issuer_name_snapshot, file_path (relative, certificates/…), issued_by and issued_at, appending a certificate.issued entry whose values exclude file_path; if the transaction fails the promoted file is deleted inline (no background cleanup, AD-16), and a repeat issuance is refused as Duplicate without touching the issued PDF. The SM-4 concurrency tests in tests/ASI.Basecode.IntegrationTests (AD-17) run parallel issuance and invalidation against real locks, with the renderer replaced by a test double that returns fixed valid PDF bytes, since the CI workflow from epic-platform-access (entry 10) has no Chromium, delivering R3 (the invalidation-versus-issuance race), R5 (issuance), R7 (the certificate.issued audit entry) and R8 (the issuance queue)."
+verify = "An Officer issues an eligible certificate from the paged queue, and the stored PDF is a relative certificates/ path whose bytes start with %PDF-, with unique certificate_number, issuer_name_snapshot and issued_at recorded; a repeat issuance is refused as Duplicate and leaves the stored file unchanged; SQL Server integration tests show parallel issuance yields exactly one issued certificate, and parallel invalidation and issuance each resolve to exactly one outcome (the invalidation is refused and the certificate is issued, or the certificate is not issued and the review is not_eligible)."
+covers = ["R3", "R5", "R7", "R8"]
+after = [2, 6, "1.3", "1.6", "1.9", "2.2"]
+hitl = false
+risk = "high"
+
+[[entry]]
+id = 8
+type = "story"
+title = "Authorized certificate streaming download endpoint"
+description = "Delivers R6 through a GET action that takes a certificate id and never a path, admits the owner (matching ActorUserId) or any caller with the Management policy, lets inactive memberships through, relies on the AD-8 session check that refuses inactive Accounts, and streams the file_path read through IPrivateFileStore.OpenReadAsync after a containment check as application/pdf."
+verify = "The owner and a Management user each download an issued certificate as application/pdf; an unauthenticated request and an inactive Account are sent to sign-in, a non-owner Member and an unknown id receive the identical not-found response, and no request can name a path."
+covers = ["R6"]
+after = [7]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 9
+type = "story"
+title = "Member certificate download links in My Events"
+description = "Delivers R2 by adding the issued-certificate query and link fields to epic-events-registration's MyEventCardViewModel and rendering _CertificateLinkPartial inside its My Events card, filling the _CertificateLinkPartial host slot created by 3.13, so a Member sees a download link only for an issued certificate they own; the controller and card model stay with e3 (AD-14)."
+verify = "A Member views a completed attended event in My Events and sees a download link for their issued certificate, while a review that is not yet issued shows no link."
+covers = ["R2"]
+after = [8, "3.13"]
+hitl = false
+risk = "low"
+
+[[entry]]
+id = 11
+type = "story"
+title = "Refactor sweep"
+description = "Cleans up technical debt, temporary test scaffolding, the entry 1 tracer action, and review findings deferred during certificate review, issuance, and download implementation."
+verify = "The full solution builds with zero warnings, linters pass, and all unit, integration, and concurrency tests run green."
+covers = []
+after = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+hitl = false
+risk = "low"

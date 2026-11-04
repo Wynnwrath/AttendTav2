@@ -1,0 +1,109 @@
+[[entry]]
+id = 1
+type = "story"
+title = "Demo host runtime environment provisioning"
+description = "An operator provisions the demo host to AD-16: the .NET 10 runtime (AD-18); a local SQL Server instance with the AttendTa_Demo database built from the canonical script (AD-10 allow-list); the runtime SQL login with SELECT and INSERT only on activity_logs (AD-7); the SetupRoot tree with uploads/venues, uploads/events, certificates, temporary and keys (AD-12, AD-16); secrets supplied only as environment variables (AD-16); Playwright Chromium installed during staging (AD-16); and the Argon2id cost parameters e1 decided, benchmarked on this host (spine Deferred); writes the host validation script executed in verification (delivers the demo-host part of R4 and the database and SetupRoot provisioning part of R5)."
+verify = "An operator runs the host validation script on the demo machine and observes: a SQL connection to AttendTa_Demo as the runtime login; INSERT into activity_logs succeeding while UPDATE and DELETE on it are refused; the SetupRoot directories present and writable; Playwright Chromium launching with the host disconnected from the internet; and the login page returning HTTP 200 on localhost."
+covers = ["R4", "R5"]
+after = ["1.1", "1.2", "1.3", "6.1"]
+hitl = true
+risk = "medium"
+
+[[entry]]
+id = 2
+type = "story"
+title = "Hotspot network binding and trusted HTTPS mobile camera scanning"
+description = "Decides the HTTPS mechanism and host address for the hotspot with Technical Manager Gabutan (Q2) and records the decision in this epic's Notes; then configures Kestrel to serve HTTPS directly on the hotspot LAN interface, with a certificate the officers' phones trust and no IIS or reverse proxy (AD-16); then verifies phone Chrome camera QR scanning where the 4.4 scanner page is served over the hotspot HTTPS origin here, not only localhost, filing scanner defects as bugs back to feature epics."
+verify = "With the host disconnected from the internet, an officer opens the hotspot HTTPS URL in mobile Chrome with no certificate warning, grants camera access, scans a valid attendee QR Pass and sees the attendee's name and student number, and finds the same attendee through manual lookup on that phone."
+covers = ["R4"]
+after = [1, "4.4", "4.5"]
+hitl = true
+risk = "high"
+
+[[entry]]
+id = 3
+type = "story"
+title = "Database and persistent file storage backup, restore, and redeploy survival"
+description = "An operator captures the SQL database and the SetupRoot tree (uploads, certificates, keys) in one backup bundle, verifies the data survives an application restart and redeploy, and restores the bundle into a disposable location; persistence failures are filed as bugs back to feature epics."
+verify = "An operator takes one backup bundle holding the SQL backup and SetupRoot (uploads, certificates, keys); restarts and redeploys the app with SetupRoot intact; restores the bundle into a disposable location; and verifies database rows, file checksums and the presence of the Data Protection keys."
+covers = ["R5"]
+after = [1, "6.7"]
+hitl = true
+risk = "medium"
+
+[[entry]]
+id = 4
+type = "story"
+title = "Whole IntegrationTests suite execution on SQL Server"
+description = "Runs the whole concurrency test suite in tests/ASI.Basecode.IntegrationTests together against the SQL Server named by ATTENDTA_TEST_SQL (AD-17), covering seat allocation, attendance recording, certificate issuance, user approval uniqueness, and last-administrator concurrency from epic-platform-access, epic-events-registration, epic-check-in, epic-administration, and epic-certificates, asserting zero overbooking and zero duplicate records; race conditions are filed as bugs back to feature epics."
+verify = "With ATTENDTA_TEST_SQL set to the test SQL Server and not AttendTa_Demo, the whole IntegrationTests suite runs, each test class on its own AttendTa_IT_<guid> database, and all pass with zero overbooking, duplicate attendance, duplicate approval, or duplicate last-admin violations."
+covers = ["R3"]
+after = ["1.1", "1.7", "3.7", "4.3", "5.2", "6.7"]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 5
+type = "story"
+title = "Automated SPEC §20 acceptance test suite execution"
+description = "Executes the automated SPEC §20 acceptance suite against the integrated dev build, kept in tests/ASI.Basecode.IntegrationTests or tests/ASI.Basecode.Services.Tests (AD-1: no new project), covering account lifecycles from epic-administration, certificate rules from epic-certificates, and report calculations from epic-participation-reports, logging test failures as bugs back to feature epics."
+verify = "A runner executes the automated SPEC §20 integration and acceptance test suite against the integrated dev build and all automated test cases pass with green output."
+covers = ["R1"]
+after = ["1.8", "2.9", "3.14", "4.9", "5.10", "6.11", "7.3"]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 6
+type = "story"
+title = "Recorded manual SPEC §20 acceptance checklist verification"
+description = "Conducts and records the manual verification checklist for non-automatable SPEC §20 scenarios including phone camera scans, stale-form submissions, manual student lookup fallbacks, and visual PDF layout inspections, logging any defects as bugs back to feature epics."
+verify = "An evaluator steps through the recorded manual SPEC §20 checklist on the live integrated build and confirms each acceptance item passes with signed-off evidence."
+covers = ["R1"]
+after = [2, 5]
+hitl = true
+risk = "medium"
+
+[[entry]]
+id = 7
+type = "story"
+title = "Full functional demo script walkthrough across all 26 feature IDs"
+description = "Walks through the complete client demonstration script covering all 26 functional IDs, initial administrator setup (FR-35), and 25-row pagination (FR-36) end-to-end on the integrated dev build, logging any observed defects as bugs back to feature epics."
+verify = "An evaluator executes the full 26-feature-ID user journey demonstration script on the integrated dev build and verifies that every functional requirement from FR-1 through FR-36 succeeds without manual workarounds."
+covers = ["R2"]
+after = [6]
+hitl = true
+risk = "low"
+
+[[entry]]
+id = 8
+type = "story"
+title = "Tier 3 manual system integration and regression verification"
+description = "Conducts Tier 3 manual system integration and regression testing on the integrated dev build covering cross-feature workflows, edge cases, and database migration consistency, filing any discovered defects as bugs back to feature epics."
+verify = "The team lead and testers complete the Tier 3 manual test matrix on the integrated dev build and sign off that all cross-feature test cases and database migration checks pass."
+covers = ["R6"]
+after = [3, 4, 7]
+hitl = true
+risk = "medium"
+
+[[entry]]
+id = 9
+type = "story"
+title = "Dev to main release pull request and submission preparation"
+description = "Prepares the release pull request from dev to main with attested Tier 1 local checks, green Tier 2 CI status, and the complete acceptance evidence package for team peer review and human merge."
+verify = "A team member reviews the dev-to-main pull request, confirms that every PR merged to dev shows green CI and at least one peer approval (prd SM-3), verifies all release CI checks are green with required peer approvals recorded, and performs the manual merge to main."
+covers = ["R6"]
+after = [8]
+hitl = true
+risk = "low"
+
+[[entry]]
+id = 10
+type = "story"
+title = "Refactor sweep"
+description = "Cleans up release harnesses, throwaway verification scripts, and temporary demo configurations, with scope set at its start from plans and review findings the epic deferred."
+verify = "The repository builds cleanly with no remaining throwaway test harnesses, stale documentation notes, or temporary demo credentials committed."
+covers = []
+after = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+hitl = false
+risk = "low"
