@@ -20,7 +20,7 @@ slug = "epic-master-data"
 title = "Management maintains members, event types and venues"
 description = "Logged-in Management edits Member Profiles (except membership status), Event Types and Venues with photos through the shared 2 MiB private image storage, each change audited and paged, and a Member sees their own read-only profile."
 covers = ["R4", "R5", "R6", "R7", "R8", "R33", "R36"]
-after = [{ epic = 1, needs = "email login issuing role and numeric actor claims, the audit writer, the pager and the canonical schema" }]
+after = [{ epic = 1, needs = "cookie login with ICurrentActor and the Management policy, the canonical schema, the unit of work with lock helpers and DomainException, the audit writer, the clock, the pager, the Tailwind shell and the master-data writes moved into the caller-owned transaction" }]
 
 [[epic]]
 id = 3
@@ -28,7 +28,7 @@ slug = "epic-events-registration"
 title = "Officers publish events and fill seats fairly"
 description = "Management runs an Event from draft through publish, edit, cancel and complete; Eligible Participants register before the deadline; reviews, Promotion and cancellations allocate Seats without overbooking and respect the start cutoff through one Registration-owned cancellation service; Members see their Registrations in My Events."
 covers = ["R8", "R9", "R10", "R11", "R12", "R13", "R14", "R15", "R16", "R17", "R18", "R19", "R20", "R33", "R36"]
-after = [{ epic = 1, needs = "the audit writer, the pager and the local-time display helper" }, { epic = 2, needs = "active Event Types and Venues, the shared image storage for Event Covers, and Member eligibility facts" }]
+after = [{ epic = 1, needs = "cookie login with ICurrentActor and policies, the canonical mappings, the unit of work and users lock, the audit writer, the clock and local-time display, the pager, approval-created Members, the Tailwind shell and both test projects" }, { epic = 2, needs = "active Event Type and Venue read queries and the shared private file store for Event Covers" }]
 
 [[epic]]
 id = 4
@@ -44,7 +44,7 @@ slug = "epic-administration"
 title = "Administrators control roles, access and the audit trail"
 description = "An Administrator changes Roles and Account access, Management changes membership status, both with a preview, reason and cancellation of upcoming Registrations through the Registration cancellation service, the last Administrator is protected, and the Activity Log is viewable newest-first."
 covers = ["R5", "R31", "R32", "R33", "R34", "R36"]
-after = [{ epic = 1, needs = "the pager, shell and audit writer for the accounts and log screens" }, { epic = 2, needs = "the Member edit screen whose membership-status control this epic replaces" }, { epic = 3, needs = "the Registration-owned participation cancellation service" }, { epic = 4, needs = "Valid Attendance facts that exempt Registrations from cancellation" }]
+after = [{ epic = 1, needs = "cookie login with the Administrator and Management policies and OnValidatePrincipal, the users lock, the pager, shell, clock and audit writer for the accounts and log screens" }, { epic = 2, needs = "the Member edit screen whose membership-status control this epic replaces" }, { epic = 3, needs = "the Registration-owned participation-cancellation service with its preview, which exempts Registrations with Valid Attendance" }]
 
 [[epic]]
 id = 6
@@ -52,7 +52,7 @@ slug = "epic-certificates"
 title = "Officers issue retained PDF certificates"
 description = "Completing an Event creates Certificate Reviews for valid attendees; Management approves or declines each, issues one fixed-template A4 PDF at a time, and the owner or Management downloads it from My Events through an authorized endpoint, with attendance corrections serialized against issuance."
 covers = ["R13", "R20", "R25", "R27", "R28", "R29", "R33", "R36"]
-after = [{ epic = 1, needs = "the canonical certificates mapping" }, { epic = 2, needs = "the shared private storage adapter for the certificates directory" }, { epic = 3, needs = "the completion transaction and the My Events page" }, { epic = 4, needs = "Attendance Records with invalidation" }]
+after = [{ epic = 1, needs = "sign-in with the Management policy and ICurrentActor, the unit of work and audit writer, the pager and shell, and the canonical certificates mapping" }, { epic = 2, needs = "the shared private file store's certificates and temporary areas" }, { epic = 3, needs = "the completion hook declaration and the My Events page" }, { epic = 4, needs = "Attendance Records and the invalidation hook declaration" }]
 
 [[epic]]
 id = 7

@@ -3,7 +3,7 @@ type: initiative
 title: "AttendTa: one organization runs membership, events, check-in and certificates in one attributable system"
 parent: none
 sources: [_bmad-output/initiative-attendta/prd-attendta/prd-attendta.md]
-companions: [_bmad-output/initiative-attendta/prd-attendta/addendum.md, docsss/AttendTa-System-Specification.md, docsss/architecture.md, docsss/design.md, _bmad-output/initiative-attendta/ux-attendta/DESIGN.md, _bmad-output/initiative-attendta/ux-attendta/EXPERIENCE.md, AttendTa-User-Stories.md, database/attendta-mvp-schema.sql, docsss/AttendTa-MVP.dbml, docsss/git_qa_guidelines.pdf]
+companions: [_bmad-output/initiative-attendta/architecture-attendta/architecture-attendta.md, _bmad-output/initiative-attendta/prd-attendta/addendum.md, docsss/AttendTa-System-Specification.md, docsss/architecture.md, docsss/design.md, _bmad-output/initiative-attendta/ux-attendta/DESIGN.md, _bmad-output/initiative-attendta/ux-attendta/EXPERIENCE.md, AttendTa-User-Stories.md, database/attendta-mvp-schema.sql, docsss/AttendTa-MVP.dbml, docsss/git_qa_guidelines.pdf]
 after: []
 risk: high
 ---
@@ -59,16 +59,17 @@ For the organization's applicants, members, officers and administrators, the req
 
 ## Constraints
 
-- Passwords only as salted Argon2id hashes; signed expiring cookie sessions; antiforgery on every mutation; ownership check on every personal resource; every time, capacity and state guard on the server; secrets, hashes and QR tokens never logged; HTTPS on every non-localhost deployment; no login throttling or lockout. (prd NFR-1; addendum A; architecture 6)
-- Seat allocation, Promotion, approval, issuance and attendance correction run in one caller-owned SQL transaction with the audit write, serialized where they compete; uniqueness enforced in the database: Account email, Member student number, Registration per Member/Event, Attendance per Registration, Certificate per Registration. (prd NFR-2; architecture 7)
-- No hard deletes of business records and no archive/restore; Activity Log append-only, runtime database role limited to SELECT/INSERT on activity_logs. (prd NFR-3; addendum B.12)
-- Images and Certificates on persistent server-local storage outside the web root and deployment tree, separate venue/event/certificate directories, relative paths only in SQL, backed up with SQL Server. (prd NFR-4; architecture 8)
-- Times stored in UTC as datetime2(3) and shown in Asia/Manila with a label; no scheduled or background jobs. (prd NFR-5)
-- One ASP.NET Core MVC app and one SQL Server database on one host, reached on localhost or intranet; Chrome target; mobile-responsive for phone check-in over a hotspot; laptop layouts at 1920x1080. (prd NFR-6; architecture 2)
+- Passwords only as salted Argon2id hashes; signed expiring cookie sessions; antiforgery on every mutation; ownership check on every personal resource; every time, capacity and state guard on the server; secrets, hashes and QR tokens never logged; HTTPS on every non-localhost deployment; no login throttling or lockout. (prd NFR-1; addendum A; spine AD-8, AD-15)
+- Seat allocation, Promotion, approval, issuance and attendance correction run in one caller-owned SQL transaction with the audit write, serialized where they compete; uniqueness enforced in the database: Account email, Member student number, Registration per Member/Event, Attendance per Registration, Certificate per Registration. (prd NFR-2; spine AD-3, AD-4, AD-10)
+- No hard deletes of business records and no archive/restore; Activity Log append-only: the schema blocks UPDATE and DELETE on activity_logs and the demo host's runtime login has only SELECT and INSERT on it. (prd NFR-3; addendum B.12; spine AD-7, AD-16)
+- Images and Certificates on persistent server-local storage outside the web root and deployment tree, separate venue/event/certificate directories, relative paths only in SQL, backed up with SQL Server. (prd NFR-4; spine AD-12)
+- Times stored in UTC as datetime2(3), every guard compared against one injected clock, and shown in Asia/Manila with a label; no scheduled or background jobs. (prd NFR-5; spine AD-11)
+- One ASP.NET Core MVC app and one SQL Server database on one host, reached on localhost or intranet; Chrome target; mobile-responsive for phone check-in over a hotspot; laptop layouts at 1920x1080. (prd NFR-6; spine AD-16)
 - The QR Pass carries no personal data; unknown-token and unauthorized responses reveal nothing about other records; email is required but unverified. (prd NFR-7)
-- .NET 9 MVC with Razor views; EF Core database-first; layers WebApp -> Services -> Data; Tailwind compiled into the app with no runtime CDN; Playwright .NET with Chromium renders the certificate PDF; QR PNG rendered server-side from registrations.qr_token. (addendum A; architecture 1-3, 9)
-- States are seeded lookup tables with foreign keys; event_types.description is NOT NULL; certificates carries issuer_name_snapshot at issuance. (addendum A, B.10, B.11; architecture 5)
-- Git Flow: feature/* and fix/* branches, PRs to dev with green CI and one peer approval, Tier 3 manual E2E before release to main; Conventional Commits. (addendum D)
+- .NET 10 (net10.0 LTS) MVC with Razor views on every project; EF Core database-first from the single canonical schema script with fluent mapping and no EF migrations; layers WebApp -> Services -> Data; Tailwind compiled into the app with no runtime CDN; Playwright .NET with Chromium renders the certificate PDF; QR PNG rendered server-side from registrations.qr_token. (addendum A; spine AD-1, AD-10, AD-14, AD-18)
+- States are seeded lookup tables with foreign keys; event_types.description is NOT NULL; certificates carries issuer_name_snapshot at issuance. (addendum A, B.10, B.11; spine AD-10)
+- Git Flow: feature/* and fix/* branches, PRs to dev with green CI (build plus both test projects against a SQL Server container) and one peer approval, Tier 3 manual E2E before release to main; Conventional Commits. (addendum D; spine AD-16, AD-17)
+- Every epic builds against the architecture spine: one writing module per table, cross-module writes only through the owner's service or a hook it declares; one caller-owned transaction per mutating use case with row locks in the AD-4 order; one set of participation facts, one cancellation path, one audit writer, one outcome contract, one private file store, one pager and one UI shell. (spine AD-2..AD-14)
 - SPEC v2.1 (docsss/AttendTa-System-Specification.md) is authoritative unless PRD 9 records an override. (prd 0, 9)
 
 ## Done when
@@ -94,7 +95,8 @@ For the organization's applicants, members, officers and administrators, the req
 - prd — `_bmad-output/initiative-attendta/prd-attendta/prd-attendta.md`, sections 3 Glossary, 4 Features (FR-1..FR-36), 5 NFRs, 7 Scope, 8 Success Metrics
 - prd addendum — `_bmad-output/initiative-attendta/prd-attendta/addendum.md`, A stack, B schema tensions, C delivery ownership, D quality gates
 - spec — `docsss/AttendTa-System-Specification.md` (SPEC v2.1, owner decisions 2026-11-04), §20 acceptance coverage
-- architecture — `docsss/architecture.md` v1.1, §4 module contracts, §5 database, §6 auth, §7 transactions, §8 files and PDF
+- architecture spine — `_bmad-output/initiative-attendta/architecture-attendta/architecture-attendta.md`, AD-1..AD-18, Consistency Conventions, Stack, Capability → Architecture Map, Deferred
+- architecture source — `docsss/architecture.md` v1.1, distilled into the spine
 - design — `docsss/design.md` (visual specification), `_bmad-output/initiative-attendta/ux-attendta/DESIGN.md`
 - ux — `_bmad-output/initiative-attendta/ux-attendta/EXPERIENCE.md`
 - user stories — `AttendTa-User-Stories.md` (US-01..US-29)
@@ -109,6 +111,8 @@ For the organization's applicants, members, officers and administrators, the req
 - Assumption: `newdocs/` is a superseded 2026-11-01 snapshot (it gives Administration to Member 1); `docsss/` SPEC (owner decisions 2026-11-04) and root `AttendTa-User-Stories.md` are current.
 - Open question: Q1 — authorized certificate signatory name, title and signature not yet supplied; PM (Talisic) owns it; needed before official issuance, not before build.
 - Open question: Q2 — hotspot storage, host address and trusted HTTPS for phone scanning; Technical Manager (Gabutan) owns it; before the demo.
+- Open question: spine wording — AD-18 moves all Microsoft.* packages in lockstep but the Stack pins Microsoft.Playwright 1.64.1 and Microsoft.TypeScript.MSBuild versions separately; AD-18 lists Hangfire.Core under Data although only Services references it; AD-4 forbids process-local locks while Deferred lets epic-certificates bound renderer concurrency; owner: architecture spine (`bmad-architecture`); before epic-certificates.
+- Open question: R30 shows the attendance rate for any Event with Confirmed > 0; SPEC §15 shows it only for Completed Events; recorded in epic-participation-reports.
 - Source conflict: R3, prd NFR-1 — code signs every login in as user `0` (`AccountController.cs:88-91`, `SignInManager.cs:63`), logs in by `UserId` not email, and stores passwords with reversible AES keyed from the JWT secret (`PasswordManager.cs`); PRD requires email login and Argon2id.
 - Source conflict: R1, R2 — public `Account/Register` creates login accounts directly (`AccountController.cs:119-134`), bypassing Account Request review.
 - Source conflict: R8 — `VenueImageStorage.cs:13`, `AGENTS.md` and `docs/database-setup.md` allow 5 MiB images; PRD FR-8, SPEC and architecture §8 cap them at 2 MiB.
@@ -122,3 +126,7 @@ For the organization's applicants, members, officers and administrators, the req
 - Decision: 2026-11-04 — keep a closing release-acceptance epic for SPEC §20, SM-4, hotspot HTTPS, backup/restore and the dev-to-main release.
 - Decision: 2026-11-04 — `docsss/architecture.md` v1.1 adopted as the shared-decision home (transactions, storage, auth, lookups); no separate architecture run.
 - Decision: 2026-11-04 — every epic is refined from the initiative's lines alone and planned into stories in this run.
+- Decision: 2026-11-04 — architecture spine `architecture-attendta/architecture-attendta.md` (AD-1..AD-18) adopted as the shared-decision home, superseding the decision above that named `docsss/architecture.md` with no separate run; `docsss/architecture.md` stays a companion as the spine's source.
+- Decision: 2026-11-04 — every project targets net10.0 LTS (spine AD-18, resolved in the architecture run), replacing .NET 9; the AGENTS.md roll-forward note becomes obsolete.
+- Decision: 2026-11-04 — epic-events-registration writes every AD-5 fact in `ParticipationFacts.cs`, Valid Attendance included as the spine defines it; epic-check-in owns later changes to Valid Attendance; epic-master-data builds only active Event Type and Venue reads.
+- Decision: 2026-11-04 — spine re-slice: unstarted entries revised in place with ids kept; new entries e1.10 (net10 baseline, test projects, CI), e1.11 (master-data unit-of-work migration), e3.15 (participation-cancellation service); epic-platform-access builds baseline, then schema, then the login tracer. Cut: Activity Log search (Boundaries: advanced log filters out) and report status filtering (not in R30).

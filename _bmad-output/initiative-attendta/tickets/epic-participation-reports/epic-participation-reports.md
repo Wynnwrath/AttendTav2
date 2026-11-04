@@ -4,7 +4,7 @@ title: "Officers read per-event participation reports"
 parent: initiative-attendta
 covers: [R30, R36]
 sources: [_bmad-output/initiative-attendta/initiative-attendta.md]
-companions: [docsss/architecture.md, docsss/design.md, _bmad-output/initiative-attendta/ux-attendta/DESIGN.md, _bmad-output/initiative-attendta/ux-attendta/EXPERIENCE.md, docsss/AttendTa-System-Specification.md]
+companions: [_bmad-output/initiative-attendta/architecture-attendta/architecture-attendta.md, docsss/architecture.md, docsss/design.md, _bmad-output/initiative-attendta/ux-attendta/DESIGN.md, _bmad-output/initiative-attendta/ux-attendta/EXPERIENCE.md, docsss/AttendTa-System-Specification.md]
 after: []
 refined: true
 risk: medium
@@ -28,8 +28,8 @@ For the organization, participation evidence for advisers comes straight from re
 ## Constraints
 
 - Passwords only as salted Argon2id hashes; signed expiring cookies; antiforgery on every mutation; ownership checks on personal resources; every time, capacity and state guard on the server; secrets, hashes and QR tokens never logged; no login throttling (parent Constraints; prd NFR-1).
-- UTC datetime2(3) storage, Asia/Manila display with a label, no scheduled jobs; every time guard evaluated per request (parent Constraints; prd NFR-5).
-- .NET 9 MVC, EF Core database-first, WebApp → Services → Data, compiled Tailwind with no runtime CDN (parent Constraints; architecture §3, §9).
+- UTC datetime2(3) storage, Asia/Manila display with a label, no scheduled jobs; every time guard evaluated per request (parent Constraints; prd NFR-5; AD-11, AD-16).
+- net10.0 MVC (AD-18), EF Core database-first, WebApp → Services → Data (AD-1), compiled Tailwind with no runtime CDN (AD-14).
 - feature/* or fix/* branches, PRs to dev with green CI and a peer approval, Conventional Commits (parent Constraints; addendum D).
 - SPEC v2.1 in docsss/ is authoritative for rule detail unless prd §9 overrides (parent Constraints).
 
@@ -42,13 +42,13 @@ For the organization, participation evidence for advisers comes straight from re
 
 ## Boundaries
 
-- Out: report export and cross-event dashboards (parent Boundaries).
-- Must not change: reports never mutate participation records.
+- Out: report export (parent Boundaries).
+- Must not change: reports never mutate participation records; reads only (AD-2).
 
 ## References
 
 - parent — _bmad-output/initiative-attendta/initiative-attendta.md, Requirements R30, R36
-- architecture — docsss/architecture.md, §9 reporting
+- spine — _bmad-output/initiative-attendta/architecture-attendta/architecture-attendta.md: AD-5 (ParticipationFacts, No-show, Attendance rate), AD-2 (reads only), AD-13 (paging), AD-11 (time), AD-14 (shell), AD-8 (Management policy), AD-18 (net10.0); Capability map row R30. docsss/architecture.md §9 is companion context only.
 - spec — docsss/AttendTa-System-Specification.md, §15 reports
 - design — _bmad-output/initiative-attendta/ux-attendta/DESIGN.md; docsss/design.md
 
@@ -56,6 +56,8 @@ For the organization, participation evidence for advisers comes straight from re
 
 - Owner: Pinca (addendum C).
 - Decision: 2026-11-04 — refined from the initiative's lines alone.
+- Open question: R30 shows the attendance rate for any Event with Confirmed > 0; SPEC §15 shows it only for Completed Events; SPEC is authoritative unless prd §9 overrides; owner: PM; before entry 1.
+- Decision: 2026-11-04 — re-sliced against the architecture spine (AD-2, AD-5, AD-8, AD-11, AD-13, AD-14, AD-18): report consumes canonical ParticipationFacts from e3 without defining facts or mutating data, cuts unneeded status filtering, uses unique-id tiebreak for paging, and gates on Management policy.
 - Waits on epic-platform-access because: role claims, Tailwind shell, and shared 25-row pager helper.
 - Waits on epic-events-registration because: Registration states, snapshots and Completed Events.
 - Waits on epic-check-in because: Attendance Records with invalidation.

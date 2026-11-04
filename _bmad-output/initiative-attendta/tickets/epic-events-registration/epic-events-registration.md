@@ -4,7 +4,7 @@ title: "Officers publish events and fill seats fairly"
 parent: initiative-attendta
 covers: [R8, R9, R10, R11, R12, R13, R14, R15, R16, R17, R18, R19, R20, R33, R36]
 sources: [_bmad-output/initiative-attendta/initiative-attendta.md]
-companions: [docsss/architecture.md, docsss/design.md, _bmad-output/initiative-attendta/ux-attendta/DESIGN.md, _bmad-output/initiative-attendta/ux-attendta/EXPERIENCE.md, docsss/AttendTa-System-Specification.md]
+companions: [_bmad-output/initiative-attendta/architecture-attendta/architecture-attendta.md, docsss/architecture.md, docsss/design.md, _bmad-output/initiative-attendta/ux-attendta/DESIGN.md, _bmad-output/initiative-attendta/ux-attendta/EXPERIENCE.md, docsss/AttendTa-System-Specification.md]
 after: []
 refined: true
 risk: high
@@ -40,14 +40,14 @@ For Officers and Members, seats are allocated by explicit, fair review instead o
 
 ## Constraints
 
-- Passwords only as salted Argon2id hashes; signed expiring cookies; antiforgery on every mutation; ownership checks on personal resources; every time, capacity and state guard on the server; secrets, hashes and QR tokens never logged; no login throttling (parent Constraints; prd NFR-1).
-- Multi-record mutations run in one caller-owned SQL transaction with the audit write, serialized where they compete; uniqueness enforced in the database (parent Constraints; prd NFR-2; architecture §7).
+- Passwords only as salted Argon2id hashes; signed expiring cookies; antiforgery on every mutation; ownership checks on personal resources; every time, capacity and state guard on the server; secrets, hashes and QR tokens never logged; no login throttling (parent Constraints; prd NFR-1; AD-8; AD-15 for the hasher).
+- Multi-record mutations run in one caller-owned SQL transaction with the audit write, serialized where they compete; uniqueness enforced in the database (parent Constraints; prd NFR-2; AD-3, AD-4).
 - No hard deletes; Activity Log append-only (parent Constraints; prd NFR-3).
-- Files on persistent server-local storage outside the web root, separate venue/event/certificate directories, relative paths only in SQL (parent Constraints; prd NFR-4; architecture §8).
-- UTC datetime2(3) storage, Asia/Manila display with a label, no scheduled jobs; every time guard evaluated per request (parent Constraints; prd NFR-5).
+- Files on persistent server-local storage outside the web root, separate venue/event/certificate directories, relative paths only in SQL (parent Constraints; prd NFR-4; AD-12).
+- UTC datetime2(3) storage, Asia/Manila display with a label, no scheduled jobs; every time guard evaluated per request against the injected TimeProvider (parent Constraints; prd NFR-5; AD-11).
 - One MVC app and one SQL Server database; Chrome target; mobile-responsive (parent Constraints; prd NFR-6).
-- .NET 9 MVC, EF Core database-first, WebApp → Services → Data, compiled Tailwind with no runtime CDN (parent Constraints; architecture §3, §9).
-- States are seeded lookup tables with FKs; event_types.description NOT NULL; certificates.issuer_name_snapshot (parent Constraints; architecture §5).
+- net10.0 MVC (AD-18), EF Core database-first, WebApp → Services → Data (AD-1), compiled Tailwind with no runtime CDN (AD-14) (parent Constraints).
+- States are seeded lookup tables with FKs; event_types.description NOT NULL; certificates.issuer_name_snapshot (parent Constraints; AD-10).
 - feature/* or fix/* branches, PRs to dev with green CI and a peer approval, Conventional Commits (parent Constraints; addendum D).
 - SPEC v2.1 in docsss/ is authoritative for rule detail unless prd §9 overrides (parent Constraints).
 
@@ -55,21 +55,22 @@ For Officers and Members, seats are allocated by explicit, fair review instead o
 
 - UJ-2 runs on the dev build: draft with cover, publish, signups, approvals confirm up to the limit and then waitlist, a confirmed Member cancels, and Promote confirms the earliest eligible waitlisted Registration.
 - SQL Server tests show concurrent last-seat approvals and Promotion never overbook (SM-4 seats).
-- Signup Deadline and Event Start Cutoff refuse stale forms at the exact boundary, stored in UTC and shown in Asia/Manila.
-- Event cancellation cancels its open Registrations atomically through the participation cancellation service, whose contract is documented for epic-administration; completion before start is refused.
+- Signup Deadline and Event Start Cutoff refuse stale forms at the exact boundary, stored in UTC and shown in Asia/Manila, using the injected TimeProvider (AD-11).
+- Event cancellation cancels its open Registrations atomically through IRegistrationCancellationService, implemented with the four AD-6 methods that epic-administration calls; completion before start is refused.
 - Merged to dev with integrated verification.
 
 ## Boundaries
 
-- Belongs to epic-check-in: QR PNG rendering, the Check-in toggle, scans and attendance.
-- Belongs to epic-certificates: Certificate Reviews created at completion and certificate links.
-- Belongs to epic-administration: deactivation-triggered cancellation (it calls this epic's service).
+- Belongs to epic-check-in: QR PNG rendering, the Check-in toggle (which adds SetCheckInWindowAsync to IEventLifecycleService with this epic's review), scans and attendance.
+- Belongs to epic-certificates: Certificate Reviews created at completion through IEventCompletionHandler (AD-2), and certificate links.
+- Belongs to epic-administration: deactivation-triggered cancellation, which calls CancelUpcomingForUserAsync and PreviewUpcomingForUserAsync (AD-6); the screens and reason entry are epic-administration's.
 - Must not change: nothing promotes automatically; no reapplication after cancellation.
 
 ## References
 
 - parent — _bmad-output/initiative-attendta/initiative-attendta.md, Requirements R8–R20, R33, R36
-- architecture — docsss/architecture.md, §4 module contracts, §7 transactions and concurrency, §9 QR token
+- spine — _bmad-output/initiative-attendta/architecture-attendta/architecture-attendta.md: AD-2 (writers, hooks), AD-3 (unit of work), AD-4 (lock order), AD-5 (ParticipationFacts), AD-6 (cancellation service), AD-7 (audit), AD-8 (actor, policies), AD-9 (outcomes), AD-10 (lookups, unique keys), AD-11 (TimeProvider), AD-12 (file store), AD-13 (paging), AD-14 (My Events ownership), AD-17 (test projects); Consistency Conventions (QR token format)
+- architecture — docsss/architecture.md
 - spec — docsss/AttendTa-System-Specification.md, §7–§10 events, registration, cutoffs
 - design — _bmad-output/initiative-attendta/ux-attendta/DESIGN.md; docsss/design.md
 - ux — _bmad-output/initiative-attendta/ux-attendta/EXPERIENCE.md, UJ-2
@@ -78,7 +79,8 @@ For Officers and Members, seats are allocated by explicit, fair review instead o
 
 - Owner: Member 3 (addendum C).
 - Decision: 2026-11-04 — refined from the initiative's lines alone; kept as one epic (split declined, parent Notes).
-- Waits on epic-master-data because: active Event Types and Venues, the shared image storage and Member eligibility facts.
-- Waits on epic-platform-access because: the audit writer and pager (1.3, 1.6) and the local-time display helper (1.4).
+- Waits on epic-master-data because: active Event Types and Venues and the shared image storage (IPrivateFileStore, AD-12). Member eligibility is the ParticipationFacts fact this epic creates (AD-5).
+- Waits on epic-platform-access because: login, ICurrentActor and policies (1.1), canonical EF mappings (1.2), audit writer (1.3), local-time display helper (1.4), pager (1.6), approval-created members (1.7), role shell (1.9), and test projects (1.10).
 - Decision: 2026-11-04 — tracer bullet: entry 1, Draft event creation, edit, and management event list (architectural slice through EF mapping, service validation, controller, Tailwind views, and pager); least-certain story entry 7 (seat allocation and SM-4 concurrency) cannot follow entry 1 directly because reviewing registrations functionally requires published events with covers (entries 2, 3) and member registration submission (entry 5).
 - Decision: 2026-11-04 — no closing end-to-end suite in this epic; epic-release-acceptance runs SPEC §20 across the build.
+- Decision: 2026-11-04 — re-sliced against the architecture spine (AD-2, AD-4, AD-5, AD-6, AD-11, AD-14, AD-18): added entry 15 for IRegistrationCancellationService (AD-6), created all AD-5 facts in ParticipationFacts in entry 3, named IEventLifecycleService in entry 1, declared IEventCompletionHandler in entry 12, moved cutoff guards into the actions they guard, established My Events ownership in entry 13, specified 64-hex QR tokens, and retargeted net10.0.

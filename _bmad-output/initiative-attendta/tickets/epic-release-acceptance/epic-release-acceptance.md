@@ -3,8 +3,8 @@ type: epic
 title: "The integrated build passes SPEC §20 and is demo-ready"
 parent: initiative-attendta
 covers: []
-sources: [_bmad-output/initiative-attendta/initiative-attendta.md]
-companions: [docsss/architecture.md, docsss/design.md, _bmad-output/initiative-attendta/ux-attendta/DESIGN.md, _bmad-output/initiative-attendta/ux-attendta/EXPERIENCE.md, docsss/AttendTa-System-Specification.md]
+sources: [_bmad-output/initiative-attendta/initiative-attendta.md, _bmad-output/initiative-attendta/prd-attendta/prd-attendta.md, docsss/AttendTa-System-Specification.md]
+companions: [_bmad-output/initiative-attendta/architecture-attendta/architecture-attendta.md, docsss/architecture.md, docsss/design.md, _bmad-output/initiative-attendta/ux-attendta/DESIGN.md, _bmad-output/initiative-attendta/ux-attendta/EXPERIENCE.md]
 after: []
 refined: true
 risk: medium
@@ -31,9 +31,9 @@ For the client and approver, the MVP is shown to meet every acceptance item, sig
 
 ## Constraints
 
-- Passwords only as salted Argon2id hashes; signed expiring cookies; antiforgery on every mutation; ownership checks on personal resources; every time, capacity and state guard on the server; secrets, hashes and QR tokens never logged; no login throttling (parent Constraints; prd NFR-1).
-- Files on persistent server-local storage outside the web root, separate venue/event/certificate directories, relative paths only in SQL (parent Constraints; prd NFR-4; architecture §8).
-- One MVC app and one SQL Server database; Chrome target; mobile-responsive (parent Constraints; prd NFR-6).
+- Passwords only as salted Argon2id hashes; signed expiring cookies; antiforgery on every mutation; ownership checks on personal resources; every time, capacity and state guard on the server; secrets, hashes and QR tokens never logged; no login throttling (parent Constraints; prd NFR-1; AD-8, AD-15).
+- Files on persistent server-local storage outside the web root, separate venue/event/certificate directories, relative paths only in SQL (parent Constraints; prd NFR-4; AD-12, AD-16).
+- One MVC app and one SQL Server database; Chrome target; mobile-responsive (parent Constraints; prd NFR-6); no IIS, reverse proxy, cloud service or background job (AD-16); net10.0 runtime (AD-18).
 - feature/* or fix/* branches, PRs to dev with green CI and a peer approval, Conventional Commits (parent Constraints; addendum D).
 - SPEC v2.1 in docsss/ is authoritative for rule detail unless prd §9 overrides (parent Constraints).
 
@@ -42,26 +42,28 @@ For the client and approver, the MVP is shown to meet every acceptance item, sig
 - Every SPEC §20 acceptance scenario passes on the integrated dev build (SM-1).
 - All 26 functional IDs, FR-35 and FR-36 are demonstrated end to end (SM-2).
 - The seat, attendance and certificate concurrency tests pass together (SM-4).
-- A phone in Chrome scans a QR Pass over the hotspot under trusted HTTPS, and SQL plus stored files survive restart, redeploy and a restore to a disposable location (NFR-4, NFR-6, Q2).
+- A phone in Chrome scans a QR Pass over the hotspot under trusted HTTPS, and SQL, stored files and the Data Protection keys (SetupRoot/keys) survive restart, redeploy and a restore to a disposable location (AD-12, AD-16, NFR-4, NFR-6, Q2).
 - Tier 3 manual E2E passes and dev is released to main (SM-3).
 
 ## Boundaries
 
 - Belongs to the feature epics: fixing behavior; this epic runs and records acceptance and reports defects back as bugs.
-- Out: production hosting, uptime, cloud services (architecture §10).
+- Out: production hosting, uptime, cloud services (AD-16: no IIS, reverse proxy, cloud service or background job).
 
 ## References
 
 - parent — _bmad-output/initiative-attendta/initiative-attendta.md, Done when
 - prd — _bmad-output/initiative-attendta/prd-attendta/prd-attendta.md, §8 Success Metrics, §10 Q2
 - spec — docsss/AttendTa-System-Specification.md, §20 acceptance coverage
-- architecture — docsss/architecture.md, §10 local and hotspot configuration, §11 verification
+- spine — _bmad-output/initiative-attendta/architecture-attendta/architecture-attendta.md: AD-16 (Environments and operations), AD-17 (Test harness), AD-7 (runtime login), AD-12 (SetupRoot), AD-18 (runtime), spine Deferred (Q2). docsss/architecture.md §10–§11 is companion context only.
 - qa process — docsss/git_qa_guidelines.pdf, Tier 3
 
 ## Notes
 
 - Owner: team; Technical Manager (Gabutan) for the hotspot and HTTPS setup (Q2).
-- Open question: Q2 — host address and trusted HTTPS certificate for officers' phones (parent Notes).
+- Open question: Q2 — host address and trusted HTTPS certificate for officers' phones (parent Notes). Decision owner: Technical Manager (Gabutan) with e8 (spine Deferred). When decided, record here the mechanism (CA or certificate path), host address and the phone trust steps; entry 2 cites this record.
+- Check beyond criteria (entry 2, high risk): repeat the scan on a second officer phone that has never had the certificate installed, to show trust comes from the certificate chain and not from device setup.
+- Decision: 2026-11-04 — re-sliced against the architecture spine (AD-7, AD-10, AD-12, AD-16, AD-17, AD-18): 8.1 provisions demo host with AttendTa_Demo, restricted activity_logs login, SetupRoot/keys, and Playwright Chromium; 8.2 specifies direct Kestrel HTTPS and mobile scanning; 8.3 bundles Data Protection keys in backup; 8.4 executes whole IntegrationTests suite on ATTENDTA_TEST_SQL including approval and last-admin concurrency tests; 8.5 keeps automated tests in existing test projects.
 - Decision: 2026-11-04 — refined from the initiative's Done when; covers no requirement id because it verifies the whole set.
 - Waits on epic-platform-access, epic-master-data, epic-events-registration, epic-check-in, epic-administration, epic-certificates and epic-participation-reports because: the acceptance run needs every finished feature epic (8.5 waits on each closing entry), the concurrency run needs 3.7, 4.3 and 6.7, phone scanning needs 4.4, and host provisioning needs the Playwright runtime from 6.1.
 - Decision: 2026-11-04 — tracer bullet: entry 1, Demo host runtime environment provisioning; next: entry 2, Hotspot network binding and trusted HTTPS mobile camera scanning (least certain).
