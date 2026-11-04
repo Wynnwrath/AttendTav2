@@ -1,0 +1,98 @@
+[[entry]]
+id = 1
+type = "story"
+title = "Console accounts list with role and status badges"
+description = "Renders the paged Accounts and Roles console table with search and role/status filters, displaying each user account's name, email, fixed role badge, active status, and action links, adapting the shared 25-row pager and role-aware Tailwind layout from epic-platform-access."
+verify = "An Administrator logs in, opens Console Accounts & Roles, and sees a 25-row paged table of users with correct role and status badges, working page navigation, and functional search filtering."
+covers = ["R2", "R6"]
+after = ["1.6"]
+hitl = false
+risk = "low"
+
+[[entry]]
+id = 2
+type = "story"
+title = "Role assignment with SQL Server guard for last-active-Administrator protection"
+description = "Enables an Administrator to assign the Member, Officer, or Administrator Role to an Account with a mandatory reason, serialized through a SQL Server application lock guard that recounts active administrators in a caller-owned transaction, rejecting demotions of the last active Administrator and writing an Activity Log entry."
+verify = "An integration test executing concurrent demotion requests against the last active Administrator proves exactly one demotion fails with explanatory feedback and the last admin remains active, while valid role changes update users.role and record an activity_logs entry."
+covers = ["R2", "R4"]
+after = [1]
+hitl = false
+risk = "high"
+
+[[entry]]
+id = 3
+type = "story"
+title = "Upcoming registration impact preview for deactivation"
+description = "Provides a query service and dialog preview endpoint showing all upcoming, not-yet-started Events for a selected Account or Member that lack Valid Attendance and would be cancelled upon deactivation, distinguishing draft/published events and attended events."
+verify = "Requesting the deactivation preview for a user registered for two upcoming un-attended events and one already-attended event displays a modal listing only the two affected upcoming registrations."
+covers = ["R3"]
+after = [1, "3.11", "4.3"]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 4
+type = "story"
+title = "Account deactivation with registration cancellation cascade and session refusal"
+description = "Applies Account deactivation with a mandatory reason in a single transaction that protects the last active Administrator via the SQL guard, cancels not-yet-started registrations lacking Valid Attendance via epic-events-registration's cancellation service, invalidates QR passes, releases seats without waitlist promotion, appends an Activity Log entry, and ensures immediate session refusal on the deactivated user's next request, realizing and proving the UJ-5 deactivation flow."
+verify = "Executing the UJ-5 flow, deactivating an officer account with a valid reason cancels their upcoming registrations, releases their seats without auto-promoting waitlisted members, records an attributable activity log entry, and immediately refuses their active session on their next request."
+covers = ["R3", "R4"]
+after = [2, 3]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 5
+type = "story"
+title = "Account reactivation restoring login access only"
+description = "Allows an Administrator to reactivate a deactivated Account with a mandatory reason, setting is_active to true and appending an Activity Log entry while strictly preserving previously issued Certificates, retaining cancelled registration states, and refraining from automatic seat or registration restoration."
+verify = "Reactivating a deactivated account with a reason allows the user to log in again and view previously earned certificates, while past cancelled registrations remain cancelled with no seats restored."
+covers = ["R3", "R4"]
+after = [4]
+hitl = false
+risk = "low"
+
+[[entry]]
+id = 6
+type = "story"
+title = "Member screen status change dialog with upcoming registration preview"
+description = "Replaces the plain Member status toggle on the Management Member screen with an action modal that previews affected upcoming Registrations, requires a mandatory reason for inactivation, and captures the change intention without modifying account login access."
+verify = "Navigating to the Member management screen and initiating member deactivation presents the confirmation dialog displaying upcoming registrations preview and requiring a non-empty reason before submission."
+covers = ["R1", "R3"]
+after = [3, "2.6"]
+hitl = false
+risk = "low"
+
+[[entry]]
+id = 7
+type = "story"
+title = "Member inactivation cascade and reactivation without account access mutation"
+description = "Executes Member status inactivation in a single transaction that revokes Eligible Participant status, cascades registration cancellation and seat release without promotion via epic-events-registration's service, and writes an Activity Log entry while leaving user account login access active, with reactivation restoring eligibility only."
+verify = "Inactivating an active member cancels their upcoming event registrations and logs the action while the user can still log in to their account, and subsequent member reactivation restores participant eligibility without restoring cancelled registrations."
+covers = ["R1", "R3", "R4"]
+after = [6]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 8
+type = "story"
+title = "Read-only newest-first paged Activity Log viewer"
+description = "Builds the read-only Governance Audit Trail screen for Administrators, displaying activity log records ordered newest-first with 25-row pagination, search, Asia/Manila timestamp formatting, actor name/type, action badge, polymorphic entity reference, and full inspection of reason and safe old/new values."
+verify = "An Administrator navigates to /admin/auditlogs and sees a chronological, newest-first, read-only paged table of activity log entries with formatted Manila timestamps, actor, action, and expandable reason/details, without edit or delete actions."
+covers = ["R4", "R5", "R6"]
+after = ["1.3", "1.6"]
+hitl = false
+risk = "low"
+
+[[entry]]
+id = 10
+type = "story"
+title = "Refactor sweep"
+description = "Cleans up technical debt, consolidates preview and cancellation view models between account and member administration, ensures consistent activity log JSON formatting without sensitive data exposure, and removes any dead administration code across controllers and services."
+verify = "All unit and integration tests across administration and audit logging pass green, with clean code analysis and no redundant or orphaned services."
+covers = []
+after = [1, 2, 3, 4, 5, 6, 7, 8]
+hitl = false
+risk = "low"

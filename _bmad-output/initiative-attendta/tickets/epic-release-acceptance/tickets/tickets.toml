@@ -1,0 +1,110 @@
+[[entry]]
+id = 1
+type = "story"
+title = "Demo host runtime environment provisioning"
+description = "Provisions the dedicated demo host environment with the canonical SQL Server instance, persistent storage root directories, Playwright browser runtime, and recorded benchmarked Argon2id cost parameters from epic-platform-access."
+verify = "An operator runs the host validation script on the demo machine and observes successful SQL connection, writable external storage directories, Playwright browser launch, and the login page returning HTTP 200 on localhost."
+covers = ["R4", "R5"]
+after = ["6.1"]
+hitl = true
+risk = "medium"
+
+[[entry]]
+id = 2
+type = "story"
+title = "Hotspot network binding and trusted HTTPS mobile camera scanning"
+description = "Binds the web application to the hotspot LAN interface with a mobile-trusted HTTPS certificate and verifies phone Chrome camera QR scanning against attendance check-in from epic-check-in, reporting any scanning defects as bugs back to feature epics."
+verify = "An officer opens the hotspot HTTPS URL in mobile Chrome without security warnings, permits camera access, and successfully scans a valid attendee QR Pass with attendee details displayed."
+covers = ["R4"]
+after = [1, "4.4"]
+hitl = true
+risk = "high"
+unknown = "What host address and mobile-trusted HTTPS certificate will Technical Manager Gabutan configure for phones scanning over the hotspot?"
+
+[[entry]]
+id = 3
+type = "story"
+title = "Database and persistent file storage backup, restore, and redeploy survival"
+description = "Executes backup and restore scripts for the SQL database and external image and certificate storage files created through epic-certificates and verifies data survives an application restart and redeploy, reporting persistence failures as bugs back to feature epics."
+verify = "An operator runs the backup script, performs an application restart and redeploy, restores the backup bundle into disposable locations, and verifies database records and file checksums match."
+covers = ["R5"]
+after = [1, "6.7"]
+hitl = true
+risk = "medium"
+
+[[entry]]
+id = 4
+type = "story"
+title = "Unified concurrency test suite execution on SQL Server"
+description = "Executes the feature epics' seat allocation, attendance recording, and certificate issuance concurrency test suites together against SQL Server from epic-certificates and asserts zero overbooking and zero duplicate records, filing race conditions as bugs back to feature epics."
+verify = "A test runner executes the combined seat, attendance, and certificate concurrency test suite against SQL Server and all tests complete with zero overbooking, duplicate attendance, or duplicate certificate records."
+covers = ["R3"]
+after = ["3.7", "4.3", "6.7"]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 5
+type = "story"
+title = "Automated SPEC §20 acceptance test suite execution"
+description = "Executes the automated SPEC §20 acceptance suite against the integrated dev build covering account lifecycles from epic-administration, certificate rules from epic-certificates, and report calculations from epic-participation-reports, logging test failures as bugs back to feature epics."
+verify = "A runner executes the automated SPEC §20 integration and acceptance test suite against the integrated dev build and all automated test cases pass with green output."
+covers = ["R1"]
+after = ["1.8", "2.9", "3.14", "4.9", "5.10", "6.11", "7.3"]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 6
+type = "story"
+title = "Recorded manual SPEC §20 acceptance checklist verification"
+description = "Conducts and records the manual verification checklist for non-automatable SPEC §20 scenarios including phone camera scans, stale-form submissions, manual student lookup fallbacks, and visual PDF layout inspections, logging any defects as bugs back to feature epics."
+verify = "An evaluator steps through the recorded manual SPEC §20 checklist on the live integrated build and confirms each acceptance item passes with signed-off evidence."
+covers = ["R1"]
+after = [2, 5]
+hitl = true
+risk = "medium"
+
+[[entry]]
+id = 7
+type = "story"
+title = "Full functional demo script walkthrough across all 26 feature IDs"
+description = "Walks through the complete client demonstration script covering all 26 functional IDs, initial administrator setup (FR-35), and 25-row pagination (FR-36) end-to-end on the integrated dev build, logging any observed defects as bugs back to feature epics."
+verify = "An evaluator executes the full 26-feature-ID user journey demonstration script on the integrated dev build and verifies that every functional requirement from FR-1 through FR-36 succeeds without manual workarounds."
+covers = ["R2"]
+after = [6]
+hitl = true
+risk = "low"
+
+[[entry]]
+id = 8
+type = "story"
+title = "Tier 3 manual system integration and regression verification"
+description = "Conducts Tier 3 manual system integration and regression testing on the integrated dev build covering cross-feature workflows, edge cases, and database migration consistency, filing any discovered defects as bugs back to feature epics."
+verify = "The team lead and testers complete the Tier 3 manual test matrix on the integrated dev build and sign off that all cross-feature test cases and database migration checks pass."
+covers = ["R6"]
+after = [3, 4, 7]
+hitl = true
+risk = "medium"
+
+[[entry]]
+id = 9
+type = "story"
+title = "Dev to main release pull request and submission preparation"
+description = "Prepares the release pull request from dev to main with attested Tier 1 local checks, green Tier 2 CI status, and the complete acceptance evidence package for team peer review and human merge."
+verify = "A team member reviews the dev-to-main pull request, confirms all CI checks are green with required peer approvals recorded, and performs the manual merge to main."
+covers = ["R6"]
+after = [8]
+hitl = true
+risk = "low"
+
+[[entry]]
+id = 10
+type = "story"
+title = "Refactor sweep"
+description = "Cleans up release harnesses, throwaway verification scripts, and temporary demo configurations, with scope set at its start from plans and review findings the epic deferred."
+verify = "The repository builds cleanly with no remaining throwaway test harnesses, stale documentation notes, or temporary demo credentials committed."
+covers = []
+after = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+hitl = false
+risk = "low"

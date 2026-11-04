@@ -1,0 +1,153 @@
+[[entry]]
+id = 1
+type = "story"
+title = "Draft event creation, edit, and management event list"
+description = "Creates and edits draft Events with active type/venue validation, positive limit within venue capacity, and deadline before start, showing them on the paged management list while hidden from members, needing canonical EF mappings, audit writer, and pager from epic-platform-access and active types and venues from epic-master-data."
+verify = "An officer logs in, creates a draft event with an active type and venue, sees it appear on the paged management events list, edits its title, and verifies a non-officer cannot access or view the draft."
+covers = ["R1", "R15"]
+after = ["2.5", "1.3", "1.6"]
+hitl = true
+risk = "low"
+
+[[entry]]
+id = 2
+type = "story"
+title = "Event Cover upload, replacement, and draft removal via shared storage"
+description = "Integrates Event Cover management with the shared 2 MiB image storage from epic-master-data, supporting upload and replacement for draft/published events, draft cover removal, and content validation."
+verify = "An officer uploads a valid JPEG cover to a draft event, removes it while in draft, re-uploads a PNG cover, and verifies that an oversized or non-image file is rejected with a validation error."
+covers = ["R13"]
+after = [1, "2.2"]
+hitl = false
+risk = "low"
+
+[[entry]]
+id = 3
+type = "story"
+title = "Event publication with active master revalidation and activity audit"
+description = "Publishes a draft event after revalidating currently active type and venue, mandatory cover presence, valid capacity, and future signup deadline, appending an Activity Log entry and immediately opening signup in the member feed."
+verify = "An officer publishes a draft event with a valid cover and future deadline, observing its status change to Published with an Activity Log entry, while a draft with a deactivated venue or missing cover is refused publication."
+covers = ["R2", "R14"]
+after = [2]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 4
+type = "story"
+title = "Published event limited edits and immutable states"
+description = "Restricts updates on Published Events to title, description, and Cover replacement only, logging old and new values in the Activity Log, while locking completed and cancelled events as read-only."
+verify = "An officer updates the title and description of a Published Event and sees the change with old and new values in the Activity Log, while server validation rejects changes to schedule, venue, limit, or deadline."
+covers = ["R3", "R14"]
+after = [3]
+hitl = false
+risk = "low"
+
+[[entry]]
+id = 5
+type = "story"
+title = "Member event browsing and registration submission with academic snapshot"
+description = "Displays published events on the paged member feed and allows eligible members to register before the deadline, recording pending status with course/year/section snapshots, showing full-event warnings, and refusing duplicate signups even after cancellation, needing member eligibility facts from epic-master-data."
+verify = "An eligible member registers for a published event, receives a Pending registration with academic snapshot saved, sees a full-event warning when capacity is reached, and a second registration attempt for the same event is refused."
+covers = ["R6", "R15"]
+after = [3, "2.5", "1.4"]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 6
+type = "story"
+title = "Signup deadline enforcement at exact local boundary"
+description = "Enforces the Signup Deadline per request against UTC storage, rejecting signups and stale submission forms at or after the deadline while keeping the event published and existing registrations intact, displaying the deadline in Asia/Manila."
+verify = "A member attempting to register at or after the Signup Deadline receives an explicit closure rejection, while earlier registrations remain intact and the event remains Published in the feed."
+covers = ["R7"]
+after = [5]
+hitl = false
+risk = "low"
+
+[[entry]]
+id = 7
+type = "story"
+title = "Registration review and transactional seat allocation with SQL Server concurrency test"
+description = "Implements officer review of pending registrations before event start cutoff, declining with required reason, administratively cancelling un-attended registrations with reason, allocating seats with SQL Server row locking, generating 32-byte hex QR tokens, and executing the SM-4 concurrency test proving last-seat approvals never overbook."
+verify = "An automated test executes concurrent approval requests for the final seat against SQL Server with zero overbooking, and an officer in the browser approves a registration to confirm with a 64-hex QR token generated or waitlists when full."
+covers = ["R8", "R14", "R15"]
+after = [6]
+hitl = false
+risk = "high"
+
+[[entry]]
+id = 8
+type = "story"
+title = "Explicit waitlist promotion across full queue"
+description = "Implements the officer action to promote the earliest waitlisted registration whose owner remains an eligible participant (ordered by reviewed_at ASC, registration_id ASC across the entire queue) when a seat is free, assigning confirmation and a QR token with audit logging, serialized with competing approvals."
+verify = "When a seat is released, an officer clicks Promote and confirms the earliest eligible waitlisted member with a new QR token generated and an Activity Log write, serialized with competing approvals."
+covers = ["R9", "R14"]
+after = [7]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 9
+type = "story"
+title = "Member self-cancellation and re-registration refusal"
+description = "Enables a member to cancel their own pending, confirmed, or waitlisted registration before event start cutoff and before valid attendance, with an explicit confirmation warning that cancellation is final, releasing the held seat, clearing the QR token, auditing the action, and preventing reapplication."
+verify = "A confirmed member cancels their registration after confirming the warning dialog, observing their seat released and QR token cleared with an Activity Log entry, and a subsequent registration attempt is refused."
+covers = ["R10", "R14"]
+after = [7]
+hitl = false
+risk = "low"
+
+[[entry]]
+id = 10
+type = "story"
+title = "Event start cutoff enforcement and Not confirmed before cutoff status"
+description = "Enforces the Event Start Cutoff per request at or after event start time in UTC, rejecting reviews, confirmations, promotions, and member cancellations, while retaining pending and waitlisted rows unchanged as 'Not confirmed before cutoff'."
+verify = "At or after the event start time, review, promotion, and member cancellation actions are rejected by the server, and pending/waitlisted registrations display as 'Not confirmed before cutoff' without being marked cancelled or no-shows."
+covers = ["R11"]
+after = [8, 9]
+hitl = false
+risk = "low"
+
+[[entry]]
+id = 11
+type = "story"
+title = "Registration-owned participation cancellation service and Event cancellation"
+description = "Implements the Registration-owned participation cancellation service contract for deactivation workflows (documented for epic-administration), and uses it within Event cancellation to atomically cancel a draft or published event with no valid attendance or certificates, cancelling open registrations, invalidating QR tokens, closing check-in, and writing an audit entry."
+verify = "An officer cancels a published event with a reason, observing all pending, confirmed, and waitlisted registrations atomically cancelled with QR tokens cleared, check-in closed, and an audit entry recorded, while event cancellation is refused if valid attendance exists."
+covers = ["R4", "R14"]
+after = [7]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 12
+type = "story"
+title = "Event completion closing check-in"
+description = "Completes a published event at or after its scheduled start time, closing check-in atomically and auditing the action, while refusing completion before start and providing the transactional extension hook for certificate review creation in epic-certificates."
+verify = "An officer completes an event at or after its start time, observing status change to Completed, check-in flag set to closed, and an Activity Log entry written, while an attempt to complete an event before start time is refused."
+covers = ["R5", "R14"]
+after = [10, 11]
+hitl = false
+risk = "low"
+
+[[entry]]
+id = 13
+type = "story"
+title = "My Events personal registrations list"
+description = "Implements the paged My Events view for logged-in members showing all their personal registrations with event title, Asia/Manila dates, and status badges including 'Not confirmed before cutoff', providing the base view for downstream QR pass and certificate links."
+verify = "A member navigates to My Events and views their registrations paged at 25 rows per page, showing accurate statuses (Pending, Confirmed, Waitlisted, Cancelled, Not confirmed before cutoff) with local time display."
+covers = ["R12", "R15"]
+after = [9, 10]
+hitl = false
+risk = "low"
+
+[[entry]]
+id = 14
+type = "story"
+title = "Refactor sweep"
+description = "Cleans up temporary test harnesses, shared service registration interfaces, and deferred review findings across the event and registration modules, with scope set at its start from plans and review findings the epic deferred."
+verify = "The complete event and registration test suite passes cleanly with zero warnings, correct dependency injection lifetimes, and clean code formatting across all epic files."
+covers = []
+after = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+hitl = false
+risk = "low"

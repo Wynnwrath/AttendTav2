@@ -1,0 +1,98 @@
+[[entry]]
+id = 1
+type = "story"
+title = "Provisioned administrator logs in by email via Argon2id into authenticated session with active role checks"
+description = "Stands up the xUnit test project and GitHub Actions CI workflow, benchmarks the Argon2id hasher to replace AES encryption, maps the MVP users table, provisions the first Administrator via setup script, and authenticates the administrator by email and password with signed expiring cookie session and role claims, enforcing per-request active/role re-validation, antiforgery on login and logout, and logout via POST while retiring the login stub, AES PasswordManager, and public Register."
+verify = "An operator benchmarks Argon2id on the host, runs the setup script to provision an administrator, and logs in with email and password on the dev build, landing on the authenticated landing view with active session claims; demoting or deactivating the account in the database rejects its next request; logout succeeds only via POST with an antiforgery token; public Register is removed; and the GitHub Actions CI workflow runs green on PR."
+covers = ["R3", "R4"]
+after = []
+hitl = true
+risk = "high"
+
+[[entry]]
+id = 2
+type = "story"
+title = "Canonical database schema update and EF Core mapping for all ten tables with lookup foreign keys"
+description = "Updates the database schema with physical lookup tables and foreign keys replacing string check states, enforces required event-type descriptions and certificate issuer snapshots, grants append-only permissions on activity logs, and maps all ten tables and lookups in EF Core."
+verify = "The canonical schema script applies cleanly to AttendTaMVP_Test and an automated integration test executes EF Core queries across all ten mapped tables and lookups against SQL Server."
+covers = []
+after = [1]
+hitl = false
+risk = "high"
+
+[[entry]]
+id = 9
+type = "story"
+title = "Compiled Tailwind CSS pipeline and role-routed layout shell replacing Bootstrap"
+description = "Configures the compiled Tailwind CSS build pipeline without runtime CDNs, removes Bootstrap 4.3.1 and external CDN stylesheets and scripts, and implements the responsive role-routed navigation shell and base layouts per the visual specification."
+verify = "The dev build compiles Tailwind CSS locally without external CDNs, renders the responsive navigation shell showing permitted routes for Administrator, Officer, and Member across desktop and mobile viewports, and removes all Bootstrap stylesheets and CDN script tags."
+covers = []
+after = [1]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 3
+type = "story"
+title = "Caller-owned transaction unit of work and append-only Activity Log writer"
+description = "Implements the caller-owned transaction unit of work participating in repository operations and the shared Activity Log writer that appends validated audit JSON inside the caller's transaction while filtering sensitive secrets, hashes, tokens, and paths."
+verify = "An integration test verifies that business writes and audit logs commit atomically inside a caller transaction, roll back completely on error, refuse credentials or paths, and that SQL Server permissions reject direct UPDATE or DELETE operations on activity_logs."
+covers = ["R5"]
+after = [2]
+hitl = false
+risk = "high"
+
+[[entry]]
+id = 4
+type = "story"
+title = "Asia/Manila timezone display helper and UTC server-side time standard"
+description = "Implements server-side UTC datetime2(3) resolution across all business operations and provides Razor display helpers that format timestamps in Asia/Manila (+08:00) with an explicit timezone label."
+verify = "A test verifies UTC timestamps are converted to Asia/Manila (+08:00) with a visible timezone label, and views display formatted local timestamps without client-side scripts."
+covers = []
+after = [1]
+hitl = false
+risk = "low"
+
+[[entry]]
+id = 5
+type = "story"
+title = "Public Account Request submission with field validation and Argon2id hash"
+description = "Allows an applicant to submit an account request with student number, academic details, and password, validating field constraints and uniqueness against existing users, members, and pending requests while storing the password solely as an Argon2id hash."
+verify = "An applicant submits valid registration details and sees the submission acknowledgment page, while duplicate submissions or mismatched confirmation passwords redisplay field errors without persisting credentials."
+covers = ["R1"]
+after = [2, 9]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 6
+type = "story"
+title = "Shared 25-row pager helper and Management Account Request queue"
+description = "Delivers the shared 25-row server-side pagination helper with deterministic sorting and page fallbacks, applying it to the Management Account Request queue view."
+verify = "An authenticated officer navigates the Account Request queue and observes exactly 25 items per page ordered deterministically by request timestamp, working previous and next controls, hidden pagination on single pages, and an empty state when no requests exist."
+covers = ["R6"]
+after = [2, 4, 9]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 7
+type = "story"
+title = "Management Account Request approval and rejection in caller transaction with audit"
+description = "Enables Management to approve a pending request to atomically create an active user and member profile with transferred hash and audit, or reject a request with mandatory reason while clearing the hash, handling concurrent reviews idempotently with automated SQL Server concurrency tests proving zero duplicate accounts."
+verify = "An officer approves a pending request and the applicant logs in as a Member with their original password; scripted SQL Server concurrency integration tests verify that parallel approval attempts on the same request yield exactly one Account and audited conflict outcomes with zero duplicate records; and rejection with a mandatory reason clears the hash."
+covers = ["R2"]
+after = [3, 5, 6]
+hitl = false
+risk = "high"
+
+[[entry]]
+id = 8
+type = "story"
+title = "Refactor sweep"
+description = "Cleans up technical debt, obsolete stubs, and temporary scaffolds across auth, schema, and UI, with scope set at its start from plans and review findings the epic deferred."
+verify = "The solution builds cleanly with zero warnings, all test suites pass in GitHub Actions CI including SQL Server integration and concurrency tests, and no obsolete login stubs, legacy User entity mappings, or temporary test scripts remain."
+covers = []
+after = [1, 2, 3, 4, 5, 6, 7, 9]
+hitl = false
+risk = "low"

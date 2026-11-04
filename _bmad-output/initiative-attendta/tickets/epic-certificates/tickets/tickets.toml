@@ -1,0 +1,110 @@
+[[entry]]
+id = 1
+type = "story"
+title = "Playwright .NET setup and certificate PDF issuance tracer"
+description = "Pins Playwright .NET with Chromium on the host, registers the certificates EF mapping, and implements a minimal vertical issuance pipeline that renders an A4 landscape PDF to private storage and streams it back to deliver the initial tracer path for R5 and R6."
+verify = "An Officer triggers the tracer route for a seeded registration, and the browser receives and displays a generated landscape A4 PDF streamed as application/pdf from certificates/ storage."
+covers = ["R5", "R6"]
+after = ["1.2", "2.2"]
+hitl = true
+risk = "high"
+
+[[entry]]
+id = 2
+type = "story"
+title = "Fixed-template landscape A4 Razor certificate rendering with embedded fonts"
+description = "Implements the institutional landscape A4 Razor certificate template delivering R5's fixed layout with embedded Cinzel fonts, University of Cebu branding, snapshot bindings, and a development watermark pending official signatory configuration."
+verify = "Rendering a certificate from the Razor template produces a landscape A4 PDF with embedded Cinzel fonts, AttendTa and institutional branding, and a visible development watermark without external network requests."
+covers = ["R5"]
+after = [1]
+hitl = false
+risk = "high"
+
+[[entry]]
+id = 3
+type = "story"
+title = "Configure official authorized signatory details"
+description = "Configures the approved signatory name, title, and institutional signature asset in the certificate renderer to deliver R5's official signatory requirement and remove the development watermark."
+verify = "Generating an issued certificate produces a PDF displaying the official signatory name, title, and signature image with no development watermark."
+covers = ["R5"]
+after = [2]
+hitl = true
+risk = "medium"
+unknown = "Who is the authorized signatory (name, title, and signature image) for official certificate issuance?"
+
+[[entry]]
+id = 4
+type = "story"
+title = "Create certificate reviews in event completion transaction"
+description = "Hooks into the Event completion transaction to atomically insert a pending_approval certificate review row for every confirmed registration with Valid Attendance to deliver R1."
+verify = "Completing an event with attended registrations creates pending_approval certificate review records for all valid attendees and none for absent registrants in the same database transaction."
+covers = ["R1"]
+after = [1, "3.12", "4.3"]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 5
+type = "story"
+title = "Attendance invalidation review disqualification and issued-certificate lock"
+description = "Extends Attendance Record invalidation to atomically transition unissued certificate reviews to not_eligible with the correction reason and reject invalidation when a certificate is already issued, delivering R3."
+verify = "Invalidating an attendance record sets the corresponding unissued review to not_eligible with the reason recorded, and attempting to invalidate an attendance record with an issued certificate is refused."
+covers = ["R3"]
+after = [4, "4.6"]
+hitl = false
+risk = "high"
+
+[[entry]]
+id = 6
+type = "story"
+title = "Management certificate review queue and approval decisions"
+description = "Implements a 25-row paged review queue delivering R8, where Management approves eligible attendees with a serialized Valid Attendance re-check or declines them with a mandatory final reason delivering R4, appending Activity Log entries for R7."
+verify = "An Officer approves an attendee's pending review to mark it eligible, declines another with a required reason to make it not_eligible, and both actions append Activity Log entries while paging navigation shows 25 rows per page."
+covers = ["R4", "R7", "R8"]
+after = [4, 5]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 7
+type = "story"
+title = "Transactional certificate issuance pipeline and audit"
+description = "Delivers the Architecture §8 issuance pipeline and paged issuance queue for R5 and R8 with recipient, event, and issuer snapshots, unique certificate numbering, private file storage under certificates/, final-transaction re-checks, orphan file cleanup, and idempotent retries, recording Activity Log entries for R7, and includes SM-4 concurrency integration tests against SQL Server proving parallel issuance yields exactly one certificate and concurrent invalidation versus issuance resolves deterministically (covering R3 and R5)."
+verify = "An Officer issues an eligible certificate from the paged queue, verifying the PDF is stored under certificates/ with issuer_name_snapshot and unique number recorded, submitting a repeat issuance returns the existing certificate without overwriting the file, and automated SQL Server integration tests prove concurrent issuance attempts produce zero duplicate certificates and race conditions against attendance invalidation resolve deterministically."
+covers = ["R3", "R5", "R7", "R8"]
+after = [2, 6]
+hitl = false
+risk = "high"
+
+[[entry]]
+id = 8
+type = "story"
+title = "Authorized certificate streaming download endpoint"
+description = "Delivers R6 by streaming issued certificate PDFs as application/pdf from private storage, enforcing per-request authorization that permits active account owners and Management, allows inactive membership, and refuses inactive accounts or path-traversal inputs."
+verify = "An active Member downloads their own issued certificate, Management downloads any issued certificate, and requests from unauthenticated users, inactive accounts, or mismatched members are rejected with appropriate HTTP status codes."
+covers = ["R6"]
+after = [7]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 9
+type = "story"
+title = "Member certificate download links in My Events"
+description = "Delivers R2 by displaying download links and issued status badges on the My Events page and event detail views for each issued certificate owned by the logged-in Member."
+verify = "A Member views a completed attended event in My Events and clicks the Download Certificate link to retrieve their issued PDF."
+covers = ["R2"]
+after = [8, "3.13"]
+hitl = false
+risk = "low"
+
+[[entry]]
+id = 11
+type = "story"
+title = "Refactor sweep"
+description = "Cleans up technical debt, temporary test scaffolding, and review findings deferred during certificate review, issuance, and download implementation."
+verify = "The full solution builds with zero warnings, linters pass, and all unit, integration, and concurrency tests run green."
+covers = []
+after = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+hitl = false
+risk = "low"

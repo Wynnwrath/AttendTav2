@@ -1,0 +1,98 @@
+[[entry]]
+id = 1
+type = "story"
+title = "Event Type management with required description, audit logging, and paged Tailwind list"
+description = "Brings Event Type create, edit, and active toggle to the canonical schema with a required non-blank description and unique trimmed name, logging old and new values to activity_logs, and displays the list with the 25-row shared pager in the Tailwind shell."
+verify = "An Officer creates an Event Type with a required description, sees it in the 25-row paged Tailwind table, edits its name and description, toggles its status, and verifies that each action appends an activity_logs entry with old and new values."
+covers = ["R3", "R6", "R7"]
+after = ["1.3", "1.6"]
+hitl = false
+risk = "low"
+
+[[entry]]
+id = 2
+type = "story"
+title = "Shared 2 MiB private image storage and authorized photo serving route"
+description = "Generalizes VenueImageStorage into a shared private storage service with separate venue and event directories, server-generated GUID filenames, 2 MiB content-checked JPEG and PNG validation, keep-old-until-commit lifecycle, authorized photo serving route, and corrects 5 MiB to 2 MiB in AGENTS.md and docs/database-setup.md."
+verify = "An authenticated request uploads a 2 MiB JPEG image successfully and renders it via the authorized photo route, while an upload exceeding 2 MiB or with invalid magic bytes is refused, and AGENTS.md and docs/database-setup.md state 2 MiB."
+covers = ["R5"]
+after = ["1.1"]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 3
+type = "story"
+title = "Venue create and edit with required photo, replacement-on-commit, and capacity guard"
+description = "Implements Venue create and edit with positive capacity, required photo via shared storage, replacement-on-commit deleting old files only after database success, and prevents reducing capacity below any linked draft or published Event's participant limit, logging all changes."
+verify = "An Officer creates a venue with a photo and edits its details; with a linked draft or published event in the database (or under test), an edit attempting to reduce capacity below its participant limit is refused with a validation error, and successful changes append activity_logs entries."
+covers = ["R4", "R5", "R6"]
+after = ["1.3", 2]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 4
+type = "story"
+title = "Venue paged list with photo thumbnails, active toggle, and Tailwind views"
+description = "Renders the Venue management list with the 25-row shared pager, photo thumbnails loaded via the authorized photo route, and active and inactive toggle with audit logging, ported to the Tailwind shell."
+verify = "An Officer views the 25-row paged Venue list displaying photo thumbnails from the authorized route, toggles a venue's active state, and observes the updated status and activity log entry."
+covers = ["R4", "R6", "R7"]
+after = ["1.6", 2, 3]
+hitl = false
+risk = "low"
+
+[[entry]]
+id = 5
+type = "story"
+title = "Active master data and member eligibility query contracts for event lifecycle"
+description = "Exposes queries returning only active Event Types and Venues, refusing inactive references for new or draft Events while keeping existing ones, and provides Member eligibility query facts verifying active account and membership state for registration."
+verify = "Service queries return only active Event Types and active Venues while refusing inactive records for draft creation under test, and confirm eligibility for an active Member while returning false for inactive membership or account state."
+covers = ["R2", "R3", "R4"]
+after = [1, 3]
+hitl = false
+risk = "low"
+
+[[entry]]
+id = 6
+type = "story"
+title = "Member profile edit with student-number correction reason and audit"
+description = "Updates Member edit to allow editing full name on the linked user, course, year level, section, mobile, and membership type with read-only email, requires a reason and uniqueness check for student-number corrections with old and new values in activity_logs, and removes the membership status edit control and un-audited toggle."
+verify = "An Officer edits a member's full name and academic fields, corrects the student number with a reason, sees the change in activity_logs with old and new values and reason while email is read-only and status edit control is absent, and a duplicate student number is rejected."
+covers = ["R2", "R6"]
+after = ["1.3", "1.9"]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 7
+type = "story"
+title = "Member paged list with search and Tailwind shell"
+description = "Applies 25-row server-side pagination with the shared pager to the Member management list with deterministic ordering and search by name or student number, styled in the Tailwind shell."
+verify = "An Officer searches members by name or student number on the Tailwind Member Index, navigates pages with Previous/Next using the 25-row pager, and sees membership status displayed read-only."
+covers = ["R2", "R7"]
+after = ["1.6", 6]
+hitl = false
+risk = "low"
+
+[[entry]]
+id = 8
+type = "story"
+title = "Member read-only self profile with ownership authorization"
+description = "Delivers a read-only Profile view for logged-in Members showing their account, academic, and membership details, rejecting any edit actions and denying access to other members' profiles."
+verify = "A logged-in Member navigates to their profile to view account, academic, and membership details with no editable controls, and attempting to view another member's profile is forbidden."
+covers = ["R1"]
+after = ["1.9", 7]
+hitl = false
+risk = "low"
+
+[[entry]]
+id = 9
+type = "story"
+title = "Refactor sweep"
+description = "Cleans up deferred review findings, legacy Bootstrap markup artifacts, and dead code across Master Data controllers, services, and views without adding new scope."
+verify = "The solution builds cleanly with zero compiler warnings in Master Data components, and all Master Data automated tests pass."
+covers = []
+after = [1, 2, 3, 4, 5, 6, 7, 8]
+hitl = false
+risk = "low"

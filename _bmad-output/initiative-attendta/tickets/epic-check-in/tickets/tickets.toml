@@ -1,0 +1,87 @@
+[[entry]]
+id = 1
+type = "story"
+title = "On-demand QR Pass PNG rendering and download"
+description = "Delivers on-demand PNG rendering of confirmed registration QR tokens using the Attendance owner's chosen QR library, with ownership checks and a download button on My Events (delivering R2 and the pass presentation part of R1)."
+verify = "A logged-in Member navigates to My Events for a Confirmed Registration, clicks Download PNG, and receives a valid PNG encoding their 64-character token; attempting to download another member's pass or a cancelled registration returns 403 Forbidden."
+covers = ["R1", "R2"]
+after = ["3.7", "3.13"]
+hitl = true
+risk = "medium"
+
+[[entry]]
+id = 2
+type = "story"
+title = "Check-in window toggle with audit logging"
+description = "Enables Management to open and close check-in for a published event at any time with an atomic Activity Log entry for each toggle (delivering R3 and the check-in toggle part of R8)."
+verify = "An Officer opens Check-in on a Published Event, observing the status change to Open with an audited timestamp in the Activity Log, and closing it records a second closed audit entry; attempting to toggle an unpublished or completed event is rejected."
+covers = ["R3", "R8"]
+after = ["3.3"]
+hitl = false
+risk = "low"
+
+[[entry]]
+id = 3
+type = "story"
+title = "Check-in validation engine and attendance recording"
+description = "Implements the server-side check-in use case with SQL Server transaction serialization and row locking on competing check-in attempts, validating event match, open window, confirmed status, and active eligibility, recording exactly one attendance row with audit on success and returning participant details or FR-23 refusal reasons (delivering R4, the attendance record part of R8, and SM-4 attendance concurrency)."
+verify = "Submitting a valid token for an open published event records an Attendance Record with method qr_code and appends an Activity Log entry, returning the participant's name and student number; submitting the same token again returns the original check-in timestamp without inserting a second row; and a multi-threaded automated test firing concurrent simultaneous check-in requests for the same confirmed registration against SQL Server asserts exactly one Attendance Record and one Activity Log entry are committed while competing requests return the existing record without error."
+covers = ["R4", "R8"]
+after = [2]
+hitl = false
+risk = "high"
+
+[[entry]]
+id = 4
+type = "story"
+title = "In-browser camera QR scanner on localhost"
+description = "Adds a focused door scanner interface that accesses a laptop webcam via JavaScript on localhost, decodes QR frames, posts tokens to the check-in endpoint, and displays verification feedback (delivering the camera scan interaction of R4)."
+verify = "An Officer opens the scanner on localhost on a laptop with a webcam, points the camera at a Confirmed Member's QR Pass, and sees immediate visual confirmation with the member's name and student number; presenting the same pass again displays the original check-in time."
+covers = ["R4"]
+after = [1, 3]
+hitl = true
+risk = "high"
+
+[[entry]]
+id = 5
+type = "story"
+title = "Manual check-in fallback by name and student number"
+description = "Allows Management to search Confirmed participants by name or student number with 25-row pagination and execute check-in recording manual_search or student_number under full FR-23 validation (delivering R5, the manual audit part of R8, and the search paging part of R9)."
+verify = "An Officer searches confirmed participants by student number or name on an open event, sees a 25-row paged list, selects an attendee and clicks Check in, creating an Attendance Record with check_in_method manual_search or student_number; searching or viewing alone never inserts an attendance row."
+covers = ["R5", "R8", "R9"]
+after = [3]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 6
+type = "story"
+title = "Attendance invalidation with confirmation and reason"
+description = "Implements Management attendance record invalidation requiring a confirmed reason, retaining the row and audit trail while blocking any future re-check-in for that registration (delivering R6 and the invalidation audit part of R8)."
+verify = "An Officer invalidates an attendance record after entering a mandatory reason and confirming the warning dialog, verifying the row is retained with invalidation metadata and audit logging, and a subsequent check-in attempt for that registration is refused."
+covers = ["R6", "R8"]
+after = [3]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 7
+type = "story"
+title = "Member attendance view on My Events"
+description = "Displays a Member's attendance history on My Events with clearly marked invalidated records, read-only guards preventing self check-in, and 25-row pagination for event histories (delivering R7, the attendance state part of R1, and the history paging part of R9)."
+verify = "A Member logs in and views My Events, observing their valid attendance records with Asia/Manila check-in timestamps, seeing an invalidated record clearly badged as Invalidated with no check-in or correction actions available, and paged at 25 rows."
+covers = ["R1", "R7", "R9"]
+after = [1, 6]
+hitl = false
+risk = "low"
+
+[[entry]]
+id = 9
+type = "story"
+title = "Refactor sweep"
+description = "Cleanup only, scope set at its start from plans and review findings the epic deferred."
+verify = "A non-builder reviews the git diff against dev, verifying no dead code, unused using directives, temporary logging, or schema drift remains and all existing automated check-in and attendance tests continue to pass."
+covers = []
+after = [1, 2, 3, 4, 5, 6, 7]
+hitl = false
+risk = "low"
