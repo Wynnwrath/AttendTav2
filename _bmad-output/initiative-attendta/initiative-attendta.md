@@ -97,6 +97,7 @@ For the organization's applicants, members, officers and administrators, the req
 - spec — `docsss/AttendTa-System-Specification.md` (SPEC v2.1, owner decisions 2026-11-04), §20 acceptance coverage
 - architecture spine — `_bmad-output/initiative-attendta/architecture-attendta/architecture-attendta.md`, AD-1..AD-18, Consistency Conventions, Stack, Capability → Architecture Map, Deferred
 - architecture source — `docsss/architecture.md` v1.1, distilled into the spine
+- dependency graphs — `_bmad-output/initiative-attendta/dependency-graphs.md`, epic and per-epic story prerequisites, critical path
 - design — `docsss/design.md` (visual specification), `_bmad-output/initiative-attendta/ux-attendta/DESIGN.md`
 - ux — `_bmad-output/initiative-attendta/ux-attendta/EXPERIENCE.md`
 - user stories — `AttendTa-User-Stories.md` (US-01..US-29)
