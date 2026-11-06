@@ -4,13 +4,14 @@
 }
 
 <h2>Edit Event Type</h2>
-<hr />
+
 
 <form asp-action="Edit" method="post">
+    <div asp-validation-summary="ModelOnly" class="validation-summary" role="alert"></div>
     <input type="hidden" asp-for="TypeId" />
     <partial name="_Form" model="Model" />
-    <button type="submit" class="btn btn-primary">Save</button>
-    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+    <button type="submit" class="button button-primary">Save</button>
+    <a asp-action="Index" class="button button-secondary">Cancel</a>
 </form>
 
 @section Scripts {

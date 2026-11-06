@@ -1,8 +1,13 @@
 using ASI.Basecode.Data.Interfaces;
 using ASI.Basecode.Data.Models;
+using ASI.Basecode.Data.Models.Lookups;
 using Basecode.Data.Repositories;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ASI.Basecode.Data.Repositories
 {
@@ -12,31 +17,26 @@ namespace ASI.Basecode.Data.Repositories
         {
         }
 
-        public IQueryable<Member> GetMembers()
-        {
-            return this.GetDbSet<Member>();
-        }
-
         public IQueryable<MemberRecord> GetMemberRecords()
         {
             var members = this.GetDbSet<Member>().AsNoTracking();
-            var userSummaries = this.GetDbSet<MemberAccountSummary>();
+            var users = this.GetDbSet<User>().AsNoTracking();
 
             return from member in members
-                   join user in userSummaries on member.UserId equals user.UserId
+                   join user in users on member.UserId equals user.Id
                    select new MemberRecord
                    {
                        MemberId = member.MemberId,
                        UserId = member.UserId,
-                       FullName = user.FullName,
-                       Email = user.Email,
+                       FullName = user.Name,
+                       Email = user.UserId,
                        StudentNumber = member.StudentNumber,
                        Course = member.Course,
                        YearLevel = member.YearLevel,
                        Section = member.Section,
                        MobileNumber = member.MobileNumber,
                        MembershipType = member.MembershipType,
-                       Status = member.Status,
+                       Status = member.MembershipStatusId == MembershipStatusCode.Active ? "active" : "inactive",
                        CreatedBy = member.CreatedBy,
                        CreatedAt = member.CreatedAt,
                        UpdatedBy = member.UpdatedBy,
@@ -49,21 +49,55 @@ namespace ASI.Basecode.Data.Repositories
             return this.GetMemberRecords().FirstOrDefault(member => member.MemberId == memberId);
         }
 
+        public Task<int> CountAsync(string search, CancellationToken cancellationToken = default) =>
+            FilterMembers(search).CountAsync(cancellationToken);
+
+        public async Task<IReadOnlyList<MemberRecord>> GetPageAsync(string search, int skip, int take, CancellationToken cancellationToken = default)
+        {
+            if (skip < 0) throw new ArgumentOutOfRangeException(nameof(skip));
+            if (take <= 0) throw new ArgumentOutOfRangeException(nameof(take));
+
+            return await FilterMembers(search)
+                .OrderBy(member => member.FullName)
+                .ThenBy(member => member.MemberId)
+                .Skip(skip)
+                .Take(take)
+                .ToListAsync(cancellationToken);
+        }
+
+        private IQueryable<MemberRecord> FilterMembers(string search)
+        {
+            var query = GetMemberRecords();
+            return string.IsNullOrWhiteSpace(search)
+                ? query
+                : query.Where(member => member.FullName.Contains(search) || member.Email.Contains(search) || member.StudentNumber.Contains(search));
+        }
+
+        public Task<MemberRecord> GetMemberRecordByUserIdAsync(int userId, CancellationToken cancellationToken = default)
+        {
+            return this.GetMemberRecords()
+                .FirstOrDefaultAsync(member => member.UserId == userId, cancellationToken);
+        }
+
         public Member GetMember(int memberId)
         {
             return this.GetDbSet<Member>().FirstOrDefault(m => m.MemberId == memberId);
         }
 
-        public void AddMember(Member member)
+        public Task AddMemberAsync(Member member, CancellationToken cancellationToken = default)
         {
             this.GetDbSet<Member>().Add(member);
-            UnitOfWork.SaveChanges();
+            return Task.CompletedTask;
         }
 
-        public void UpdateMember(Member member)
+        public Task UpdateMemberAsync(Member member, CancellationToken cancellationToken = default)
         {
-            this.SetEntityState(member, EntityState.Modified);
-            UnitOfWork.SaveChanges();
+            if (Context.Entry(member).State == EntityState.Detached)
+            {
+                throw new System.InvalidOperationException("Only a tracked member can be updated.");
+            }
+
+            return Task.CompletedTask;
         }
 
         public bool UserHasMemberProfile(int userId)

@@ -11,6 +11,25 @@ post {
 }
 
 body:form-urlencoded {
-  UserId: officer
-  Password: x
+  Email: admin@example.edu
+  Password: {{adminPassword}}
+  __RequestVerificationToken: {{antiforgeryToken}}
+}
+
+docs {
+  Sign in with the email and password of an active account provisioned by
+  database/seed-local-admin.sql. There is no default account.
+
+  The login form is antiforgery-protected, so a bare POST returns 400:
+  1. GET /Account/Login in the browser (or in Bruno) and copy the
+     __RequestVerificationToken hidden input value.
+  2. Set the collection variables adminPassword and antiforgeryToken.
+  3. Send this request. A successful sign-in returns 302 to /Home/Index and
+     sets the non-persistent AttendTa.Auth cookie, which Bruno reuses for the
+     other requests in this collection.
+
+  A wrong password, an unknown email and an inactive account all return 200
+  with the same "Incorrect email or password." message and no cookie.
+
+  Logout is POST /Account/Logout with the same antiforgery token; GET returns 405.
 }

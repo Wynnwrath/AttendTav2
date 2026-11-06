@@ -1,0 +1,42 @@
+@model IPagedResult
+@using System
+@using System.Globalization
+@using Microsoft.AspNetCore.Http.Extensions
+@{
+    string PageUrl(int pageNumber)
+    {
+        var query = new QueryBuilder();
+        foreach (var parameter in Context.Request.Query)
+        {
+            if (string.Equals(parameter.Key, "page", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            foreach (var value in parameter.Value)
+            {
+                query.Add(parameter.Key, value);
+            }
+        }
+
+        query.Add("page", pageNumber.ToString(CultureInfo.InvariantCulture));
+        return $"{Context.Request.PathBase}{Context.Request.Path}{query.ToQueryString()}";
+    }
+}
+
+@if (Model.TotalPages > 1)
+{
+    <nav class="page-heading" aria-label="Pagination">
+        <span aria-live="polite">Page @Model.PageNumber of @Model.TotalPages</span>
+        <div class="search-group">
+            @if (Model.HasPreviousPage)
+            {
+                <a class="button button-secondary" rel="prev" href="@PageUrl(Model.PageNumber - 1)" aria-label="Previous page">Previous</a>
+            }
+            @if (Model.HasNextPage)
+            {
+                <a class="button button-secondary" rel="next" href="@PageUrl(Model.PageNumber + 1)" aria-label="Next page">Next</a>
+            }
+        </div>
+    </nav>
+}

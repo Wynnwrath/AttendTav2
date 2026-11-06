@@ -1,6 +1,4 @@
-﻿let dpicn = document.querySelector(".dpicn");
-let dropdown = document.querySelector(".dropdown");
-
-dpicn.addEventListener("click", () => {
-    dropdown.classList.toggle("dropdown-open");
-})
+$(function () {
+    const token = document.querySelector('meta[name="RequestVerificationToken"]')?.content;
+    if (token) $.ajaxSetup({ headers: { RequestVerificationToken: token } });
+});

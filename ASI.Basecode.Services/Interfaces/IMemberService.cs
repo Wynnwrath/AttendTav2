@@ -1,14 +1,15 @@
 using ASI.Basecode.Services.ServiceModels;
-using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ASI.Basecode.Services.Interfaces
 {
     public interface IMemberService
     {
-        List<MemberViewModel> GetMembers(string search = null);
+        Task<PagedResult<MemberViewModel>> GetPageAsync(string search, int? pageNumber, CancellationToken cancellationToken = default);
         MemberViewModel GetMember(int id);
-        void UpdateMember(MemberViewModel model, int actorUserId);
-        void ToggleStatus(int id, int actorUserId);
-        void CreateMemberFromApprovedAccountRequest(int userId, MemberViewModel model, int actorUserId);
+        Task<MemberViewModel> GetSelfProfileAsync(CancellationToken cancellationToken = default);
+        Task UpdateMemberAsync(MemberViewModel model, CancellationToken cancellationToken = default);
+        Task CreateMemberFromApprovedAccountRequestAsync(int userId, MemberViewModel model, CancellationToken cancellationToken = default);
     }
 }

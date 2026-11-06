@@ -1,26 +1,27 @@
 /*
    Seeds the MVP's six starter event classifications.
-   Run only in the disposable AttendTaMVP_Test database, after the local admin
-   seed has created admin@gmail.com as an active admin.
-   Auth must create a local test admin before this seed is run. Obtain any
-   test credentials securely from the Auth owner; this file never stores them.
+   Run only in AttendTaMVP_Test, AttendTa_IT_<guid>, or AttendTa_Demo, after the
+   local admin seed has created the initial active administrator.
+   The active administrator is selected by role, not by a hard-coded email, and its
+   user_id fills the required created_by field. This file never stores credentials.
    Never use local test credentials outside a disposable local database.
-   Uses that active admin's user_id for the required created_by field.
 */
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
 
 IF DB_NAME() <> N'AttendTaMVP_Test'
-    THROW 51020, 'This seed script may only run in AttendTaMVP_Test.', 1;
+   AND DB_NAME() <> N'AttendTa_Demo'
+   AND (DB_NAME() NOT LIKE N'AttendTa_IT[_]%' OR LEN(DB_NAME()) <= LEN(N'AttendTa_IT_'))
+    THROW 51020, 'This seed script may only run in AttendTaMVP_Test, AttendTa_IT_<guid>, or AttendTa_Demo.', 1;
 GO
 
 DECLARE @CreatedByUserId int;
 
-SELECT @CreatedByUserId = [user_id]
+SELECT TOP (1) @CreatedByUserId = [user_id]
 FROM dbo.users
-WHERE [email] = N'admin@gmail.com'
-  AND [role] = N'admin'
-  AND [is_active] = 1;
+WHERE [role_id] = 1
+  AND [is_active] = 1
+ORDER BY [user_id];
 
 IF @CreatedByUserId IS NULL
     THROW 51021, 'Run the local admin seed before seeding event types.', 1;
@@ -28,16 +29,16 @@ IF @CreatedByUserId IS NULL
 BEGIN TRY
     BEGIN TRANSACTION;
 
-    INSERT INTO dbo.event_types ([type_name], [created_by])
-    SELECT seed.[type_name], @CreatedByUserId
+    INSERT INTO dbo.event_types ([type_name], [description], [created_by])
+    SELECT seed.[type_name], seed.[description], @CreatedByUserId
     FROM (VALUES
-        (N'Seminar'),
-        (N'Outreach'),
-        (N'Meeting'),
-        (N'Competition'),
-        (N'General Assembly'),
-        (N'Training')
-    ) AS seed([type_name])
+        (N'Seminar', N'An educational session featuring presentations, discussions, or workshops.'),
+        (N'Outreach', N'An activity that engages with and serves the broader community.'),
+        (N'Meeting', N'A gathering for organization members to discuss plans and business.'),
+        (N'Competition', N'An organized contest in which participants demonstrate their skills.'),
+        (N'General Assembly', N'An organization-wide gathering for announcements and collective decisions.'),
+        (N'Training', N'A session focused on developing practical knowledge or skills.')
+    ) AS seed([type_name], [description])
     WHERE NOT EXISTS
     (
         SELECT 1
@@ -54,7 +55,7 @@ BEGIN CATCH
 END CATCH;
 GO
 
-SELECT [type_id], [type_name], [is_active], [created_by]
+SELECT [type_id], [type_name], [description], [is_active], [created_by]
 FROM dbo.event_types
 ORDER BY [type_name];
 GO

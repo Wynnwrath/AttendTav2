@@ -8,13 +8,18 @@ namespace ASI.Basecode.Services.ServiceModels
 
         public int UserId { get; set; }
 
+        [Required(ErrorMessage = "Full name is required.")]
+        [StringLength(255, ErrorMessage = "Full name cannot exceed 255 characters.")]
         public string FullName { get; set; }
 
         public string Email { get; set; }
 
         [Required(ErrorMessage = "Student number is required.")]
-        [StringLength(50)]
+        [StringLength(50, ErrorMessage = "Student number cannot exceed 50 characters.")]
         public string StudentNumber { get; set; }
+
+        [StringLength(500, ErrorMessage = "The correction reason cannot exceed 500 characters.")]
+        public string StudentNumberCorrectionReason { get; set; }
 
         [Required(ErrorMessage = "Course is required.")]
         [StringLength(100)]
@@ -33,8 +38,7 @@ namespace ASI.Basecode.Services.ServiceModels
         [StringLength(100)]
         public string MembershipType { get; set; }
 
-        [Required]
-        [RegularExpression("^(active|inactive)$", ErrorMessage = "Status must be active or inactive.")]
+        // Display-only. Member edits deliberately preserve the persisted status.
         public string Status { get; set; }
     }
 }

@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - dev
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: ASI.Basecode.WebApp/package-lock.json
+
+      - name: Build and verify CSS
+        run: |
+          npm --prefix ASI.Basecode.WebApp ci
+          npm --prefix ASI.Basecode.WebApp run css:build
+          git diff --exit-code -- ASI.Basecode.WebApp/wwwroot/css/app.css
+
+      - name: Set up .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Start SQL Server
+        shell: bash
+        run: |
+          password="Aa1!$(openssl rand -hex 24)"
+          echo "::add-mask::$password"
+          echo "MSSQL_SA_PASSWORD=$password" >> "$GITHUB_ENV"
+          docker run --detach --name attendta-sql --publish 1433:1433 \
+            --env ACCEPT_EULA=Y --env MSSQL_PID=Developer \
+            --env "MSSQL_SA_PASSWORD=$password" \
+            mcr.microsoft.com/mssql/server:2025-latest
+          for attempt in {1..30}; do
+            if docker exec attendta-sql /opt/mssql-tools18/bin/sqlcmd \
+              -C -S localhost -U sa -P "$password" -b -l 2 -Q 'SELECT 1'; then
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "SQL Server failed its readiness check" >&2
+          exit 1
+
+      - name: Restore solution
+        run: dotnet restore ASI.Basecode.sln
+
+      - name: Build solution
+        run: dotnet build ASI.Basecode.sln --no-restore --configuration Release
+
+      - name: Install Playwright Chromium
+        run: pwsh ASI.Basecode.WebApp/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+
+      - name: Run service tests
+        run: dotnet test --project tests/ASI.Basecode.Services.Tests/ASI.Basecode.Services.Tests.csproj --no-build --no-restore --configuration Release
+
+      - name: Install Poppler PDF inspection tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes poppler-utils
+
+      - name: Run SQL integration tests
+        run: dotnet tests/ASI.Basecode.IntegrationTests/bin/Release/net10.0/ASI.Basecode.IntegrationTests.dll -parallelMode none
+        env:
+          ATTENDTA_TEST_SQL: "Server=localhost,1433;Database=master;User ID=sa;Encrypt=True;TrustServerCertificate=True"

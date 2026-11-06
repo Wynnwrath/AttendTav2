@@ -1,0 +1,7 @@
+[tickets]
+store = "github"
+repo = "rainyDayssss/AttendTa"
+
+# The requested publication is the existing set of story issues.
+[tickets.types]
+epic = ""

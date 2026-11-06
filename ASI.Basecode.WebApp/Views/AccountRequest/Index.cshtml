@@ -1,0 +1,68 @@
+@model PagedResult<AccountRequestQueueItemViewModel>
+@using System
+@{
+    ViewData["Title"] = "Account requests";
+    var selectedStatus = ViewBag.Status as string ?? "pending";
+}
+
+<div class="page-heading">
+    <h2>Account Request Queue</h2>
+    <span class="muted">Review submitted account requests by status.</span>
+</div>
+
+<form asp-action="Index" method="get" class="spacing-bottom">
+    <div class="search-group">
+        <div class="field">
+            <label for="status">Request status</label>
+            <select id="status" name="status" class="field-control">
+                <option value="pending" selected="@(selectedStatus == "pending")">Pending</option>
+                <option value="approved" selected="@(selectedStatus == "approved")">Approved</option>
+                <option value="rejected" selected="@(selectedStatus == "rejected")">Rejected</option>
+            </select>
+        </div>
+        <button type="submit" class="button button-secondary">Filter</button>
+    </div>
+</form>
+
+@if (Model.Items.Count == 0)
+{
+    <p class="empty-state">No @selectedStatus account requests found.</p>
+}
+else
+{
+    <div class="table-scroll" role="region" aria-label="Account request table" tabindex="0">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th scope="col">Requested</th>
+                    <th scope="col">Student Number</th>
+                    <th scope="col">Full Name</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Course</th>
+                    <th scope="col">Year</th>
+                    <th scope="col">Section</th>
+                    <th scope="col">Mobile</th>
+                    <th scope="col">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var request in Model.Items)
+                {
+                    <tr data-request-id="@request.RequestId">
+                        <td><time datetime="@(DateTime.SpecifyKind(request.RequestedAt, DateTimeKind.Utc).ToString("O"))" aria-label="Requested at in Asia/Manila">@ManilaTimeFormatter.Format(request.RequestedAt)</time></td>
+                        <td>@request.StudentNumber</td>
+                        <td>@request.FullName</td>
+                        <td>@request.Email</td>
+                        <td>@request.Course</td>
+                        <td>@request.YearLevel</td>
+                        <td>@request.Section</td>
+                        <td>@request.MobileNumber</td>
+                        <td>@request.Status</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <partial name="_Pager" model="Model" />
+}

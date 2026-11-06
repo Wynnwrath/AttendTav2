@@ -1,0 +1,61 @@
+@model PagedResult<EventViewModel>
+@using ASI.Basecode.Data.Models.Lookups
+@{
+    ViewData["Title"] = "Events";
+}
+
+<div class="page-heading">
+    <h2>Event Management</h2>
+    <a asp-action="Create" class="button button-primary">Create draft event</a>
+</div>
+
+@if (Model.Items.Count == 0)
+{
+    <p class="empty-state">No records found.</p>
+}
+else
+{
+    <div class="table-scroll" role="region" aria-label="Event table" tabindex="0">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th scope="col">Title</th>
+                    <th scope="col">Event type</th>
+                    <th scope="col">Venue</th>
+                    <th scope="col">Starts</th>
+                    <th scope="col">Signup deadline</th>
+                    <th scope="col">Participant limit</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var eventItem in Model.Items)
+                {
+                    <tr data-event-id="@eventItem.EventId">
+                        <td>@eventItem.Title</td>
+                        <td>@eventItem.TypeName</td>
+                        <td>@eventItem.VenueName</td>
+                        <td>@ManilaTimeFormatter.Format(eventItem.StartsAt)</td>
+                        <td>@ManilaTimeFormatter.Format(eventItem.RegistrationDeadline)</td>
+                        <td>@eventItem.ParticipantLimit</td>
+                        <td>@eventItem.StatusLabel</td>
+                        <td class="actions">
+                            <a asp-action="Cover" asp-route-id="@eventItem.EventId" class="button button-secondary">Cover</a>
+                            @if (eventItem.EventStatusId == EventStatusCode.Draft)
+                            {
+                                <a asp-action="Edit" asp-route-id="@eventItem.EventId" class="button button-secondary">Edit</a>
+                                <form asp-action="Publish" method="post" class="inline-form">
+                                    <input type="hidden" name="id" value="@eventItem.EventId" />
+                                    <button type="submit" class="button button-primary">Publish</button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <partial name="_Pager" model="Model" />
+}

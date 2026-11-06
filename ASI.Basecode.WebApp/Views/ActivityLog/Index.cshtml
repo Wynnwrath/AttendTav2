@@ -1,0 +1,50 @@
+@model PagedResult<ActivityLogItemViewModel>
+@using System
+@{
+    ViewData["Title"] = "Activity log";
+}
+
+<div class="page-heading">
+    <h2>Activity Log</h2>
+    <span class="muted">Read-only history of recorded activity.</span>
+</div>
+
+@if (Model.Items.Count == 0)
+{
+    <p class="empty-state">No activity has been recorded yet.</p>
+}
+else
+{
+    <div class="table-scroll" role="region" aria-label="Activity log table" tabindex="0">
+        <table class="data-table">
+            <caption>Activity log, newest entries first</caption>
+            <thead>
+                <tr>
+                    <th scope="col">Occurred</th>
+                    <th scope="col">Actor</th>
+                    <th scope="col">Actor type</th>
+                    <th scope="col">Action</th>
+                    <th scope="col">Entity type</th>
+                    <th scope="col">Entity ID</th>
+                    <th scope="col">Reason</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var log in Model.Items)
+                {
+                    <tr data-log-id="@log.LogId">
+                        <td><time datetime="@(DateTime.SpecifyKind(log.OccurredAt, DateTimeKind.Utc).ToString("O"))" aria-label="Occurred at in Asia/Manila">@ManilaTimeFormatter.Format(log.OccurredAt)</time></td>
+                        <td>@log.ActorName</td>
+                        <td>@log.ActorType</td>
+                        <td>@log.Action</td>
+                        <td>@log.EntityType</td>
+                        <td>@log.EntityId</td>
+                        <td>@(string.IsNullOrWhiteSpace(log.Reason) ? "—" : log.Reason)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <partial name="_Pager" model="Model" />
+}

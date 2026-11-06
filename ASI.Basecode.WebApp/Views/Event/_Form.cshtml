@@ -1,0 +1,52 @@
+@model EventViewModel
+
+<div class="field">
+    <label asp-for="Title" class="field-label"></label>
+    <input asp-for="Title" aria-describedby="Title-validation" class="field-control" />
+    <span id="Title-validation" asp-validation-for="Title" class="field-error"></span>
+</div>
+<div class="field">
+    <label asp-for="Description" class="field-label"></label>
+    <textarea asp-for="Description" aria-describedby="Description-validation" class="field-control" rows="4"></textarea>
+    <span id="Description-validation" asp-validation-for="Description" class="field-error"></span>
+</div>
+<div class="field">
+    <label asp-for="TypeId" class="field-label">Event type</label>
+    <select asp-for="TypeId" aria-describedby="TypeId-validation" class="field-control">
+        <option value="">Select an active event type</option>
+        @foreach (var eventType in Model.FormOptions.EventTypes)
+        {
+            <option value="@eventType.TypeId" selected="@(eventType.TypeId == Model.TypeId)">@eventType.TypeName</option>
+        }
+    </select>
+    <span id="TypeId-validation" asp-validation-for="TypeId" class="field-error"></span>
+</div>
+<div class="field">
+    <label asp-for="VenueId" class="field-label">Venue</label>
+    <select asp-for="VenueId" aria-describedby="VenueId-validation VenueId-help" class="field-control">
+        <option value="">Select an active venue</option>
+        @foreach (var venue in Model.FormOptions.Venues)
+        {
+            <option value="@venue.VenueId" selected="@(venue.VenueId == Model.VenueId)">@venue.RoomName (capacity @venue.Capacity)</option>
+        }
+    </select>
+    <small id="VenueId-help" class="muted">The participant limit cannot exceed the selected venue capacity.</small>
+    <span id="VenueId-validation" asp-validation-for="VenueId" class="field-error"></span>
+</div>
+<div class="field">
+    <label asp-for="StartsAt" class="field-label">Starts (Asia/Manila)</label>
+    <input asp-for="StartsAt" type="datetime-local" aria-describedby="StartsAt-validation StartsAt-help" class="field-control" required />
+    <small id="StartsAt-help" class="muted">Enter the start date and time in Asia/Manila.</small>
+    <span id="StartsAt-validation" asp-validation-for="StartsAt" class="field-error"></span>
+</div>
+<div class="field">
+    <label asp-for="RegistrationDeadline" class="field-label">Signup deadline (Asia/Manila)</label>
+    <input asp-for="RegistrationDeadline" type="datetime-local" aria-describedby="RegistrationDeadline-validation RegistrationDeadline-help" class="field-control" required />
+    <small id="RegistrationDeadline-help" class="muted">The signup deadline cannot be after the event start.</small>
+    <span id="RegistrationDeadline-validation" asp-validation-for="RegistrationDeadline" class="field-error"></span>
+</div>
+<div class="field">
+    <label asp-for="ParticipantLimit" class="field-label">Participant limit</label>
+    <input asp-for="ParticipantLimit" type="number" min="1" aria-describedby="ParticipantLimit-validation" class="field-control" />
+    <span id="ParticipantLimit-validation" asp-validation-for="ParticipantLimit" class="field-error"></span>
+</div>

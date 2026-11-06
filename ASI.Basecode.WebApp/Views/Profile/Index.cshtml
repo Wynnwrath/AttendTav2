@@ -1,0 +1,53 @@
+@model MemberViewModel
+@{
+    ViewData["Title"] = "Profile";
+}
+
+<div class="page-heading">
+    <div>
+        <h1>Your profile</h1>
+        <p class="muted">Review the account, academic and membership details linked to your account.</p>
+    </div>
+</div>
+
+<section class="panel" aria-labelledby="profile-details-heading">
+    <h2 id="profile-details-heading">Profile details</h2>
+    <dl class="profile-details">
+        <div>
+            <dt>Full name</dt>
+            <dd>@Model.FullName</dd>
+        </div>
+        <div>
+            <dt>Email</dt>
+            <dd>@Model.Email</dd>
+        </div>
+        <div>
+            <dt>Student number</dt>
+            <dd>@Model.StudentNumber</dd>
+        </div>
+        <div>
+            <dt>Course</dt>
+            <dd>@Model.Course</dd>
+        </div>
+        <div>
+            <dt>Year level</dt>
+            <dd>@Model.YearLevel</dd>
+        </div>
+        <div>
+            <dt>Section</dt>
+            <dd>@Model.Section</dd>
+        </div>
+        <div>
+            <dt>Mobile number</dt>
+            <dd>@Model.MobileNumber</dd>
+        </div>
+        <div>
+            <dt>Membership type</dt>
+            <dd>@Model.MembershipType</dd>
+        </div>
+        <div>
+            <dt>Membership status</dt>
+            <dd>@Model.Status</dd>
+        </div>
+    </dl>
+</section>

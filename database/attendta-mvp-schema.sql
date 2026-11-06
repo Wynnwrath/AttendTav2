@@ -1,9 +1,9 @@
 /*
    AttendTa MVP SQL Server schema, based on docs-local/ERD-DATABASE-DESIGN/new mvp.sql.
 
-   Run only in the disposable AttendTaMVP_Test database. The source ERD comments
-   specify filtered/pending-only uniqueness; the executable SQL below implements
-   those rules explicitly.
+   This is the canonical AttendTa schema. The source ERD comments specify
+   filtered/pending-only uniqueness; the executable SQL below implements those
+   rules explicitly.
 */
 SET ANSI_NULLS ON;
 SET QUOTED_IDENTIFIER ON;
@@ -15,11 +15,121 @@ SET NUMERIC_ROUNDABORT OFF;
 GO
 
 IF DB_NAME() <> N'AttendTaMVP_Test'
-    THROW 51000, 'This schema script may only run in AttendTaMVP_Test.', 1;
+   AND DB_NAME() <> N'AttendTa_Demo'
+   AND (DB_NAME() NOT LIKE N'AttendTa_IT[_]%' OR LEN(DB_NAME()) <= LEN(N'AttendTa_IT_'))
+    THROW 51000, 'This schema script may only run in AttendTaMVP_Test, AttendTa_IT_<guid>, or AttendTa_Demo.', 1;
 GO
 
 IF OBJECT_ID(N'dbo.users', N'U') IS NOT NULL
-    THROW 51001, 'AttendTaMVP_Test already contains schema objects. Run the reset script first.', 1;
+    THROW 51001, 'This database already contains schema objects. Use a fresh database or run the reset script for AttendTaMVP_Test.', 1;
+GO
+
+ALTER DATABASE CURRENT SET READ_COMMITTED_SNAPSHOT ON WITH ROLLBACK IMMEDIATE;
+GO
+
+CREATE TABLE [roles] (
+  [role_id] tinyint NOT NULL PRIMARY KEY,
+  [code] varchar(50) UNIQUE NOT NULL,
+  [label] nvarchar(100) NOT NULL
+)
+GO
+
+CREATE TABLE [account_request_statuses] (
+  [account_request_status_id] tinyint NOT NULL PRIMARY KEY,
+  [code] varchar(50) UNIQUE NOT NULL,
+  [label] nvarchar(100) NOT NULL
+)
+GO
+
+CREATE TABLE [membership_statuses] (
+  [membership_status_id] tinyint NOT NULL PRIMARY KEY,
+  [code] varchar(50) UNIQUE NOT NULL,
+  [label] nvarchar(100) NOT NULL
+)
+GO
+
+CREATE TABLE [event_statuses] (
+  [event_status_id] tinyint NOT NULL PRIMARY KEY,
+  [code] varchar(50) UNIQUE NOT NULL,
+  [label] nvarchar(100) NOT NULL
+)
+GO
+
+CREATE TABLE [registration_statuses] (
+  [registration_status_id] tinyint NOT NULL PRIMARY KEY,
+  [code] varchar(50) UNIQUE NOT NULL,
+  [label] nvarchar(100) NOT NULL
+)
+GO
+
+CREATE TABLE [check_in_methods] (
+  [check_in_method_id] tinyint NOT NULL PRIMARY KEY,
+  [code] varchar(50) UNIQUE NOT NULL,
+  [label] nvarchar(100) NOT NULL
+)
+GO
+
+CREATE TABLE [certificate_statuses] (
+  [certificate_status_id] tinyint NOT NULL PRIMARY KEY,
+  [code] varchar(50) UNIQUE NOT NULL,
+  [label] nvarchar(100) NOT NULL
+)
+GO
+
+CREATE TABLE [actor_types] (
+  [actor_type_id] tinyint NOT NULL PRIMARY KEY,
+  [code] varchar(50) UNIQUE NOT NULL,
+  [label] nvarchar(100) NOT NULL
+)
+GO
+
+INSERT INTO [roles] ([role_id], [code], [label]) VALUES
+  (1, 'admin', N'Administrator'),
+  (2, 'officer', N'Officer'),
+  (3, 'member', N'Member')
+GO
+
+INSERT INTO [account_request_statuses] ([account_request_status_id], [code], [label]) VALUES
+  (1, 'pending', N'Pending'),
+  (2, 'approved', N'Approved'),
+  (3, 'rejected', N'Rejected')
+GO
+
+INSERT INTO [membership_statuses] ([membership_status_id], [code], [label]) VALUES
+  (1, 'active', N'Active'),
+  (2, 'inactive', N'Inactive')
+GO
+
+INSERT INTO [event_statuses] ([event_status_id], [code], [label]) VALUES
+  (1, 'draft', N'Draft'),
+  (2, 'published', N'Published'),
+  (3, 'cancelled', N'Cancelled'),
+  (4, 'completed', N'Completed')
+GO
+
+INSERT INTO [registration_statuses] ([registration_status_id], [code], [label]) VALUES
+  (1, 'pending', N'Pending'),
+  (2, 'confirmed', N'Confirmed'),
+  (3, 'waitlisted', N'Waitlisted'),
+  (4, 'cancelled', N'Cancelled')
+GO
+
+INSERT INTO [check_in_methods] ([check_in_method_id], [code], [label]) VALUES
+  (1, 'qr_code', N'QR Code'),
+  (2, 'manual_search', N'Manual Search'),
+  (3, 'student_number', N'Student Number')
+GO
+
+INSERT INTO [certificate_statuses] ([certificate_status_id], [code], [label]) VALUES
+  (1, 'pending_approval', N'Pending Approval'),
+  (2, 'eligible', N'Eligible'),
+  (3, 'not_eligible', N'Not Eligible'),
+  (4, 'issued', N'Issued')
+GO
+
+INSERT INTO [actor_types] ([actor_type_id], [code], [label]) VALUES
+  (1, 'user', N'User'),
+  (2, 'system', N'System')
 GO
 
 CREATE TABLE [users] (
@@ -27,7 +137,7 @@ CREATE TABLE [users] (
   [full_name] nvarchar(255) NOT NULL,
   [email] nvarchar(255) UNIQUE NOT NULL,
   [password_hash] varchar(255) NOT NULL,
-  [role] nvarchar(255) CHECK ([role] IN ('admin', 'officer', 'member')) NOT NULL DEFAULT 'member',
+  [role_id] tinyint NOT NULL DEFAULT (3),
   [is_active] bit NOT NULL DEFAULT (0),
   [created_by] integer,
   [created_at] datetime2(3) NOT NULL DEFAULT (SYSUTCDATETIME()),
@@ -46,7 +156,7 @@ CREATE TABLE [account_requests] (
   [year_level] integer NOT NULL,
   [section] nvarchar(50) NOT NULL,
   [mobile_number] varchar(30),
-  [status] nvarchar(255) CHECK ([status] IN ('pending', 'approved', 'rejected')) NOT NULL DEFAULT 'pending',
+  [account_request_status_id] tinyint NOT NULL DEFAULT (1),
   [requested_at] datetime2(3) NOT NULL DEFAULT (SYSUTCDATETIME()),
   [reviewed_by] integer,
   [reviewed_at] datetime2(3),
@@ -55,8 +165,8 @@ CREATE TABLE [account_requests] (
   CONSTRAINT [chk_account_requests_positive_year_level] CHECK (year_level > 0),
   CONSTRAINT [chk_account_requests_password_by_status] CHECK
   (
-      ([status] = 'pending' AND [password_hash] IS NOT NULL)
-      OR ([status] IN ('approved', 'rejected') AND [password_hash] IS NULL)
+      ([account_request_status_id] = 1 AND [password_hash] IS NOT NULL)
+      OR ([account_request_status_id] IN (2, 3) AND [password_hash] IS NULL)
   )
 )
 GO
@@ -70,7 +180,7 @@ CREATE TABLE [members] (
   [section] nvarchar(50) NOT NULL,
   [mobile_number] varchar(30),
   [membership_type] nvarchar(100),
-  [status] nvarchar(255) CHECK ([status] IN ('active', 'inactive')) NOT NULL DEFAULT 'active',
+  [membership_status_id] tinyint NOT NULL DEFAULT (1),
   [created_by] integer NOT NULL,
   [created_at] datetime2(3) NOT NULL DEFAULT (SYSUTCDATETIME()),
   [updated_by] integer,
@@ -82,7 +192,7 @@ GO
 CREATE TABLE [event_types] (
   [type_id] integer PRIMARY KEY IDENTITY(1, 1),
   [type_name] nvarchar(100) UNIQUE NOT NULL,
-  [description] nvarchar(max),
+  [description] nvarchar(max) NOT NULL,
   [is_active] bit NOT NULL DEFAULT (1),
   [created_by] integer NOT NULL,
   [created_at] datetime2(3) NOT NULL DEFAULT (SYSUTCDATETIME()),
@@ -118,7 +228,7 @@ CREATE TABLE [events] (
   [starts_at] datetime2(3) NOT NULL,
   [registration_deadline] datetime2(3) NOT NULL,
   [participant_limit] integer NOT NULL,
-  [status] nvarchar(255) CHECK ([status] IN ('draft', 'published', 'cancelled', 'completed')) NOT NULL DEFAULT 'draft',
+  [event_status_id] tinyint NOT NULL DEFAULT (1),
   [image_path] nvarchar(500),
   [published_by] integer,
   [published_at] datetime2(3),
@@ -145,7 +255,7 @@ CREATE TABLE [registrations] (
   [registration_id] integer PRIMARY KEY IDENTITY(1, 1),
   [member_id] integer NOT NULL,
   [event_id] integer NOT NULL,
-  [status] nvarchar(255) CHECK ([status] IN ('pending', 'confirmed', 'waitlisted', 'cancelled')) NOT NULL DEFAULT 'pending',
+  [registration_status_id] tinyint NOT NULL DEFAULT (1),
   [course_snapshot] nvarchar(100) NOT NULL,
   [year_level_snapshot] integer NOT NULL,
   [section_snapshot] nvarchar(50) NOT NULL,
@@ -170,7 +280,7 @@ GO
 CREATE TABLE [attendance] (
   [attendance_id] integer PRIMARY KEY IDENTITY(1, 1),
   [registration_id] integer UNIQUE NOT NULL,
-  [check_in_method] nvarchar(255) CHECK ([check_in_method] IN ('qr_code', 'manual_search', 'student_number')) NOT NULL,
+  [check_in_method_id] tinyint NOT NULL,
   [recorded_by] integer NOT NULL,
   [recorded_at] datetime2(3) NOT NULL DEFAULT (SYSUTCDATETIME()),
   [invalidated_by] integer,
@@ -182,7 +292,7 @@ GO
 CREATE TABLE [certificates] (
   [certificate_id] integer PRIMARY KEY IDENTITY(1, 1),
   [registration_id] integer UNIQUE NOT NULL,
-  [status] nvarchar(255) CHECK ([status] IN ('pending_approval', 'eligible', 'not_eligible', 'issued')) NOT NULL DEFAULT 'pending_approval',
+  [certificate_status_id] tinyint NOT NULL DEFAULT (1),
   [reviewed_by] integer,
   [reviewed_at] datetime2(3),
   [review_notes] nvarchar(max),
@@ -190,6 +300,7 @@ CREATE TABLE [certificates] (
   [recipient_name_snapshot] nvarchar(255),
   [event_title_snapshot] nvarchar(255),
   [event_starts_at_snapshot] datetime2(3),
+  [issuer_name_snapshot] nvarchar(255),
   [file_path] nvarchar(500),
   [issued_by] integer,
   [issued_at] datetime2(3),
@@ -202,7 +313,7 @@ GO
 
 CREATE TABLE [activity_logs] (
   [log_id] bigint PRIMARY KEY IDENTITY(1, 1),
-  [actor_type] nvarchar(255) CHECK ([actor_type] IN ('user', 'system')) NOT NULL,
+  [actor_type_id] tinyint NOT NULL,
   [actor_user_id] integer,
   [action] varchar(100) NOT NULL,
   [entity_type] varchar(100) NOT NULL,
@@ -221,11 +332,11 @@ CREATE UNIQUE INDEX [UX_account_requests_created_user_id_not_null]
 GO
 CREATE UNIQUE INDEX [UX_account_requests_pending_email]
     ON [account_requests] ([email])
-    WHERE [status] = 'pending'
+    WHERE [account_request_status_id] = 1
 GO
 CREATE UNIQUE INDEX [UX_account_requests_pending_student_number]
     ON [account_requests] ([student_number])
-    WHERE [status] = 'pending'
+    WHERE [account_request_status_id] = 1
 GO
 CREATE UNIQUE INDEX [UX_members_user_id]
     ON [members] ([user_id])
@@ -239,13 +350,13 @@ CREATE UNIQUE INDEX [UX_certificates_certificate_number_not_null]
     WHERE [certificate_number] IS NOT NULL
 GO
 
-CREATE INDEX [account_requests_index_0] ON [account_requests] ([status], [requested_at], [request_id])
+CREATE INDEX [account_requests_index_0] ON [account_requests] ([account_request_status_id], [requested_at], [request_id])
 GO
 CREATE INDEX [account_requests_index_1] ON [account_requests] ([email])
 GO
 CREATE INDEX [account_requests_index_2] ON [account_requests] ([student_number])
 GO
-CREATE INDEX [events_index_3] ON [events] ([status], [starts_at], [event_id])
+CREATE INDEX [events_index_3] ON [events] ([event_status_id], [starts_at], [event_id])
 GO
 CREATE INDEX [events_index_4] ON [events] ([type_id])
 GO
@@ -253,7 +364,7 @@ CREATE INDEX [events_index_5] ON [events] ([venue_id])
 GO
 CREATE UNIQUE INDEX [unique_event_member_registration] ON [registrations] ([event_id], [member_id])
 GO
-CREATE INDEX [registrations_index_7] ON [registrations] ([event_id], [status], [reviewed_at], [registration_id])
+CREATE INDEX [registrations_index_7] ON [registrations] ([event_id], [registration_status_id], [reviewed_at], [registration_id])
 GO
 CREATE INDEX [registrations_index_8] ON [registrations] ([member_id], [submitted_at], [registration_id])
 GO
@@ -335,6 +446,33 @@ GO
 ALTER TABLE [certificates] ADD FOREIGN KEY ([updated_by]) REFERENCES [users] ([user_id])
 GO
 ALTER TABLE [activity_logs] ADD FOREIGN KEY ([actor_user_id]) REFERENCES [users] ([user_id])
+GO
+
+ALTER TABLE [users] ADD CONSTRAINT [FK_users_roles] FOREIGN KEY ([role_id]) REFERENCES [roles] ([role_id])
+GO
+ALTER TABLE [account_requests] ADD CONSTRAINT [FK_account_requests_statuses] FOREIGN KEY ([account_request_status_id]) REFERENCES [account_request_statuses] ([account_request_status_id])
+GO
+ALTER TABLE [members] ADD CONSTRAINT [FK_members_statuses] FOREIGN KEY ([membership_status_id]) REFERENCES [membership_statuses] ([membership_status_id])
+GO
+ALTER TABLE [events] ADD CONSTRAINT [FK_events_statuses] FOREIGN KEY ([event_status_id]) REFERENCES [event_statuses] ([event_status_id])
+GO
+ALTER TABLE [registrations] ADD CONSTRAINT [FK_registrations_statuses] FOREIGN KEY ([registration_status_id]) REFERENCES [registration_statuses] ([registration_status_id])
+GO
+ALTER TABLE [attendance] ADD CONSTRAINT [FK_attendance_methods] FOREIGN KEY ([check_in_method_id]) REFERENCES [check_in_methods] ([check_in_method_id])
+GO
+ALTER TABLE [certificates] ADD CONSTRAINT [FK_certificates_statuses] FOREIGN KEY ([certificate_status_id]) REFERENCES [certificate_statuses] ([certificate_status_id])
+GO
+ALTER TABLE [activity_logs] ADD CONSTRAINT [FK_activity_logs_actor_types] FOREIGN KEY ([actor_type_id]) REFERENCES [actor_types] ([actor_type_id])
+GO
+
+CREATE TRIGGER [dbo].[TR_activity_logs_append_only]
+ON [dbo].[activity_logs]
+INSTEAD OF UPDATE, DELETE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    THROW 51002, 'activity_logs is append-only.', 1;
+END
 GO
 
 EXEC sp_addextendedproperty @name=N'Table_Description', @value=N'Enforce pending-only uniqueness separately for email and student number in SQL Server. Password hash is required while pending and cleared after approval/rejection.', @level0type=N'Schema', @level0name=N'dbo', @level1type=N'Table', @level1name=N'account_requests';

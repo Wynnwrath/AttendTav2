@@ -1,36 +1,80 @@
-﻿@using Microsoft.AspNetCore.Http
-@inject IHttpContextAccessor HttpContextAccessor
-<header class="@((ViewBag.LoginView == true) ? "hide-navbar" : "")">
-    <div class="logosec hover-pointer">
-        <img src="~/img/asi-logo-invert.svg"
-             style="width: 185px;" alt="logo"
-             onclick="window.location.href = '@Url.Action("Index", "Home")';">
+@using ASI.Basecode.Resources.Constants
+@{
+    var authenticated = User.Identity?.IsAuthenticated == true;
+    var management = User.IsInRole(RoleCodes.Admin) || User.IsInRole(RoleCodes.Officer);
+    var administrator = User.IsInRole(RoleCodes.Admin);
+    var member = User.IsInRole(RoleCodes.Member);
+    var role = User.IsInRole(RoleCodes.Admin) ? "Administrator" : User.IsInRole(RoleCodes.Officer) ? "Officer" : "Member";
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString();
+}
+<header class="shell-header @(management ? "management-header" : "")">
+    <div class="brand-row">
+        @if (authenticated)
+        {
+            <a class="brand" asp-controller="Home" asp-action="Index"><img class="brand-mark" src="~/img/attendta-logo.jpg" alt="" /><span>AttendTa<small>University of Cebu</small></span></a>
+        }
+        else
+        {
+            <div class="brand"><img class="brand-mark" src="~/img/attendta-logo.jpg" alt="" /><span>AttendTa<small>University of Cebu</small></span></div>
+        }
+        @if (authenticated)
+        {
+            <details class="mobile-menu">
+                <summary>Menu</summary>
+                <nav aria-label="Mobile navigation">
+                    <a asp-controller="Home" asp-action="Index" aria-current="@(controller == "Home" ? "page" : null)">Home</a>
+                    @if (management)
+                    {
+                        <a asp-controller="Event" asp-action="Index" aria-current="@(controller == "Event" ? "page" : null)">Events</a>
+                        <a asp-controller="Member" asp-action="Index" aria-current="@(controller == "Member" ? "page" : null)">Members</a>
+                        <a asp-controller="AccountRequest" asp-action="Index" aria-current="@(controller == "AccountRequest" ? "page" : null)">Account requests</a>
+                        @if (administrator)
+                        {
+                            <a asp-controller="AdminAccounts" asp-action="Index" aria-current="@(controller == "AdminAccounts" ? "page" : null)">Accounts</a>
+                        }
+                        <a asp-controller="EventType" asp-action="Index" aria-current="@(controller == "EventType" ? "page" : null)">Event types</a>
+                        <a asp-controller="Venue" asp-action="Index" aria-current="@(controller == "Venue" ? "page" : null)">Venues</a>
+                    }
+                    @if (User.IsInRole(RoleCodes.Admin))
+                    {
+                        <a asp-controller="ActivityLog" asp-action="Index" aria-current="@(controller == "ActivityLog" ? "page" : null)">Activity log</a>
+                    }
+                    @if (member)
+                    {
+                        <a asp-controller="Profile" asp-action="Index" aria-current="@(controller == "Profile" ? "page" : null)">Profile</a>
+                    }
+                    <div class="account-name">@User.Identity?.Name <span>@role</span></div>
+                    <form asp-controller="Account" asp-action="Logout" method="post"><button type="submit" class="nav-logout">Sign out</button></form>
+                </nav>
+            </details>
+        }
     </div>
-    <nav class="header-nav" style="display:flex; gap:20px; align-items:center;">
-        <a href="@Url.Action("Index", "Member")" style="color:#fff;">Members</a>
-        <a href="@Url.Action("Index", "EventType")" style="color:#fff;">Event Types</a>
-        <a href="@Url.Action("Index", "Venue")" style="color:#fff;">Venues</a>
-    </nav>
-    <div class="logosec">
-        @HttpContextAccessor.HttpContext.Session.GetString("UserName")
-        <div class="mr-20 hover-pointer" style="position: relative">
-            <div class="dp">
-                <img src="~/img/profile-logo.png"
-                     class="dpicn hover-pointer"
-                     alt="dp">
-            </div>
-            <div class="dropdown">
-                <ul>
-                    <li>
-                        <i class="fa-solid fa-gear"></i>
-                        <a href="#">Settings</a>
-                    </li>
-                    <li>
-                        <i class="fa-solid fa-right-from-bracket"></i>
-                        <a asp-action="SignOutUser" asp-controller="Account">Logout</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </div>
+    @if (authenticated)
+    {
+        <nav class="desktop-nav" aria-label="Main navigation">
+            <a asp-controller="Home" asp-action="Index" aria-current="@(controller == "Home" ? "page" : null)">Home</a>
+            @if (management)
+            {
+                <a asp-controller="Event" asp-action="Index" aria-current="@(controller == "Event" ? "page" : null)">Events</a>
+                <a asp-controller="Member" asp-action="Index" aria-current="@(controller == "Member" ? "page" : null)">Members</a>
+                <a asp-controller="AccountRequest" asp-action="Index" aria-current="@(controller == "AccountRequest" ? "page" : null)">Account requests</a>
+                @if (administrator)
+                {
+                    <a asp-controller="AdminAccounts" asp-action="Index" aria-current="@(controller == "AdminAccounts" ? "page" : null)">Accounts</a>
+                }
+                <a asp-controller="EventType" asp-action="Index" aria-current="@(controller == "EventType" ? "page" : null)">Event types</a>
+                <a asp-controller="Venue" asp-action="Index" aria-current="@(controller == "Venue" ? "page" : null)">Venues</a>
+            }
+            @if (User.IsInRole(RoleCodes.Admin))
+            {
+                <a asp-controller="ActivityLog" asp-action="Index" aria-current="@(controller == "ActivityLog" ? "page" : null)">Activity log</a>
+            }
+            @if (member)
+            {
+                <a asp-controller="Profile" asp-action="Index" aria-current="@(controller == "Profile" ? "page" : null)">Profile</a>
+            }
+            <div class="account-name">@User.Identity?.Name <span>@role</span></div>
+            <form asp-controller="Account" asp-action="Logout" method="post"><button type="submit" class="nav-logout">Sign out</button></form>
+        </nav>
+    }
 </header>

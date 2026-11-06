@@ -1,30 +1,47 @@
 using ASI.Basecode.Data.Interfaces;
 using ASI.Basecode.Data.Models;
+using ASI.Basecode.Resources;
+using ASI.Basecode.Resources.Constants;
 using ASI.Basecode.Services.Interfaces;
 using ASI.Basecode.Services.ServiceModels;
 using AutoMapper;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ASI.Basecode.Services.Services
 {
     public class EventTypeService : IEventTypeService
     {
         private readonly IEventTypeRepository _repository;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly TimeProvider _timeProvider;
         private readonly IMapper _mapper;
+        private readonly IActivityLogWriter _audit;
+        private readonly ICurrentActor _actor;
 
-        public EventTypeService(IEventTypeRepository repository, IMapper mapper)
+        public EventTypeService(IEventTypeRepository repository, IUnitOfWork unitOfWork, IMapper mapper, TimeProvider timeProvider, IActivityLogWriter audit, ICurrentActor actor)
         {
             _repository = repository;
+            _unitOfWork = unitOfWork;
+            _timeProvider = timeProvider;
             _mapper = mapper;
+            _audit = audit;
+            _actor = actor;
         }
 
-        public List<EventTypeViewModel> GetEventTypes()
+        public async Task<PagedResult<EventTypeViewModel>> GetPageAsync(int? page, CancellationToken cancellationToken = default)
         {
-            var eventTypes = _repository.GetEventTypes().OrderBy(t => t.TypeName).ToList();
-            return _mapper.Map<List<EventTypeViewModel>>(eventTypes);
+            var totalCount = await _repository.CountEventTypesAsync(cancellationToken);
+            var pageRequest = new PageRequest(page);
+            var normalizedPage = pageRequest.NormalizePageNumber(totalCount);
+            var eventTypes = await _repository.GetEventTypesPageAsync(
+                pageRequest.GetOffset(normalizedPage),
+                PageRequest.FixedPageSize,
+                cancellationToken);
+            var items = _mapper.Map<List<EventTypeViewModel>>(eventTypes);
+            return new PagedResult<EventTypeViewModel>(items, normalizedPage, totalCount);
         }
 
         public EventTypeViewModel GetEventType(int id)
@@ -33,81 +50,141 @@ namespace ASI.Basecode.Services.Services
             return eventType == null ? null : _mapper.Map<EventTypeViewModel>(eventType);
         }
 
-        public void AddEventType(EventTypeViewModel model, int actorUserId)
+        private sealed record EventTypeAuditValues(string TypeName, string Description, bool IsActive) : IAuditValues;
+
+        private sealed record EventTypeStatusAuditValues(bool IsActive, int LinkedEventCount) : IAuditValues;
+
+        private static EventTypeAuditValues Snapshot(EventType eventType) =>
+            new(eventType.TypeName, eventType.Description, eventType.IsActive);
+
+        private int ActorUserId()
         {
-            if (actorUserId <= 0)
+            if (!_actor.IsAuthenticated)
             {
-                throw new InvalidDataException("A valid authenticated user is required to create an event type.");
+                throw new DomainException(OutcomeCode.Forbidden, "A valid authenticated user is required to change an event type.");
             }
 
-            var normalizedTypeName = model.TypeName?.Trim();
-            if (string.IsNullOrWhiteSpace(normalizedTypeName))
+            int userId;
+            try
             {
-                throw new InvalidDataException("Type name is required.");
+                userId = _actor.UserId;
+            }
+            catch (InvalidOperationException)
+            {
+                throw new DomainException(OutcomeCode.Forbidden, "A valid authenticated user is required to change an event type.");
             }
 
-            if (_repository.TypeNameExists(normalizedTypeName))
+            if (userId <= 0)
             {
-                throw new InvalidDataException("Event type name already exists.");
+                throw new DomainException(OutcomeCode.Forbidden, "A valid authenticated user is required to change an event type.");
             }
 
-            var eventType = new EventType();
-            eventType.TypeName = normalizedTypeName;
-            eventType.Description = model.Description;
-            eventType.IsActive = true;
-            eventType.CreatedBy = actorUserId;
-            eventType.CreatedAt = DateTime.UtcNow;
-            _repository.AddEventType(eventType);
+            return userId;
         }
 
-        public void UpdateEventType(EventTypeViewModel model, int actorUserId)
+        private static string RequiredTypeName(EventTypeViewModel model)
         {
-            if (actorUserId <= 0)
+            var typeName = model.TypeName?.Trim();
+            if (string.IsNullOrWhiteSpace(typeName))
             {
-                throw new InvalidDataException("A valid authenticated user is required to update an event type.");
+                throw new DomainException(OutcomeCode.Invalid, "Type name is required.", nameof(EventTypeViewModel.TypeName));
             }
 
-            var normalizedTypeName = model.TypeName?.Trim();
-            if (string.IsNullOrWhiteSpace(normalizedTypeName))
-            {
-                throw new InvalidDataException("Type name is required.");
-            }
-
-            var eventType = _repository.GetEventType(model.TypeId);
-            if (eventType == null)
-            {
-                throw new InvalidDataException("Event type not found.");
-            }
-
-            if (_repository.TypeNameExists(normalizedTypeName, model.TypeId))
-            {
-                throw new InvalidDataException("Event type name already exists.");
-            }
-
-            eventType.TypeName = normalizedTypeName;
-            eventType.Description = model.Description;
-            eventType.UpdatedBy = actorUserId;
-            eventType.UpdatedAt = DateTime.UtcNow;
-            _repository.UpdateEventType(eventType);
+            return typeName;
         }
 
-        public void ToggleActive(int id, int actorUserId)
+        private static string RequiredDescription(EventTypeViewModel model)
         {
-            if (actorUserId <= 0)
+            var description = model.Description?.Trim();
+            if (string.IsNullOrWhiteSpace(description))
             {
-                throw new InvalidDataException("A valid authenticated user is required to update an event type.");
+                throw new DomainException(OutcomeCode.Invalid, "Description is required.", nameof(EventTypeViewModel.Description));
             }
 
-            var eventType = _repository.GetEventType(id);
-            if (eventType == null)
-            {
-                throw new InvalidDataException("Event type not found.");
-            }
+            return description;
+        }
 
-            eventType.IsActive = !eventType.IsActive;
-            eventType.UpdatedBy = actorUserId;
-            eventType.UpdatedAt = DateTime.UtcNow;
-            _repository.UpdateEventType(eventType);
+        public async Task AddEventTypeAsync(EventTypeViewModel model, CancellationToken cancellationToken = default)
+        {
+            var actorUserId = ActorUserId();
+            var typeName = RequiredTypeName(model);
+            var description = RequiredDescription(model);
+
+            await _unitOfWork.ExecuteInTransactionAsync(async ct =>
+            {
+                if (_repository.TypeNameExists(typeName))
+                {
+                    throw new DomainException(OutcomeCode.Duplicate, "Event type name already exists.", nameof(EventTypeViewModel.TypeName));
+                }
+
+                var eventType = new EventType
+                {
+                    TypeName = typeName,
+                    Description = description,
+                    IsActive = true,
+                    CreatedBy = actorUserId,
+                    CreatedAt = _timeProvider.GetUtcNow().UtcDateTime
+                };
+                await _repository.AddEventTypeAsync(eventType, ct);
+                await _unitOfWork.SaveChangesAsync(ct);
+                _audit.Append(new AuditEntry(AuditActions.EventTypeCreated, "event_types", eventType.TypeId, NewValues: Snapshot(eventType)));
+                await _unitOfWork.SaveChangesAsync(ct);
+            }, cancellationToken);
+        }
+
+        public async Task UpdateEventTypeAsync(EventTypeViewModel model, CancellationToken cancellationToken = default)
+        {
+            var actorUserId = ActorUserId();
+            var typeName = RequiredTypeName(model);
+            var description = RequiredDescription(model);
+
+            await _unitOfWork.ExecuteInTransactionAsync(async ct =>
+            {
+                var eventType = await _repository.LockEventTypeAsync(model.TypeId, ct);
+                if (eventType == null)
+                {
+                    throw new DomainException(OutcomeCode.NotFound, "Event type not found.");
+                }
+
+                if (_repository.TypeNameExists(typeName, model.TypeId))
+                {
+                    throw new DomainException(OutcomeCode.Duplicate, "Event type name already exists.", nameof(EventTypeViewModel.TypeName));
+                }
+
+                var oldValues = Snapshot(eventType);
+                eventType.TypeName = typeName;
+                eventType.Description = description;
+                eventType.UpdatedBy = actorUserId;
+                eventType.UpdatedAt = _timeProvider.GetUtcNow().UtcDateTime;
+                await _repository.UpdateEventTypeAsync(eventType, ct);
+                _audit.Append(new AuditEntry(AuditActions.EventTypeEdited, "event_types", eventType.TypeId,
+                    OldValues: oldValues, NewValues: Snapshot(eventType)));
+                await _unitOfWork.SaveChangesAsync(ct);
+            }, cancellationToken);
+        }
+
+        public async Task ToggleActiveAsync(int id, CancellationToken cancellationToken = default)
+        {
+            var actorUserId = ActorUserId();
+
+            await _unitOfWork.ExecuteInTransactionAsync(async ct =>
+            {
+                var eventType = await _repository.LockEventTypeAsync(id, ct);
+                if (eventType == null)
+                {
+                    throw new DomainException(OutcomeCode.NotFound, "Event type not found.");
+                }
+
+                var linkedEventCount = await _repository.CountLinkedEventsAsync(id, ct);
+                var oldValues = new EventTypeStatusAuditValues(eventType.IsActive, linkedEventCount);
+                eventType.IsActive = !eventType.IsActive;
+                eventType.UpdatedBy = actorUserId;
+                eventType.UpdatedAt = _timeProvider.GetUtcNow().UtcDateTime;
+                await _repository.UpdateEventTypeAsync(eventType, ct);
+                _audit.Append(new AuditEntry(AuditActions.EventTypeStatusChanged, "event_types", eventType.TypeId,
+                    OldValues: oldValues, NewValues: new EventTypeStatusAuditValues(eventType.IsActive, linkedEventCount)));
+                await _unitOfWork.SaveChangesAsync(ct);
+            }, cancellationToken);
         }
     }
 }

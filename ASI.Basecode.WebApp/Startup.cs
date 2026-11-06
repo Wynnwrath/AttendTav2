@@ -1,10 +1,7 @@
 ﻿using ASI.Basecode.Data;
-using ASI.Basecode.Resources.Constants;
-using ASI.Basecode.Services.Manager;
-using ASI.Basecode.WebApp.Authentication;
 using ASI.Basecode.WebApp.Extensions.Configuration;
-using ASI.Basecode.WebApp.Models;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
@@ -13,10 +10,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using System;
 using System.IO;
 using System.Text;
+using Serilog.Context;
+using Microsoft.Extensions.Logging;
 
 namespace ASI.Basecode.WebApp
 {
@@ -51,24 +49,6 @@ namespace ASI.Basecode.WebApp
         {
             this.Configuration = configuration;
 
-            PathManager.Setup(this.Configuration.GetSetupRootDirectoryPath());
-
-            var token = this.Configuration.GetTokenAuthentication();
-            this._signingKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(token.SecretKey));
-            this._tokenProviderOptions = TokenProviderOptionsFactory.Create(token, this._signingKey);
-            this._tokenValidationParameters = new TokenValidationParameters
-            {
-                ValidateIssuerSigningKey = true,
-                IssuerSigningKey = this._signingKey,
-                ValidateIssuer = true,
-                ValidIssuer = Const.Issuer,
-                ValidateAudience = true,
-                ValidAudience = token.Audience,
-                ValidateLifetime = true,
-                ClockSkew = TimeSpan.Zero
-            };
-
-            PasswordManager.SetUp(this.Configuration.GetSection("TokenAuthentication"));
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
         }
 
@@ -82,25 +62,27 @@ namespace ASI.Basecode.WebApp
 
             services.AddMemoryCache();
 
+            var connectionString = Configuration.GetConnectionString("DefaultConnection");
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                throw new InvalidOperationException(
+                    "ConnectionStrings:DefaultConnection is not configured. Set the "
+                    + "ConnectionStrings__DefaultConnection environment variable (or a user secret) "
+                    + "before starting AttendTa.");
+            }
+
             // Register SQL database configuration context as services.
             services.AddDbContext<AsiBasecodeDBContext>(options =>
             {
                 options.UseSqlServer(
-                    Configuration.GetConnectionString("DefaultConnection"),
+                    connectionString,
                     sqlServerOptions => sqlServerOptions.CommandTimeout(120));
             });
 
             services.AddControllersWithViews();
             services.AddRazorPages().AddRazorRuntimeCompilation();
 
-            //Configuration
-            services.Configure<TokenAuthentication>(Configuration.GetSection("TokenAuthentication"));
-            
-            // Session
-            services.AddSession(options =>
-            {
-                options.Cookie.Name = Const.Issuer;
-            });
+            this.ConfigureDataProtection();
 
             // DI Services AutoMapper(Add Profile)
             this.ConfigureAutoMapper();
@@ -108,7 +90,7 @@ namespace ASI.Basecode.WebApp
             // DI Services
             this.ConfigureOtherServices();
 
-            // Authorization (Add Policy)
+            // Authorization (cookie authentication and named policies)
             this.ConfigureAuthorization();
 
             services.Configure<FormOptions>(options =>
@@ -116,9 +98,12 @@ namespace ASI.Basecode.WebApp
                 options.ValueLengthLimit = 1024 * 1024 * 100;
             });
 
-            services.AddSingleton<IFileProvider>(
-                new PhysicalFileProvider(
-                    Path.Combine(Directory.GetCurrentDirectory(), "wwwroot")));
+            services.AddSingleton<IFileProvider>(serviceProvider =>
+            {
+                var environment = serviceProvider.GetRequiredService<IWebHostEnvironment>();
+                var webRoot = environment.WebRootPath ?? Path.Combine(environment.ContentRootPath, "wwwroot");
+                return new PhysicalFileProvider(webRoot);
+            });
         }
 
         /// <summary>
@@ -138,7 +123,20 @@ namespace ASI.Basecode.WebApp
 
             this.ConfigureLogger();
 
-            this._app.UseTokenProvider(_tokenProviderOptions);
+            this._app.Use(async (context, next) =>
+            {
+                var correlationId = Guid.NewGuid().ToString("N");
+                context.Response.Headers["X-Correlation-ID"] = correlationId;
+                using (LogContext.PushProperty("CorrelationId", correlationId))
+                {
+                    try { await next(); }
+                    finally
+                    {
+                        var logger = context.RequestServices.GetRequiredService<ILoggerFactory>().CreateLogger("AttendTa.Request");
+                        logger.LogInformation("Request completed with status {StatusCode}", context.Response.StatusCode);
+                    }
+                }
+            });
 
             this._app.UseHttpsRedirection();
             this._app.UseStaticFiles();
@@ -147,11 +145,30 @@ namespace ASI.Basecode.WebApp
             var options = this._app.ApplicationServices.GetService<IOptions<RequestLocalizationOptions>>();
             this._app.UseRequestLocalization(options.Value);
 
-            this._app.UseSession();
             this._app.UseRouting();
 
             this._app.UseAuthentication();
             this._app.UseAuthorization();
+        }
+
+        /// <summary>
+        /// Persists Data Protection keys under <c>Common:SetupRoot/keys</c> so cookies survive restarts.
+        /// </summary>
+        private void ConfigureDataProtection()
+        {
+            var setupRoot = Configuration.GetSetupRootDirectoryPath();
+            if (string.IsNullOrWhiteSpace(setupRoot))
+            {
+                throw new InvalidOperationException(
+                    "Common:SetupRoot must be configured so Data Protection keys can be stored under its keys folder.");
+            }
+
+            var keyDirectory = new DirectoryInfo(Path.Combine(setupRoot, "keys"));
+            keyDirectory.Create();
+
+            this._services.AddDataProtection()
+                .PersistKeysToFileSystem(keyDirectory)
+                .SetApplicationName("AttendTa");
         }
     }
 }

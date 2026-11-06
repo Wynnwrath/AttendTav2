@@ -1,3 +1,5 @@
+using ASI.Basecode.Resources;
+using ASI.Basecode.Resources.Constants;
 using ASI.Basecode.Services.Interfaces;
 using ASI.Basecode.Services.ServiceModels;
 using ASI.Basecode.WebApp.Mvc;
@@ -7,11 +9,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using System.IO;
+using System.Threading.Tasks;
 
 namespace ASI.Basecode.WebApp.Controllers
 {
-    [Authorize(Roles = "admin,officer")]
+    [Authorize(Policy = Policies.Management)]
     [AutoValidateAntiforgeryToken]
     public class MemberController : ControllerBase<MemberController>
     {
@@ -26,14 +28,18 @@ namespace ASI.Basecode.WebApp.Controllers
             _memberService = memberService;
         }
 
-        public IActionResult Index(string search)
+        [HttpGet]
+        [Route("Member")]
+        [Route("Member/Index")]
+        public async Task<IActionResult> Index(string search, int? page)
         {
-            var members = _memberService.GetMembers(search);
+            var members = await _memberService.GetPageAsync(search, page, HttpContext.RequestAborted);
             ViewBag.Search = search;
             return View(members);
         }
 
         [HttpGet]
+        [Route("Member/Edit/{id:int}")]
         public IActionResult Edit(int id)
         {
             var model = _memberService.GetMember(id);
@@ -46,39 +52,31 @@ namespace ASI.Basecode.WebApp.Controllers
         }
 
         [HttpPost]
-        public IActionResult Edit(MemberViewModel model)
+        public async Task<IActionResult> Edit(MemberViewModel model)
         {
             if (!ModelState.IsValid)
             {
+                RestoreCanonicalEmail(model);
                 return View(model);
             }
 
             try
             {
-                _memberService.UpdateMember(model, GetActorUserId());
+                await _memberService.UpdateMemberAsync(model, HttpContext.RequestAborted);
                 TempData["SuccessMessage"] = "Member updated successfully.";
                 return RedirectToAction("Index");
             }
-            catch (InvalidDataException ex)
+            catch (DomainException ex)
             {
-                TempData["ErrorMessage"] = ex.Message;
-                return View(model);
+                RestoreCanonicalEmail(model);
+                return HandleDomainException(ex, model, "Index");
             }
         }
 
-        [HttpPost]
-        public IActionResult ToggleStatus(int id)
+        private void RestoreCanonicalEmail(MemberViewModel model)
         {
-            try
-            {
-                _memberService.ToggleStatus(id, GetActorUserId());
-                TempData["SuccessMessage"] = "Member status updated.";
-            }
-            catch (InvalidDataException ex)
-            {
-                TempData["ErrorMessage"] = ex.Message;
-            }
-            return RedirectToAction("Index");
+            model.Email = _memberService.GetMember(model.MemberId)?.Email;
+            ModelState.Remove(nameof(MemberViewModel.Email));
         }
     }
 }

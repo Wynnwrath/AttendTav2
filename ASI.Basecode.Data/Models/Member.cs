@@ -1,4 +1,5 @@
 ﻿using System;
+using ASI.Basecode.Data.Models.Lookups;
 
 namespace ASI.Basecode.Data.Models
 {
@@ -20,7 +21,13 @@ namespace ASI.Basecode.Data.Models
 
         public string MembershipType { get; set; }
 
-        public string Status { get; set; }
+        public MembershipStatusCode MembershipStatusId { get; set; }
+
+        public string Status
+        {
+            get => MembershipStatusId.ToString().ToLowerInvariant();
+            set => MembershipStatusId = Enum.Parse<MembershipStatusCode>(value, true);
+        }
 
         public int CreatedBy { get; set; }
 

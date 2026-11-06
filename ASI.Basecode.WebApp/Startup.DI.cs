@@ -2,16 +2,16 @@
 using ASI.Basecode.Data.Interfaces;
 using ASI.Basecode.Data.Repositories;
 using ASI.Basecode.Services.Interfaces;
-using ASI.Basecode.Services.ServiceModels;
+using ASI.Basecode.Services.Security;
 using ASI.Basecode.Services.Services;
+using ASI.Basecode.WebApp.Certificates;
 using ASI.Basecode.WebApp.Authentication;
-using ASI.Basecode.WebApp.Models;
+using ASI.Basecode.WebApp.Rendering;
 using ASI.Basecode.WebApp.Storage;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using System;
 
 namespace ASI.Basecode.WebApp
 {
@@ -25,32 +25,55 @@ namespace ASI.Basecode.WebApp
         {
             // Framework
             this._services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-            this._services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
 
             // Common
-            this._services.AddScoped<TokenProvider>();
-            this._services.TryAddSingleton<TokenProviderOptionsFactory>();
-            this._services.TryAddSingleton<TokenValidationParametersFactory>();
             this._services.AddScoped<IUnitOfWork, UnitOfWork>();
+            this._services.TryAddSingleton(TimeProvider.System);
+            this._services.AddScoped<IActivityLogWriter, ActivityLogWriter>();
 
             // Services
-            this._services.TryAddSingleton<TokenValidationParametersFactory>();
-            this._services.AddScoped<IUserService, UserService>();
+            this._services.AddSingleton<IPasswordHasher, Argon2PasswordHasher>();
+            this._services.AddScoped<IAccountService, AccountService>();
+            this._services.AddScoped<IAccountRequestQueueService, AccountRequestQueueService>();
+            this._services.AddScoped<IActivityLogReaderService, ActivityLogReaderService>();
+            this._services.AddScoped<IAccountRequestService, AccountRequestService>();
+            this._services.AddScoped<IAccountAdministrationService, AccountAdministrationService>();
+            this._services.AddScoped<IAccountRoleService, AccountRoleService>();
             this._services.AddScoped<IMemberService, MemberService>();
             this._services.AddScoped<IEventTypeService, EventTypeService>();
             this._services.AddScoped<IVenueService, VenueService>();
+            this._services.AddScoped<IEventLifecycleService, EventLifecycleService>();
+            this._services.AddScoped<ICertificateTracerService, CertificateTracerService>();
 
             // Repositories
             this._services.AddScoped<IUserRepository, UserRepository>();
+            this._services.AddScoped<IAccountRequestRepository, AccountRequestRepository>();
+            this._services.AddScoped<IActivityLogReaderRepository, ActivityLogReaderRepository>();
+            this._services.AddScoped<IAccountAdministrationRepository, AccountAdministrationRepository>();
             this._services.AddScoped<IMemberRepository, MemberRepository>();
             this._services.AddScoped<IEventTypeRepository, EventTypeRepository>();
             this._services.AddScoped<IVenueRepository, VenueRepository>();
+            this._services.AddScoped<IEventRepository, EventRepository>();
+            this._services.AddScoped<IRegistrationRepository, RegistrationRepository>();
 
-            // Local, private venue-photo storage.
-            this._services.AddScoped<IVenueImageStorage, VenueImageStorage>();
+            // Shared server-local storage for private images, certificates and renderer files.
+            this._services.AddScoped<IPrivateFileStore, PrivateFileStore>();
+            this._services.AddScoped<ICertificatePdfRenderer, PlaywrightCertificatePdfRenderer>();
 
-            // Manager Class
-            this._services.AddScoped<SignInManager>();
+            this._services.AddOptions<CertificateSignatoryOptions>()
+                .Bind(this.Configuration.GetSection(CertificateSignatoryOptions.SectionName))
+                .Validate(
+                    options => string.Equals(options.Name, CertificateSignatoryOptions.ApprovedName, StringComparison.Ordinal),
+                    $"{CertificateSignatoryOptions.SectionName}:Name must match the approved certificate signatory.")
+                .Validate(
+                    options => string.Equals(options.Title, CertificateSignatoryOptions.ApprovedTitle, StringComparison.Ordinal),
+                    $"{CertificateSignatoryOptions.SectionName}:Title must match the approved certificate signatory title.")
+                .Validate(
+                    options => string.Equals(options.PackagedSignatureAsset, CertificateSignatoryOptions.SignatureAssetPath, StringComparison.Ordinal),
+                    $"{CertificateSignatoryOptions.SectionName}:PackagedSignatureAsset must name the packaged approved signature asset.");
+
+            // Current request actor for service-layer authorization and audit.
+            this._services.AddScoped<ICurrentActor, HttpCurrentActor>();
 
             this._services.AddHttpClient();
         }

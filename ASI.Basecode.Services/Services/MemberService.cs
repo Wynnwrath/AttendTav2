@@ -1,37 +1,51 @@
 using ASI.Basecode.Data.Interfaces;
 using ASI.Basecode.Data.Models;
+using ASI.Basecode.Data.Models.Lookups;
+using ASI.Basecode.Resources;
+using ASI.Basecode.Resources.Constants;
 using ASI.Basecode.Services.Interfaces;
 using ASI.Basecode.Services.ServiceModels;
+using System.ComponentModel.DataAnnotations;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ASI.Basecode.Services.Services
 {
     public class MemberService : IMemberService
     {
         private readonly IMemberRepository _repository;
+        private readonly IUserRepository _userRepository;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly TimeProvider _timeProvider;
+        private readonly ICurrentActor _currentActor;
+        private readonly IActivityLogWriter _audit;
 
-        public MemberService(IMemberRepository repository)
+        public MemberService(
+            IMemberRepository repository,
+            IUserRepository userRepository,
+            IUnitOfWork unitOfWork,
+            TimeProvider timeProvider,
+            ICurrentActor currentActor,
+            IActivityLogWriter audit)
         {
-            _repository = repository;
+            _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _timeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
+            _currentActor = currentActor ?? throw new ArgumentNullException(nameof(currentActor));
+            _audit = audit ?? throw new ArgumentNullException(nameof(audit));
         }
 
-        public List<MemberViewModel> GetMembers(string search = null)
+        public async Task<PagedResult<MemberViewModel>> GetPageAsync(string search, int? pageNumber, CancellationToken cancellationToken = default)
         {
-            var query = _repository.GetMemberRecords();
-            if (!string.IsNullOrWhiteSpace(search))
-            {
-                query = query.Where(m => m.FullName.Contains(search) ||
-                                         m.Email.Contains(search) ||
-                                         m.StudentNumber.Contains(search));
-            }
-
-            return query.OrderBy(member => member.FullName)
-                .ThenBy(member => member.MemberId)
-                .Select(ToViewModel)
-                .ToList();
+            var totalCount = await _repository.CountAsync(search, cancellationToken);
+            var request = new PageRequest(pageNumber);
+            var page = request.NormalizePageNumber(totalCount);
+            var records = await _repository.GetPageAsync(search, request.GetOffset(page), PageRequest.FixedPageSize, cancellationToken);
+            return new PagedResult<MemberViewModel>(records.Select(ToViewModel).ToList(), page, totalCount);
         }
 
         public MemberViewModel GetMember(int id)
@@ -40,88 +54,218 @@ namespace ASI.Basecode.Services.Services
             return member == null ? null : ToViewModel(member);
         }
 
-        public void CreateMemberFromApprovedAccountRequest(int userId, MemberViewModel model, int actorUserId)
+        public async Task<MemberViewModel> GetSelfProfileAsync(CancellationToken cancellationToken = default)
         {
-            if (userId <= 0 || actorUserId <= 0)
+            if (!_currentActor.IsAuthenticated || !string.Equals(_currentActor.Role, RoleCodes.Member, StringComparison.Ordinal))
             {
-                throw new InvalidDataException("A valid linked user and approving actor are required to create a member.");
+                throw new DomainException(OutcomeCode.Forbidden, "Access denied.");
             }
 
-            if (_repository.UserHasMemberProfile(userId))
-            {
-                throw new InvalidDataException("This user already has a member profile.");
-            }
-
-            if (_repository.StudentNumberExists(model.StudentNumber))
-            {
-                throw new InvalidDataException("Student number already exists.");
-            }
-
-            var member = new Member
-            {
-                UserId = userId,
-                StudentNumber = model.StudentNumber,
-                Course = model.Course,
-                YearLevel = model.YearLevel,
-                Section = model.Section,
-                MobileNumber = model.MobileNumber,
-                MembershipType = model.MembershipType,
-                Status = "active",
-                CreatedBy = actorUserId,
-                CreatedAt = DateTime.UtcNow
-            };
-
-            _repository.AddMember(member);
-        }
-
-        public void UpdateMember(MemberViewModel model, int actorUserId)
-        {
-            var member = _repository.GetMember(model.MemberId);
+            var member = await _repository.GetMemberRecordByUserIdAsync(_currentActor.UserId, cancellationToken);
             if (member == null)
             {
-                throw new InvalidDataException("Member not found.");
+                throw new DomainException(OutcomeCode.NotFound, "Member profile not found.");
             }
 
-            if (_repository.StudentNumberExists(model.StudentNumber, model.MemberId))
-            {
-                throw new InvalidDataException("Student number already exists.");
-            }
-
-            if (actorUserId <= 0)
-            {
-                throw new InvalidDataException("A valid authenticated user is required to update a member.");
-            }
-
-            member.StudentNumber = model.StudentNumber;
-            member.Course = model.Course;
-            member.YearLevel = model.YearLevel;
-            member.Section = model.Section;
-            member.MobileNumber = model.MobileNumber;
-            member.MembershipType = model.MembershipType;
-            member.Status = model.Status;
-            member.UpdatedBy = actorUserId;
-            member.UpdatedAt = DateTime.UtcNow;
-            _repository.UpdateMember(member);
+            return ToViewModel(member);
         }
 
-        public void ToggleStatus(int id, int actorUserId)
+        public async Task CreateMemberFromApprovedAccountRequestAsync(int userId, MemberViewModel model, CancellationToken cancellationToken = default)
         {
-            var member = _repository.GetMember(id);
-            if (member == null)
+            ArgumentNullException.ThrowIfNull(model);
+            var verifiedActorId = RequireManagementActor();
+            if (userId <= 0)
             {
-                throw new InvalidDataException("Member not found.");
+                throw new DomainException(OutcomeCode.Invalid, "A valid linked user is required to create a member.");
             }
 
-            if (actorUserId <= 0)
-            {
-                throw new InvalidDataException("A valid authenticated user is required to update a member.");
-            }
+            Normalize(model);
+            Validate(model);
 
-            member.Status = (member.Status ?? "active") == "active" ? "inactive" : "active";
-            member.UpdatedBy = actorUserId;
-            member.UpdatedAt = DateTime.UtcNow;
-            _repository.UpdateMember(member);
+            await _unitOfWork.ExecuteInTransactionAsync(async ct =>
+            {
+                var user = await _userRepository.LockUserAsync(userId, ct);
+                if (user == null)
+                {
+                    throw new DomainException(OutcomeCode.NotFound, "The linked account was not found.");
+                }
+
+                if (_repository.UserHasMemberProfile(userId))
+                {
+                    throw new DomainException(OutcomeCode.Duplicate, "This user already has a member profile.");
+                }
+
+                if (_repository.StudentNumberExists(model.StudentNumber))
+                {
+                    throw new DomainException(OutcomeCode.Duplicate, "Student number already exists.", nameof(MemberViewModel.StudentNumber));
+                }
+
+                var member = new Member
+                {
+                    UserId = userId,
+                    StudentNumber = model.StudentNumber,
+                    Course = model.Course,
+                    YearLevel = model.YearLevel,
+                    Section = model.Section,
+                    MobileNumber = model.MobileNumber,
+                    MembershipType = model.MembershipType,
+                    MembershipStatusId = MembershipStatusCode.Active,
+                    CreatedBy = verifiedActorId,
+                    CreatedAt = _timeProvider.GetUtcNow().UtcDateTime
+                };
+
+                await _repository.AddMemberAsync(member, ct);
+                await _unitOfWork.SaveChangesAsync(ct);
+
+                _audit.Append(new AuditEntry(
+                    AuditActions.MemberCreated,
+                    "members",
+                    member.MemberId,
+                    NewValues: Snapshot(member, user.Name)));
+                await _unitOfWork.SaveChangesAsync(ct);
+            }, cancellationToken);
         }
+
+        public async Task UpdateMemberAsync(MemberViewModel model, CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(model);
+            var verifiedActorId = RequireManagementActor();
+            Normalize(model);
+
+            await _unitOfWork.ExecuteInTransactionAsync(async ct =>
+            {
+                var memberRecord = _repository.GetMemberRecord(model.MemberId);
+                if (memberRecord == null)
+                {
+                    throw new DomainException(OutcomeCode.NotFound, "Member not found.");
+                }
+
+                var user = await _userRepository.LockUserAsync(memberRecord.UserId, ct);
+                if (user == null)
+                {
+                    throw new DomainException(OutcomeCode.NotFound, "The linked account was not found.");
+                }
+
+                var member = _repository.GetMember(model.MemberId);
+                if (member == null)
+                {
+                    throw new DomainException(OutcomeCode.NotFound, "Member not found.");
+                }
+
+                Validate(model);
+                var correctingStudentNumber = !string.Equals(member.StudentNumber, model.StudentNumber, StringComparison.Ordinal);
+                var reason = string.IsNullOrWhiteSpace(model.StudentNumberCorrectionReason)
+                    ? null
+                    : model.StudentNumberCorrectionReason.Trim();
+
+                if (correctingStudentNumber && reason == null)
+                {
+                    throw new DomainException(OutcomeCode.Invalid, "A reason is required when correcting the student number.", nameof(MemberViewModel.StudentNumberCorrectionReason));
+                }
+
+                if (correctingStudentNumber && _repository.StudentNumberExists(model.StudentNumber, model.MemberId))
+                {
+                    throw new DomainException(OutcomeCode.Duplicate, "Student number already exists.", nameof(MemberViewModel.StudentNumber));
+                }
+
+                var oldValues = Snapshot(member, user.Name);
+                user.Name = model.FullName;
+                user.UpdatedById = verifiedActorId;
+                user.UpdatedTime = _timeProvider.GetUtcNow().UtcDateTime;
+                member.StudentNumber = model.StudentNumber;
+                member.Course = model.Course;
+                member.YearLevel = model.YearLevel;
+                member.Section = model.Section;
+                member.MobileNumber = model.MobileNumber;
+                member.MembershipType = model.MembershipType;
+                member.UpdatedBy = verifiedActorId;
+                member.UpdatedAt = _timeProvider.GetUtcNow().UtcDateTime;
+                await _repository.UpdateMemberAsync(member, ct);
+                await _unitOfWork.SaveChangesAsync(ct);
+
+                _audit.Append(new AuditEntry(
+                    correctingStudentNumber ? AuditActions.MemberStudentNumberCorrected : AuditActions.MemberEdited,
+                    "members",
+                    member.MemberId,
+                    Reason: correctingStudentNumber ? reason : null,
+                    OldValues: oldValues,
+                    NewValues: Snapshot(member, user.Name)));
+                await _unitOfWork.SaveChangesAsync(ct);
+            }, cancellationToken);
+        }
+
+        private int RequireManagementActor()
+        {
+            if (!_currentActor.IsAuthenticated)
+            {
+                throw new DomainException(OutcomeCode.Forbidden, "A valid authenticated user is required to change a member.");
+            }
+
+            int actorId;
+            try
+            {
+                actorId = _currentActor.UserId;
+            }
+            catch (InvalidOperationException)
+            {
+                throw new DomainException(OutcomeCode.Forbidden, "A valid authenticated user is required to change a member.");
+            }
+
+            if (actorId <= 0
+                || (!string.Equals(_currentActor.Role, RoleCodes.Admin, StringComparison.Ordinal)
+                    && !string.Equals(_currentActor.Role, RoleCodes.Officer, StringComparison.Ordinal)))
+            {
+                throw new DomainException(OutcomeCode.Forbidden, "A valid authenticated management user is required to change a member.");
+            }
+
+            return actorId;
+        }
+
+        private static void Normalize(MemberViewModel model)
+        {
+            model.FullName = model.FullName?.Trim();
+            model.StudentNumber = model.StudentNumber?.Trim();
+            model.Course = model.Course?.Trim();
+            model.Section = model.Section?.Trim();
+            model.MobileNumber = string.IsNullOrWhiteSpace(model.MobileNumber) ? null : model.MobileNumber.Trim();
+            model.MembershipType = string.IsNullOrWhiteSpace(model.MembershipType) ? null : model.MembershipType.Trim();
+            model.StudentNumberCorrectionReason = string.IsNullOrWhiteSpace(model.StudentNumberCorrectionReason)
+                ? null
+                : model.StudentNumberCorrectionReason.Trim();
+        }
+
+        private static void Validate(MemberViewModel model)
+        {
+            var results = new List<ValidationResult>();
+            if (Validator.TryValidateObject(model, new ValidationContext(model), results, validateAllProperties: true))
+            {
+                return;
+            }
+
+            var first = results[0];
+            var field = first.MemberNames.FirstOrDefault();
+            throw new DomainException(OutcomeCode.Invalid, first.ErrorMessage ?? "The member profile contains invalid details.", field);
+        }
+
+        private static MemberAuditValues Snapshot(Member member, string fullName) => new(
+            fullName,
+            member.StudentNumber,
+            member.Course,
+            member.YearLevel,
+            member.Section,
+            member.MobileNumber,
+            member.MembershipType,
+            member.Status);
+
+        private sealed record MemberAuditValues(
+            string FullName,
+            string StudentNumber,
+            string Course,
+            int YearLevel,
+            string Section,
+            string MobileNumber,
+            string MembershipType,
+            string Status) : IAuditValues;
 
         private static MemberViewModel ToViewModel(MemberRecord member)
         {
