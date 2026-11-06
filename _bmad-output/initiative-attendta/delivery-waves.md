@@ -1,5 +1,7 @@
 # AttendTa — sequential waves and shared unblockers
 
+> Superseded 2026-11-06 by the demo rescope in [delivery-queue.md](delivery-queue.md): 1.12 became the closing demo rehearsal 8.15, 1.13 starts first, 5.11 no longer waits on 2.13, and 2.11 moved to the finale. Use the queue, not these waves, to pick work.
+
 Verified snapshot: **6 November 2026**, after planning commit `45d1c20`.
 
 **Start with [#135][i135] → [#136][i136].** Then use the five-builder batches below.

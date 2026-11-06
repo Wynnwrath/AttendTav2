@@ -139,6 +139,8 @@ Reference by path only. The SPEC is the source of truth for planned features not
 ## UI review
 The impeccable design skill is installed at `.opencode/skills/impeccable`, with `/impeccable` in `.opencode/commands`. For any UI-facing ticket — a new screen, form, table, dialog, navigation change, or a refactor sweep that touches Razor or CSS — run `/impeccable critique` on the changed surface and `/impeccable polish` before review. Keep `PRODUCT.md` current; `docs/DESIGN.md` remains the visual authority.
 
+Exception (2026-11-06 demo rescope, project owner): tickets in the demo and integration phases of `_bmad-output/initiative-attendta/delivery-queue.md` do not run per-ticket critique or polish. The demo rehearsal (8.15) runs critique and polish once for the demo surface, and 8.12 and 2.11 run them for the integrated app. Each pull request still keeps green CI and one peer approval.
+
 ## Current assignment scope
 Master Data only — Member Management, Event Type Management, Venue Management (Admin & Officer).
 Auth, Transactions, Reports, Administration are owned by other members.

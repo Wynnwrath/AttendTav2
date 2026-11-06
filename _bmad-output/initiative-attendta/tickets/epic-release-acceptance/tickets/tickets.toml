@@ -10,6 +10,22 @@ hitl = true
 risk = "medium"
 
 [[entry]]
+id = 15
+type = "story"
+title = "Demo rehearsal with Impeccable critique and polish"
+description = "A person runs the demo script end to end on the demo build with DemoData__Enabled=true, in the Administrator, Officer and Member roles at desktop and 390px width: account request and approval, master data, event create and publish, signup and review, My Events and the pass, the door scan, completion, certificate review, issue and download, the report, access changes and the Activity Log. Run Impeccable critique on the demo-critical screens, then fix dead ends, broken links, misleading copy, any visible sign of demo data and the highest-value findings with Impeccable polish. Findings not fixed go to 8.12. This is the one critique-and-polish pass of the demo phase; it adds no new screens or backend. The demo script and its starting state are written to _bmad-output/initiative-attendta/demo-script.md for the presenter. Confirm that unlinked development-only pages, such as the certificate tracer and its watermarked sample, are not reachable on the demo machine. It also checks each demo-phase ticket's full Verify line once; a failing line goes back to its ticket before the demo. The script leaves out signing in as a deactivated account, because the demo does not block that login until 5.4 (see the register's Known limits)."
+verify = "The demo script runs start to finish in each role without a dead end, an error page or a visible sign of demo data, on desktop and at 390px width; each critique finding is fixed or listed for 8.12; demo-script.md holds the steps and the starting state. Every demo-phase ticket's Verify line passes or is recorded against its ticket."
+covers = []
+after = ["1.13", "1.14", "3.16", "3.17", "4.10", "4.11", "4.12", "5.11", "6.12", "6.13", "7.4"]
+hitl = true
+risk = "medium"
+phase = "frontend"
+area = "frontend"
+queue = 110
+references = ["docs/DESIGN.md", "_bmad-output/initiative-attendta/delivery-queue.md", "_bmad-output/initiative-attendta/demo-mock-register.md"]
+notes = ["Decision: 2026-11-06 — demo rescope: the old 1.12 opening walkthrough spike became this closing demo rehearsal and moved here from epic-platform-access because it waits on demo screens in later epics; 1.13 no longer waits on it. Existing issue #135 is reused.", "A person walks the script and judges the result with the project owner; the builder fixes what the walkthrough finds.", "Done check: dotnet build, npm run css:build when views or styles change, and the walkthrough itself. No new automated tests."]
+
+[[entry]]
 id = 2
 type = "story"
 title = "Hotspot network binding and trusted HTTPS mobile camera scanning"
@@ -125,8 +141,8 @@ queue = 610
 id = 10
 type = "story"
 title = "Refactor sweep"
-description = "Pre-acceptance release cleanup only: remove enabled throwaway harnesses and temporary prototype configuration, check setup/run documentation and secret hygiene, and retain useful evidence. Backend hardening is 8.13 and rendered frontend critique/polish is 8.12. Finish code/config cleanup BEFORE acceptance runs and the release PR, not after main is released."
-verify = "The solution/CSS build succeeds, no temporary credentials or enabled prototype runtime configuration is committed, setup instructions match the integrated build and the acceptance run can use this exact commit without another planned code-changing sweep."
+description = "Pre-acceptance release cleanup only: remove enabled throwaway harnesses, confirm no demo data configuration remains in deployment settings, check setup/run documentation and secret hygiene, and retain useful evidence. Backend hardening is 8.13 and rendered frontend critique/polish is 8.12. Finish code/config cleanup BEFORE acceptance runs and the release PR, not after main is released."
+verify = "The solution/CSS build succeeds, no temporary credentials or enabled demo data runtime configuration is committed, setup instructions match the integrated build and the acceptance run can use this exact commit without another planned code-changing sweep."
 covers = []
 after = [11, 12, 13]
 hitl = false
@@ -134,6 +150,7 @@ risk = "low"
 phase = "finale"
 area = "backend"
 queue = 530
+references = ["_bmad-output/initiative-attendta/delivery-queue.md", "_bmad-output/initiative-attendta/finale-test-cases.md"]
 
 [[entry]]
 id = 14
@@ -154,7 +171,7 @@ references = ["_bmad-output/initiative-attendta/delivery-queue.md", "_bmad-outpu
 id = 13
 type = "story"
 title = "Final backend hardening and cross-module integration cleanup"
-description = "Resolve concrete cross-module backend findings after the focused module sweeps: confirm one caller-owned transaction/audit path, lock order, canonical facts, cancellation/hook registration, authorization/ownership, time guards and safe private file failure/cleanup. Include report read coherence and source registration. No feature expansion or frontend presentation work; do not duplicate the module sweeps or author exhaustive tests here. Hand the stable real-provider wiring to 8.11."
+description = "Resolve concrete cross-module backend findings after the focused module sweeps: confirm one caller-owned transaction/audit path, lock order, canonical facts, cancellation/hook registration, authorization/ownership, time guards and safe private file failure/cleanup. Include report read coherence and source registration. No feature expansion or frontend presentation work; do not duplicate the module sweeps or author exhaustive tests here. Hand the stable real-provider wiring to 8.11. First delete the demo seam, register row M-01 (the demo data folder, the DemoData switch, the startup guard, the token key and the registration method), once every other register row is removed, and set M-01 removed."
 verify = "Build and the focused request-to-certificate/report smoke succeed on real data; each agreed backend finding is fixed or an explicit release blocker, and there is one implementation of shared cancellation, eligibility and storage rules. 8.5/8.4 own the final important tests."
 covers = []
 after = ["3.14", "4.9", "5.10", "6.11", "7.3"]
@@ -163,14 +180,15 @@ risk = "high"
 phase = "finale"
 area = "backend"
 queue = 500
-references = ["_bmad-output/initiative-attendta/delivery-queue.md", "_bmad-output/initiative-attendta/finale-test-cases.md"]
+references = ["_bmad-output/initiative-attendta/delivery-queue.md", "_bmad-output/initiative-attendta/finale-test-cases.md", "_bmad-output/initiative-attendta/demo-mock-register.md"]
+notes = ["Removes demo data M-01 (2026-11-06 review): the last integration step before 8.11 verifies the register."]
 
 [[entry]]
 id = 11
 type = "story"
 title = "Remove prototype data and prove complete real integrations"
-description = "Use 1.13's fixture register to replace/remove every required mock-backed source and simulated mutation with its accountable real implementation. Verify My Events/passes/attendance, scanner, completion, certificate review/issue/download, access changes and reports against one coherent database. Remove prototype routes/providers from runtime wiring, keep only isolated test fixtures, and refuse any release configuration enabling prototype mode. This is a functional integration gate, not a frontend redesign or a claim that the final test suite already passed."
-verify = "The fixture register has no unresolved required surface, release startup cannot enable fixture providers, and a real member goes from approved account through registration/pass/check-in/completion to a retained certificate and matching report/audit, with no manual SQL state workaround."
+description = "Verify only; this ticket changes no code. Confirm every row of `demo-mock-register.md`, M-01 included, is `removed` with its commit; an open row sends the finding back to that row's removing ticket instead of being fixed here. Then prove the demo seam is gone with checks that fail if any part remains: start the published build with DemoData__Enabled=true, no DemoData__TokenKey and a database other than AttendTa_Demo, which the startup guard refuses while the seam exists; and search the source and the published output for every register id, the demo data folder and the DemoData configuration keys. Finally verify My Events, passes, attendance, scanner, completion, certificate review, issue and download, access changes and reports against one coherent database. Keep only isolated test fixtures in the test projects. This is a functional integration gate, not a frontend redesign or a claim that the final test suite already passed."
+verify = "Every register row shows `removed` with its commit; the published build starts normally with DemoData__Enabled=true, no token key and a non-demo database; the search finds no register id, demo data folder or DemoData key; a real member goes from approved account through registration, pass, check-in and completion to a retained certificate and matching report and audit, with no manual SQL state workaround."
 covers = ["R1", "R2", "R3"]
 after = [13, "2.10", "2.11"]
 hitl = false
@@ -178,14 +196,15 @@ risk = "high"
 phase = "finale"
 area = "backend"
 queue = 510
-references = ["_bmad-output/initiative-attendta/delivery-queue.md", "_bmad-output/initiative-attendta/finale-test-cases.md"]
+references = ["_bmad-output/initiative-attendta/delivery-queue.md", "_bmad-output/initiative-attendta/finale-test-cases.md", "_bmad-output/initiative-attendta/demo-mock-register.md"]
+notes = ["Verify-only (2026-11-06 review): 8.13 removes M-01; findings return to the owning ticket."]
 
 [[entry]]
 id = 12
 type = "story"
 title = "Final frontend walkthrough targeted refactor and Impeccable polish"
-description = "Walk the complete real integrated frontend against docs/DESIGN.md and 1.12's findings: all 20 core screens, distinct role navigation, coherent state/copy/actions, centered dialogs, keyboard focus, responsive layouts, long content, error/retry and PDF/QR presentation. Refactor only concrete presentation duplication/usability findings; preserve ready backend behavior. Use the impeccable skill for implementing fixes, rendered critique and polish before review, and run its detector on changed UI targets."
-verify = "Desktop and phone walkthrough evidence shows no dead-end required routes, hidden primary actions or prototype outcomes; important keyboard/dialog and 200%-zoom checks pass, and all critique findings are fixed or recorded as explicit release blockers. Final backend and test-only tickets do not inherit this design-tool requirement."
+description = "Walk the complete real integrated frontend against docs/DESIGN.md and the 8.15 demo rehearsal findings: all 20 core screens, distinct role navigation, coherent state/copy/actions, centered dialogs, keyboard focus, responsive layouts, long content, error/retry and PDF/QR presentation. Refactor only concrete presentation duplication/usability findings; preserve ready backend behavior. Use the impeccable skill for implementing fixes, rendered critique and polish before review, and run its detector on changed UI targets."
+verify = "Desktop and phone walkthrough evidence shows no dead-end required routes, hidden primary actions or demo data outcomes; important keyboard/dialog and 200%-zoom checks pass, and all critique findings are fixed or recorded as explicit release blockers. Final backend and test-only tickets do not inherit this design-tool requirement."
 covers = ["R2", "R6"]
 after = [11]
 hitl = false
@@ -195,3 +214,4 @@ area = "frontend"
 queue = 520
 references = ["docs/DESIGN.md", "_bmad-output/initiative-attendta/delivery-queue.md", "_bmad-output/initiative-attendta/finale-test-cases.md"]
 notes = ["Frontend only: impeccable is required for implementation, rendered critique and final polish; inspect representative desktop/1024/768/390px surfaces and critical keyboard/zoom states. Use manual evidence rather than introducing broad screenshot automation in the timebox."]
+

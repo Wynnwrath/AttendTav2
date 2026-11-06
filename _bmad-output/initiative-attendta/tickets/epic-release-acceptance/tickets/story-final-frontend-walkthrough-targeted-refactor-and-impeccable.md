@@ -16,11 +16,11 @@ tracker_status: backlog
 
 ## Description
 
-Walk the complete real integrated frontend against docs/DESIGN.md and 1.12's findings: all 20 core screens, distinct role navigation, coherent state/copy/actions, centered dialogs, keyboard focus, responsive layouts, long content, error/retry and PDF/QR presentation. Refactor only concrete presentation duplication/usability findings; preserve ready backend behavior. Use the impeccable skill for implementing fixes, rendered critique and polish before review, and run its detector on changed UI targets.
+Walk the complete real integrated frontend against docs/DESIGN.md and the 8.15 demo rehearsal findings: all 20 core screens, distinct role navigation, coherent state/copy/actions, centered dialogs, keyboard focus, responsive layouts, long content, error/retry and PDF/QR presentation. Refactor only concrete presentation duplication/usability findings; preserve ready backend behavior. Use the impeccable skill for implementing fixes, rendered critique and polish before review, and run its detector on changed UI targets.
 
 ## Requirements
 
-Verify: Desktop and phone walkthrough evidence shows no dead-end required routes, hidden primary actions or prototype outcomes; important keyboard/dialog and 200%-zoom checks pass, and all critique findings are fixed or recorded as explicit release blockers. Final backend and test-only tickets do not inherit this design-tool requirement.
+Verify: Desktop and phone walkthrough evidence shows no dead-end required routes, hidden primary actions or demo data outcomes; important keyboard/dialog and 200%-zoom checks pass, and all critique findings are fixed or recorded as explicit release blockers. Final backend and test-only tickets do not inherit this design-tool requirement.
 
 ## References
 

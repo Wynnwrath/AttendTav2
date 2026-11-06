@@ -16,7 +16,7 @@ tracker_status: backlog
 
 ## Description
 
-Retain existing GitHub #128 as the acceptance umbrella for centered Member, Event Type and Venue editors. Required markers, fieldsets and constrained forms already shipped in #132; implementation is split into 2.12–2.14. Verify the complete original visual scope rather than claiming that the Event Type tracer alone finishes #128. Use impeccable to critique all three rendered editors and polish remaining UI findings.
+Finale acceptance check for existing GitHub #128: the Member, Event Type and Venue editors from 2.12–2.14 meet docs/DESIGN.md (centered dialogs, focus entering/contained/restored, separate status versus Cancel/Save actions, retained validation, Venue photo preview). Fix only findings; required markers, fieldsets and constrained forms already shipped in #132. Runs with the 8.12 whole-app Impeccable pass.
 
 ## Requirements
 
@@ -30,4 +30,5 @@ Verify: All three editors satisfy docs/DESIGN.md: centered dialogs, keyboard foc
 
 ## Notes
 
-- Existing issue #128 is reused, not closed or weakened by the split. Frontend only: impeccable implementation for any fixes, critique and polish; manual acceptance rather than a duplicate automated suite.
+- Existing issue #128 is reused, not closed or weakened by the split.
+- Moved to the finale by the 2026-11-06 demo rescope: it is an acceptance check, not demo work. Impeccable critique and polish apply here as part of 8.12.

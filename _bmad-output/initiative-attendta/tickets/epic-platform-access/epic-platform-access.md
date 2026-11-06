@@ -20,14 +20,20 @@ Opening epic and platform baseline. Replaced the login stub, reversible AES pass
 
 For applicants and Management, membership moves from in-person chasing to a reviewed request and a real email login, shown by UJ-1 running end to end on the dev build.
 
+## Delivery (2026-11-06, demo rescope)
+
+- 1.13 and 1.14 are the first demo-critical tickets and run in parallel (neither waits on 1.12). 1.13 is the shell: navigation, routes, authorized actions with typed contracts, the My Events host with its empty slots, the empty access-action slots and the shared event selector; it adds no demo data. 1.14 is the demo data seam: `DemoData:Enabled` with the startup database guard, the in-memory demo store with stable pass tokens, the seed, and the event-state commands and overlay (register rows M-01, M-04 and M-09 in `demo-mock-register.md`). Demo-polish tickets need only 1.13; surfaces that show demo data need both.
+- The old 1.12 opening walkthrough became the closing demo rehearsal and moved to epic-release-acceptance as 8.15, because it waits on demo screens in later epics; issue #135 still maps to it.
+- This replaces the first three bullets below (marked) and the 1.12/1.13 dependency note; the rest stands.
+
 ## Delivery (2026-11-06)
 
-- This epic opens the frontend-first sequence. 1.12 (early frontend walkthrough and prioritized usability findings) runs after 1.9; 1.13 (shared shell/routes and Development-only typed fixture contracts) runs after 1.12. Together they establish the shell, routes and contract seams that later epics reuse. They may start now because the real login, canonical schema, audit writer, pager and Tailwind shell already exist on `dev`.
-- Real authentication, routes and shell data are reused directly. A mock is used only for a contract that does not exist yet, is Development-only, conspicuous, performs no real writes, never hides a broken real backend, and is tracked for removal in `delivery-queue.md`.
-- Only frontend/UI-facing tickets require impeccable for implementation, rendered critique and polish per `AGENTS.md`; backend-only and test-only work does not. 1.12 and 1.13 are UI-facing.
+- (Replaced by the demo rescope above.) This epic opens the frontend-first sequence. 1.12 (early frontend walkthrough and prioritized usability findings) runs after 1.9; 1.13 (shared shell/routes and Development-only typed fixture contracts) runs after 1.12. Together they establish the shell, routes and contract seams that later epics reuse. They may start now because the real login, canonical schema, audit writer, pager and Tailwind shell already exist on `dev`.
+- (Replaced by the demo rescope above.) Real authentication, routes and shell data are reused directly. A mock is used only for a contract that does not exist yet, is Development-only, conspicuous, performs no real writes, never hides a broken real backend, and is tracked for removal in `delivery-queue.md`.
+- (Replaced by the demo rescope above.) Only frontend/UI-facing tickets require impeccable for implementation, rendered critique and polish per `AGENTS.md`; backend-only and test-only work does not. 1.12 and 1.13 are UI-facing.
 - Development checks are a clean build, a reproducible CSS build when views/styles change, and a manual smoke of the changed surface; add a focused guard regression only for a live high-risk mutation. Finale 8.5 (#78) authors/maps important cases before 8.4 (#77) executes the combined suite; 8.6–8.8 record acceptance. The two xUnit v3 projects and existing GitHub Actions workflow remain the PR gate.
 - 1.8 is historical sweep work and is not repeated. The final whole-app frontend walkthrough, refactor and polish is 8.12.
-- Dependency note: 1.12 and 1.13 declare contract-level waits (1.9 and 1.12), not whole-backend epic gates. The epic-level waits in Notes gate backend completion only; the frontend slices may start when their declared shell/contract exists.
+- Dependency note: 1.13 declares a contract-level wait on 1.9 only (the old 1.12 is now 8.15). The epic-level waits in Notes gate backend completion only; the frontend slices may start when their declared shell/contract exists.
 
 ## Requirements
 
@@ -93,3 +99,5 @@ For applicants and Management, membership moves from in-person chasing to a revi
 - Decision: 2026-11-06 — impeccable is required for frontend/UI-facing tickets here (including 1.9, 1.12, 1.13 and UI-facing work in 1.5/1.6/1.7): implementation, rendered critique and polish. Backend-only/test-only tickets (1.2, 1.3, 1.4, 1.10, 1.11) do not require it.
 - Decision: 2026-11-06 — 1.8 is historical sweep work and is not repeated. The final frontend walkthrough, refactor and polish belongs to 8.12; backend hardening to 8.13.
 - Coordination: 2026-11-06 — PR #134 (UI patterns, 2.9/127–129) and PR #133 (event start cutoff, 3.10) are merged at `997f290`; the parent closed issue #39 with PR #133 merge evidence. No status change to this container and no implementation starts from this planning edit.
+- Decision: 2026-11-06 — demo rescope (project owner): the client demo is close, so frontend-only demo work comes first on demo data that shows no visible sign of being demo data and is recorded for removal in `demo-mock-register.md`. 1.13 starts without 1.12 and builds the demo data seam; 1.12 became the closing demo rehearsal and moved to epic-release-acceptance as 8.15. Per-ticket critique and polish move to that rehearsal and to 8.12; there is no separate code-review pass beyond each pull request's one peer approval.
+- Decision: 2026-11-06 — review of the demo rescope (project owner): 1.13 split into the shell (1.13) and the demo data seam (1.14) so both run in parallel; the seam refuses to start against any database other than AttendTa_Demo unless DemoData:AllowDatabase names it, derives stable pass tokens from DemoData:TokenKey, applies the real refusal rules to demo commands and overlays the demo event state on the real event reads.

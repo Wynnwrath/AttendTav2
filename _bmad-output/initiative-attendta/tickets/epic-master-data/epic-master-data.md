@@ -20,14 +20,22 @@ Brings the existing Member, Event Type and Venue code to the PRD rules on the re
 
 For Management, the reference data every Event depends on is maintained in one audited place, shown by an Officer editing a member, a type and a venue with photo on the dev build.
 
+## Delivery (2026-11-06, demo rescope)
+
+- **Demo-polish phase.** 2.12 (queue 140), 2.13 (queue 150), 2.14 (queue 160) and 2.10 (queue 170) deliver in the demo phase as demo-polish against the existing real backend; this epic adds no demo data and has no rows in `demo-mock-register.md`. 2.13 and 5.11 touch different partials (5.11 the 1.13 slot partial, 2.13 the Edit trigger and form); 2.13 leaves the access-action slot partial that 1.13 placed in each Members list row (5.11 fills it) untouched and the two have no ordering between them.
+- **Finale acceptance.** 2.11 moves to the finale (queue 515, phase finale) as an acceptance check for GitHub #128; it verifies all three centered editors against `docs/DESIGN.md` and runs with the 8.12 whole-app Impeccable pass.
+- **Replaced delivery rules.** This rescope replaces the per-ticket Impeccable critique and polish bullet below. Per-ticket checks in the demo phase are `dotnet build`, `npm run css:build` when views or styles change, and one look at the changed screen with `DemoData__Enabled=true`. No new automated tests, no per-ticket Impeccable critique or polish, and no separate code review; critique and polish run once in 8.15 and in 8.12.
+
 ## Delivery (2026-11-06)
+
+The bullets below stand where the demo rescope above does not replace them. It replaces the per-ticket Impeccable critique and polish bullet.
 
 - The Master Data backend is on `dev` (2.1–2.9; 2.1 is still marked in progress in the tracker although its code is present); these slices reuse it and add no backend contract. 2.10 finishes only #127's residual submitting/loading feedback, error/retry and truthful empty/no-match states; status filters and result counts already shipped in #134/#132 are preserved, not rebuilt.
 - 2.12 is the shared dialog plus Event Type tracer; 2.13 applies the same dialog pattern to Member; 2.14 applies it to Venue. Then 2.11 is the #128 acceptance umbrella that verifies all three rendered editors after 2.13 and 2.14; it is not a separate 2.15 entry. These are parent-owned entries recorded here as the frontend order, not new backend scope.
-- Every slice in this epic is UI-facing and uses impeccable for implementation, rendered critique and polish per `AGENTS.md`.
+- (Replaced by demo rescope above) Per-ticket design critique and polish are replaced by the single passes in 8.15 and 8.12.
 - Development checks are a clean build, a reproducible CSS build when views/styles change, and a manual smoke of the changed surface. Keep the focused venue-capacity guard for this live high-risk mutation. Finale 8.5 (#78) authors/maps important cases before 8.4 (#77) runs the combined suite; 8.6–8.8 record acceptance.
 - 2.9 is the historical Master Data sweep and is not repeated. The final whole-app frontend walkthrough, refactor and polish is 8.12; backend hardening is 8.13.
-- Dependency note: 2.10 waits on 2.9 and 1.13; 2.12 on 2.9 and 1.13; 2.13 and 2.14 on 2.12; 2.11 on 2.13 and 2.14. These are contract-level waits, not whole-backend epic gates.
+- Dependency note: 2.10 waits on 2.9, 1.13, 2.12, 2.13 and 2.14; 2.12 on 2.9 and 1.13; 2.13 on 2.12; 2.14 on 2.12; 2.11 on 2.13 and 2.14. These are contract-level waits, not whole-backend epic gates.
 
 ## Requirements
 
@@ -92,3 +100,5 @@ For Management, the reference data every Event depends on is maintained in one a
 - Decision: 2026-11-06 — no fixed future human owner. Historical attribution above is preserved as history; claims from `delivery-queue.md` win over the addendum assignment.
 - Decision: 2026-11-06 — every slice here is UI-facing and uses impeccable for implementation, rendered critique and polish. Development checks are minimal (build, reproducible CSS, manual smoke); the venue-capacity guard keeps a focused automated regression because it is a live high-risk mutation. Finale 8.5 (#78) authors/maps important cases before 8.4 (#77) runs the combined suite, followed by 8.6–8.8 acceptance.
 - Decision: 2026-11-06 — 2.9 is not repeated. Final frontend walkthrough/refactor/polish is 8.12; backend hardening is 8.13. No container status change and no implementation starts from this planning edit.
+- Decision: 2026-11-06 — demo rescope: 2.10, 2.12, 2.13 and 2.14 deliver in the demo phase as demo-polish against the real backend without demo data; 2.13 and 5.11 split the Members list view (5.11 owns the row access-action partial, 2.13 the Edit trigger and form) instead of an ordering, which would cross epic order; 2.11 moves to the finale as an acceptance check with 8.12.
+- Decision: 2026-11-06 — review of the demo rescope: Clarify that 2.13 and 5.11 touch different partials in the Members list (5.11 the 1.13 slot partial, 2.13 the Edit trigger and form), and update Done check verify line requirements for demo-phase tickets.

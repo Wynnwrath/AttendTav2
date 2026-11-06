@@ -27,12 +27,17 @@ Verify: Focused development check: one eligible issuance persists the retained P
 - parent — _bmad-output/initiative-attendta/tickets/epic-certificates/epic-certificates.md
 - _bmad-output/initiative-attendta/delivery-queue.md
 - _bmad-output/initiative-attendta/finale-test-cases.md
+- _bmad-output/initiative-attendta/demo-mock-register.md
 
 ## Delivery (2026-11-06)
 
-- Real issuance consumes 6.12's issuance control; it does not construct a second screen or change presentation. Prototype issuance does not close the functional issue.
+- Real issuance consumes 6.12's issuance control; it does not construct a second screen or change presentation. Demo issuance does not close the functional issue.
 - Issuance must wait for the 6.5 invalidation guard and the existing 6.3 signatory before it is enabled.
 - Development check: build plus a focused issuance/duplicate guard smoke. CI now installs Chromium; use the PDF test double for SQL race/lock tests and the real renderer for the renderer smoke. Existing CI unchanged.
 - Missing important test authoring is 8.5 (#78), combined final execution 8.4 (#77), manual 8.6–8.8.
-- Backend-only: no Impeccable requirement; frontend design lives only in the separate slices 6.12/6.13/7.4 and finale 8.12.
+- Backend-only: no per-ticket design critique or polish requirement; frontend design lives only in the separate slices 6.12/6.13/7.4 and finale 8.12.
 - The transaction/lock order, outside-lock rendering, failed-commit cleanup, no-replace retry and one-issuance race stay final acceptance even while test authoring is deferred.
+
+## Notes
+
+- Removes demo data M-11a (2026-11-06 demo rescope): implement the real source behind the contract the demo provider serves, delete the provider classes and their registration, and set the rows to `removed` with the commit in `demo-mock-register.md`. The screen should not change visibly. No per-ticket Impeccable critique or polish; 8.12 covers it.

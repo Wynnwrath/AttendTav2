@@ -31,5 +31,5 @@ Verify: Build and the focused affected issuance/download check pass; no agreed b
 
 - Finale backend-only cleanup of concrete findings; it retires the development tracer without replacing the retained-PDF pipeline and does not build a second screen or change presentation.
 - Development check: build plus the focused affected issuance/download smoke; existing CI unchanged. Missing important test authoring is 8.5 (#78), combined final execution 8.4 (#77), manual 8.6–8.8.
-- Backend-only: no Impeccable requirement; frontend critique/polish is 8.12 and design lives only in the separate slices 6.12/6.13/7.4 and finale 8.12.
+- Backend-only: no per-ticket design critique or polish requirement; frontend critique/polish is 8.12 and design lives only in the separate slices 6.12/6.13/7.4 and finale 8.12.
 - No imaginary lint command and no extra full-app audit; the real service, SQL and PDF regression is recorded once by 8.4.

@@ -143,12 +143,14 @@ risk = "low"
 phase = "integration"
 area = "backend"
 queue = 210
+references = ["_bmad-output/initiative-attendta/delivery-queue.md", "_bmad-output/initiative-attendta/finale-test-cases.md", "_bmad-output/initiative-attendta/demo-mock-register.md"]
+notes = ["Removes demo data M-09 (2026-11-06 demo rescope): implement the real source behind the contract the demo provider serves including the Completed status overlay on event reads (register rule 7), delete the provider classes and their registration, and set the rows to `removed` with the commit in `demo-mock-register.md`. The screen should not change visibly. No per-ticket Impeccable critique or polish; 8.12 covers it."]
 
 [[entry]]
 id = 13
 type = "story"
 title = "My Events personal registrations list"
-description = "Replace 3.17's fixture-backed registrations source with the real owner-scoped 25-row query, preserving the My Events controller, card contract and partial slots established by the frontend slice. Reuse RegistrationStatusDisplay from merged #133 and ManilaTimeFormatter. Return accurate Pending, Confirmed, Waitlisted, Cancelled and Not confirmed before cutoff states; never expose another member's rows. This integration ticket stays open until the real query is wired; no second UI host or card implementation."
+description = "Replace 3.17's demo registrations source with the real owner-scoped 25-row query, preserving the My Events controller, card contract and partial slots established by the frontend slice. Reuse RegistrationStatusDisplay from merged #133 and ManilaTimeFormatter. Return accurate Pending, Confirmed, Waitlisted, Cancelled and Not confirmed before cutoff states; never expose another member's rows. This integration ticket stays open until the real query is wired; no second UI host or card implementation."
 verify = "A member navigates to My Events and views their registrations paged at 25 rows per page, showing accurate statuses (Pending, Confirmed, Waitlisted, Cancelled, Not confirmed before cutoff) with local time display; host slots for _PassPartial and _CertificateLinkPartial are present."
 covers = ["R12", "R15"]
 after = [9, 10, 17]
@@ -157,7 +159,8 @@ risk = "low"
 phase = "integration"
 area = "backend"
 queue = 200
-
+references = ["_bmad-output/initiative-attendta/delivery-queue.md", "_bmad-output/initiative-attendta/finale-test-cases.md", "_bmad-output/initiative-attendta/demo-mock-register.md"]
+notes = ["Removes demo data M-02 (2026-11-06 demo rescope): implement the real source behind the contract the demo provider serves, delete the provider classes and their registration, and set the rows to `removed` with the commit in `demo-mock-register.md`. The screen should not change visibly. No per-ticket Impeccable critique or polish; 8.12 covers it."]
 [[entry]]
 id = 14
 type = "story"
@@ -176,39 +179,37 @@ queue = 450
 id = 16
 type = "story"
 title = "Frontend officer event dossier roster and lifecycle dialogs"
-description = "Complete the officer event-list/create/detail composition and registration roster using the ready event, review, promotion and cancellation services. Replace the rough Event ID filter workflow with contextual event navigation. Present the completion and check-in-window controls through the 1.13 prototype contract until 3.12/4.2 are real; never simulate a successful real write. Own Event/RegistrationReview presentation and scoped assets, not My Events. Use impeccable for implementation, critique and polish against DESIGN screens 8–10."
-verify = "An Officer navigates Events to a dossier with metadata, capacity and status-aware roster/actions, uses ready real review/cancel actions, and can inspect completion/open-paused prototype states with a clear fixture notice. Required reason, validation and blocked-action states remain usable on desktop and phone width."
+description = "Complete the officer path from the event list to an event dossier with metadata, capacity and a status-aware registration roster that uses the ready real review, promotion and cancellation services. Replace the Event ID filter workflow with contextual navigation from the event list into the dossier. Add the Complete event and Open/Close check-in controls with their dialogs; they call the open/close check-in and complete event commands, which run on demo data (M-04, M-09, provided by 1.14) until 3.12 and 4.2 exist, and the dossier shows the resulting state for the session. Own Event/RegistrationReview presentation and scoped assets, not My Events. DESIGN screens 8–10. The open/close check-in control is the shared partial from 1.14."
+verify = "An Officer goes from Events to a dossier, sees metadata, capacity and the roster with status-aware actions, approves, declines and cancels through the real services, opens and closes check-in and completes a started event, and sees each new state on the dossier with no sign that any of it is demo data. Required-reason, validation and blocked-action states work on desktop and phone width. Completing a cancelled event or an event before its start time is refused."
 covers = ["R1", "R2", "R3", "R4", "R5", "R8", "R9", "R14", "R15"]
-after = ["1.13"]
+after = ["1.13", "1.14"]
 hitl = false
 risk = "medium"
 phase = "frontend"
 area = "frontend"
-queue = 70
-references = ["docs/DESIGN.md", "_bmad-output/initiative-attendta/delivery-queue.md"]
-notes = ["Frontend only: load impeccable for implementation, critique rendered results and polish before review.", "Development checks: build/CSS and one primary/blocked/manual interaction; no new exhaustive lifecycle test suite. Missing completion/toggle behavior remains accountable to 3.12/4.2."]
-
+queue = 20
+references = ["docs/DESIGN.md", "_bmad-output/initiative-attendta/delivery-queue.md", "_bmad-output/initiative-attendta/demo-mock-register.md"]
+notes = ["Demo phase (2026-11-06 demo rescope): frontend only. Use the real backend where a service method exists and demo data per `demo-mock-register.md` (uses rows M-04, M-09 from 1.14; adds no rows) where it does not; nothing on screen may show that data is demo data.", "Done check: `dotnet build`, `npm run css:build` when views or styles change, and one look at the changed screen with `DemoData__Enabled=true`. No new automated tests, no per-ticket Impeccable critique or polish and no separate code-review pass; the pull request keeps green existing CI and one peer approval. Critique, polish and the full Verify line run once in 8.15."]
 [[entry]]
 id = 17
 type = "story"
 title = "Frontend My Events history host and extension slots"
-description = "Build the member My Events/Participation History shell with registration, attendance and certificate tabs, accurate status presentation and separate pager state. Use 1.13's contracts and existing queries when available; otherwise use its explicit Development-only fixtures. Establish one MyEventsController/card host and named _PassPartial, attendance and _CertificateLinkPartial slots with empty handoff partials; 4.10/4.12/6.13 own their partials and data contracts without rewriting this host. 3.13 owns the real registrations query. Use impeccable for implementation, critique and polish."
-verify = "A Member can navigate registrations/history, switch the three tabs and inspect populated/empty/cutoff scenarios without dead ends. The host slot map lets pass, attendance and certificate UI build independently; mock-backed content is conspicuous and does not claim real attendance or issuance."
+description = "Build the member My Events / Participation History host with Registrations, Attendance and Certificates tabs, accurate status presentation (reuse RegistrationStatusDisplay and ManilaTimeFormatter) and separate pager state per tab, linked from the member navigation. Until 3.13 the registrations list is demo data (M-02) composed from existing reads where they exist, so the member's real registrations appear. Fill the My Events host and its Registrations tab that 1.13 created; keep its three slot partials (_PassPartial, the attendance-history partial and _CertificateLinkPartial) in place without editing them, because 4.10, 4.12 and 6.13 fill them in parallel. Follow docs/DESIGN.md."
+verify = "A Member opens My Events from the navigation, sees their registrations including one just made on the real event page, switches the three tabs and pages each independently, and sees populated, empty and Not confirmed before cutoff states without dead ends; nothing on screen says the data is demo data."
 covers = ["R12", "R15"]
-after = ["1.13"]
+after = ["1.13", "1.14"]
 hitl = false
 risk = "medium"
 phase = "frontend"
 area = "frontend"
 queue = 30
-references = ["docs/DESIGN.md", "_bmad-output/initiative-attendta/delivery-queue.md"]
-notes = ["Frontend only: impeccable implementation, rendered critique and polish; build/CSS plus tab/pager/keyboard smoke only. Functional completion and ownership checks belong to 3.13 and finale tests."]
-
+references = ["docs/DESIGN.md", "_bmad-output/initiative-attendta/delivery-queue.md", "_bmad-output/initiative-attendta/demo-mock-register.md"]
+notes = ["Demo phase (2026-11-06 demo rescope): frontend only. Use the real backend where a service method exists and demo data per `demo-mock-register.md` (row M-02) where it does not; nothing on screen may show that data is demo data. Add or fill this ticket's register rows in the same pull request.", "Done check: `dotnet build`, `npm run css:build` when views or styles change, and one look at the changed screen with `DemoData__Enabled=true`. No new automated tests, no per-ticket Impeccable critique or polish and no separate code-review pass; the pull request keeps green existing CI and one peer approval. Critique, polish and the full Verify line run once in 8.15."]
 [[entry]]
 id = 18
 type = "story"
 title = "Frontend member event feed and detail visual alignment"
-description = "Align the existing real member feed/detail screens to DESIGN screens 11–12: cover hierarchy, metadata, registration-status panel, truthful capacity/deadline messages and cancellation dialog. Preserve the ready registration/cancellation services and RegistrationStatusDisplay shipped by #133; no backend rule rewrite. Own only MemberEvents presentation and scoped assets, not the My Events host. Use impeccable for implementation, critique and polish."
+description = "Align the existing real member feed/detail screens to DESIGN screens 11–12: cover hierarchy, metadata, registration-status panel, truthful capacity/deadline messages and cancellation dialog. Preserve the ready registration/cancellation services and RegistrationStatusDisplay shipped by #133; no backend rule rewrite. Own only MemberEvents presentation and scoped assets, not the My Events host."
 verify = "A Member browses events, opens a readable responsive detail page and sees consistent Pending/Confirmed/Waitlisted/Cancelled/cutoff states, with working existing registration/cancellation behavior and no unrelated mock replacing a ready real source."
 covers = ["R6", "R7", "R10", "R11", "R15"]
 after = ["1.13", 10]
@@ -216,6 +217,6 @@ hitl = false
 risk = "low"
 phase = "frontend"
 area = "frontend"
-queue = 80
-references = ["docs/DESIGN.md", "_bmad-output/initiative-attendta/delivery-queue.md"]
-notes = ["Frontend only: use impeccable for implementation and critique, then polish. Build/CSS and a short real-flow smoke; reuse existing boundary tests rather than rewriting them."]
+queue = 120
+references = ["docs/DESIGN.md", "_bmad-output/initiative-attendta/delivery-queue.md", "_bmad-output/initiative-attendta/demo-mock-register.md"]
+notes = ["Demo phase (2026-11-06 demo rescope): frontend only, real backend only; this ticket adds no demo data.", "Done check: `dotnet build`, `npm run css:build` when views or styles change, and one look at the changed screen with `DemoData__Enabled=true`. No new automated tests, no per-ticket Impeccable critique or polish and no separate code-review pass; the pull request keeps green existing CI and one peer approval. Critique, polish and the full Verify line run once in 8.15."]

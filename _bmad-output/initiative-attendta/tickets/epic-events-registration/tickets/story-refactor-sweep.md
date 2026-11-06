@@ -29,7 +29,7 @@ Verify: The solution builds with zero warnings, the focused affected regression 
 
 ## Delivery (2026-11-06)
 
-- Finale backend-only sweep: it closes concrete deferred event/registration controller, service and contract findings and keeps the shipped cancellation, seat-allocation and cutoff implementations. No feature rewrite, no repeated frontend audit and no Impeccable requirement.
+- Finale backend-only sweep: it closes concrete deferred event/registration controller, service and contract findings and keeps the shipped cancellation, seat-allocation and cutoff implementations. No feature rewrite and no repeated frontend audit; critique and polish belong to 8.12.
 - Frontend is already delivered by 3.16–3.18; the single UI walkthrough is 8.12 and backend hardening is 8.13.
 - Development check: build with zero warnings plus the focused affected regression; existing CI unchanged. Full-suite execution is recorded once by 8.4 (#77), broad automation is 8.5 (#78), final manual acceptance is 8.6–8.8.
 - Final rules unchanged: no agreed backend finding may stay unresolved and no existing guard test is removed.

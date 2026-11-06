@@ -20,11 +20,19 @@ Turns completed, attended Events into certificates: completion creates Certifica
 
 For Members and Officers, certificate eligibility rests on recorded attendance and approval, shown by UJ-4 ending with a downloaded PDF.
 
+## Delivery (2026-11-06, demo rescope)
+
+- Demo-critical frontend slices 6.12 (queue 50) and 6.13 (queue 90) build the officer certificate ledger and member certificate history against the real template, renderer and signatory, using demo data per `demo-mock-register.md` for missing review, issuance and download contracts (6.12 adds M-10a, M-10b, M-11a and M-11b; 6.13 adds M-12). Neither screen displays any indication that data is demo data.
+- Integration tickets 6.4 (M-10a), 6.6 (M-10b), 6.7 (M-11a), 6.8 (M-11b) and 6.9 (M-12) replace each mock with real backend implementation with no visible change on screen; 6.5 replaces the 1.14 store's invalidation-to-review rule before issuance.
+- Development checks are a clean build, CSS build when views or styles change, and one look with `DemoData__Enabled=true`; no new automated tests, no per-ticket Impeccable critique or polish and no separate code-review pass. Critique and polish run once in 8.15 and once in 8.12. This replaces the earlier mock and per-ticket Impeccable bullets below.
+
 ## Delivery (2026-11-06)
 
+The bullets below stand where the demo rescope above does not replace them.
+
 - 6.12 is the certificate ledger decision dialogs and document viewer after 1.13, 6.2 and 6.3; 6.13 is the member certificate history and download-link states after 3.17. They are parent-owned frontend slices recorded here as the epic's UI order. Reason: the tracer, template and signatory already exist, so the ledger and member history can be built and reviewed before the review/issuance backend lands.
-- The real 6.1–6.3 tracer, template and signatory configuration are reused. The review, issuance and download contracts (6.4–6.9) are not built yet, so the slices use Development-only mocks of those contracts: conspicuous, no real writes, no silent fallback, same contract as the real service, tracked removal in `delivery-queue.md`. The later backend entries wire into them: 6.6 and 6.8 follow 6.12, and 6.9 follows 6.13. The finale removes the mocks (8.11).
-- The slices are UI-facing and use impeccable for implementation, rendered critique and polish per `AGENTS.md`.
+- [Replaced by demo rescope] The real 6.1–6.3 tracer, template and signatory configuration are reused. The review, issuance and download contracts (6.4–6.9) are served by demo data per `demo-mock-register.md` without visible indicators, tracked for removal by 6.4–6.9.
+- [Replaced by demo rescope] Critique and polish run once in 8.15 and once in 8.12.
 - Development checks are a clean build, a reproducible CSS build when views/styles change, and a manual smoke of the changed surface. Keep a focused guard for live issuance. Finale 8.5 (#78) authors/maps important cases including the SM-4 certificate race before 8.4 (#77) executes the combined suite; 8.6–8.8 record acceptance.
 - 6.11 remains a focused backend cleanup at the finale; it is not a repeated whole-app or UI audit. Frontend review belongs to 8.12; backend hardening to 8.13.
 - Dependency note: 6.12 waits on 1.13/6.2/6.3 and 6.13 on 3.17; these are contract-level waits, not whole-backend epic gates. The epic-level waits in Notes gate backend completion only.
@@ -94,3 +102,5 @@ For Members and Officers, certificate eligibility rests on recorded attendance a
 - Decision: 2026-11-06 — development checks are minimal (build, reproducible CSS, manual smoke); issuance keeps a focused guard because it is a live high-risk mutation. Finale 8.5 (#78) authors/maps important cases including the SM-4 certificate race before 8.4 (#77) executes the combined suite, then 8.6–8.8 acceptance.
 - Decision: 2026-11-06 — 6.11 stays a focused backend cleanup at the finale, not a repeated whole-app/UI audit. Frontend review is 8.12; backend hardening is 8.13.
 - Note: 2026-11-06 — no container status change and no implementation starts from this planning edit.
+- Decision: 2026-11-06 — demo rescope: 6.12 (queue 50) and 6.13 (queue 90) are demo-critical frontend slices using demo data (M-10, M-11, M-12) with no visible signs on screen; integration tickets 6.4–6.9 replace each mock with real backend implementation and remove their register rows. Done checks are build, CSS build, and screen check with demo data on; Impeccable critique and polish run once in 8.15 and 8.12.
+- Decision: 2026-11-06 — review of the demo rescope: Split M-10 and M-11 into lettered rows with single removers, add 1.14 demo-seam dependency, and clarify that 6.5 replaces the 1.14 store invalidation rule.

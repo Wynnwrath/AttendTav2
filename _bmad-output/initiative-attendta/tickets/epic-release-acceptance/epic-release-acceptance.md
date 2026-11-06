@@ -14,19 +14,29 @@ risk: medium
 
 ## Description
 
-Delivers the initiative's Done when on the integrated build: the full SPEC §20 acceptance run, the owners' concurrency tests together, the demo host with trusted HTTPS for phone scanning over the hotspot, persistent storage with backup and restore, and the Tier 3 release from dev to main. The finale phase now also removes every Development-only mock, runs the final frontend walkthrough/refactor/polish and backend hardening, and records real demo-host evidence. #74 delivered host tooling only; 8.14 is the follow-up that records actual host acceptance.
+Delivers the initiative's Done when on the integrated build: the full SPEC §20 acceptance run, the owners' concurrency tests together, the demo host with trusted HTTPS for phone scanning over the hotspot, persistent storage with backup and restore, and the Tier 3 release from dev to main. The finale phase now also removes all demo data and mocks, runs the final frontend walkthrough/refactor/polish and backend hardening, and records real demo-host evidence. #74 delivered host tooling only; 8.14 is the follow-up that records actual host acceptance.
 
 ## Outcome
 
 For the client and approver, the MVP is shown to meet every acceptance item, signalled by SM-1 and SM-2 at 100%.
 
+## Delivery (2026-11-06, demo rescope)
+
+- 8.15 (was 1.12, issue #135) is the demo rehearsal that closes the demo phase: a person walks the demo script on demo data in every role, runs the one Impeccable critique and polish pass of the demo phase, checks each demo-phase ticket's full Verify line once, and writes `demo-script.md`. It sits in this epic because it waits on 1.13, 1.14 and demo screens from epics 3, 4, 5, 6 and 7.
+- The finale phase removes every piece of demo data added during the demo phase, proves complete real integrations against one coherent database, polishes the integrated application, and executes acceptance.
+- 8.13 deletes the demo seam (register row M-01) once every other register row is removed; 8.11 is the verify-only gate that confirms every row in `demo-mock-register.md` (M-01 to M-15b) is `removed` with its commit, proves the demo seam is gone with checks that fail if any part remains, and proves all real integrations end to end. 2.11 joins the finale before 8.12 to accept the three centered record editors against `docs/DESIGN.md`.
+- 8.12 runs the single whole-app frontend walkthrough, refactor and Impeccable polish pass against `docs/DESIGN.md` and the 8.15 demo rehearsal findings; individual demo-phase and integration tickets do not run per-ticket critique or polish.
+- 8.10 pre-acceptance cleanup removes enabled throwaway harnesses and confirms no demo data configuration remains in deployment settings before the 8.5/8.4 test execution and 8.6–8.8 acceptance run. This replaces the earlier mock and demo data removal bullets below.
+
 ## Delivery (2026-11-06)
 
-- 8.14 is the early real-host evidence follow-up after 8.1 for closed #74; it is not a substitute for actual hotspot/HTTPS acceptance. The finale implementation sequence is 8.13 backend hardening (no Impeccable) → 8.11 remove prototype data/prove real integrations → 8.12 final frontend walkthrough, targeted refactor and Impeccable polish → 8.10 cleanup → 8.5 important-case authoring/mapping (#78) → 8.4 combined suite execution (#77) → 8.6 manual acceptance → 8.7 demo → 8.8 signoff → 8.9 release last. These are parent-owned entries. Reason: frontend-first slices leave mocks and deferred backend work that must be closed, reviewed and proven before acceptance and release.
-- 8.11 is a hard gate: no Development-only mock, fixture fallback or mock route may remain reachable before the acceptance run. Every mocked contract is served by its real backend. It follows 8.13, 2.10 and 2.11; 8.12 follows 8.11.
+The bullets below stand where the demo rescope above does not replace them.
+
+- 8.14 is the early real-host evidence follow-up after 8.1 for closed #74; it is not a substitute for actual hotspot/HTTPS acceptance. The finale implementation sequence is 8.13 backend hardening (no Impeccable) → 8.11 remove demo data/prove real integrations → 8.12 final frontend walkthrough, targeted refactor and Impeccable polish → 8.10 cleanup → 8.5 important-case authoring/mapping (#78) → 8.4 combined suite execution (#77) → 8.6 manual acceptance → 8.7 demo → 8.8 signoff → 8.9 release last. These are parent-owned entries. Reason: frontend-first slices leave demo data and deferred backend work that must be closed, reviewed and proven before acceptance and release.
+- [Replaced by demo rescope] 8.11 is a hard gate: no demo data, mock, fixture fallback or mock route may remain reachable before the acceptance run. Every mocked contract is served by its real backend. It follows 8.13, 2.10 and 2.11; 8.12 follows 8.11.
 - 8.14 follows 8.1 as an early, separate real-host evidence follow-up. 8.2 and 8.3 retain their declared host-operation dependencies. 8.10 cleanup follows 8.11/8.12/8.13 and runs before 8.5 case authoring, 8.4 suite execution and 8.6–8.8 acceptance; 8.9 release is last. This overrides the earlier 8.10-after-8.9 ordering.
 - 8.5 (#78, “Important automated acceptance cases and SPEC coverage mapping”) authors/maps the important automated cases first and maps the remainder to concrete manual verification; it does not automate every minor screen. 8.4 (#77) then runs the combined suite on SQL Server. Full SPEC §20 scenario acceptance remains required in 8.6–8.8; the existing CI workflow is unchanged.
-- 8.12 is the only whole-app frontend walkthrough; it uses impeccable for implementation of any UI fix, rendered critique and polish. 8.13 is backend hardening and does not use impeccable. The feature-epic sweeps 3.14, 4.9, 5.10 and 6.11 remain focused backend cleanup, not repeated UI audits.
+- 8.12 is the only whole-app frontend walkthrough; it uses Impeccable for implementation of any UI fix, rendered critique and polish. 8.13 is backend hardening and does not use Impeccable. The feature-epic sweeps 3.14, 4.9, 5.10 and 6.11 remain focused backend cleanup, not repeated UI audits.
 - Q2 remains unresolved as a real host and HTTPS acceptance item. #74 is closed as tooling delivered, not as demo-host acceptance; 8.14 records the actual host, certificate and phone-scan evidence and files fixes.
 - Dependency note: 8.11 waits on 8.13/2.10/2.11, 8.12 on 8.11, 8.10 on 8.11/8.12/8.13, 8.5 on 8.10 plus the focused backend sweeps and 7.3, 8.4 on 8.5, and 8.14 on 8.1. These declared dependencies produce the sequence above; 8.14 is an early host-evidence branch, not a late gate.
 
@@ -54,7 +64,7 @@ For the client and approver, the MVP is shown to meet every acceptance item, sig
 - The seat, attendance and certificate concurrency tests pass together (SM-4).
 - A phone in Chrome scans a QR Pass over the hotspot under trusted HTTPS, and SQL, stored files and the Data Protection keys (SetupRoot/keys) survive restart, redeploy and a restore to a disposable location (AD-12, AD-16, NFR-4, NFR-6, Q2).
 - Tier 3 manual E2E passes and dev is released to main (SM-3).
-- No Development-only mock, fixture fallback or mock route remains reachable; every contract is served by its real backend (8.11).
+- No demo data, mock, fixture fallback or mock route remains reachable; every contract is served by its real backend (8.11).
 - Real demo-host evidence is recorded for the host, trusted HTTPS and phone scan; tooling delivery alone does not satisfy it (8.14).
 
 ## Boundaries
@@ -86,3 +96,6 @@ For the client and approver, the MVP is shown to meet every acceptance item, sig
 - Decision: 2026-11-06 — 8.12 is the only whole-app frontend review and polish and uses impeccable; 8.13 is backend hardening and does not. The feature-epic sweeps 3.14, 4.9, 5.10 and 6.11 remain focused backend cleanup, not repeated UI audits.
 - Decision: 2026-11-06 — #74 is closed as tooling delivered, not as real demo-host acceptance. 8.14 records the actual host, trusted HTTPS and phone-scan evidence and files fixes; Q2 stays open until that evidence exists.
 - Note: 2026-11-06 — no container status change and no implementation starts from this planning edit.
+- Decision: 2026-11-06 — demo rescope: 2.11 joins the finale before 8.12; 8.11 proves the demo-mock-register empty and removes the demo store and switch; 8.12 covers the single integrated Impeccable pass incorporating 8.15 demo rehearsal findings; 8.10 removes leftover demo configuration before acceptance.
+- Decision: 2026-11-06 — demo rescope: 8.15 joins this epic from epic-platform-access (old 1.12) as the closing demo rehearsal, first in build order among the open entries; it waits on 1.13 and the demo-critical surfaces 3.16, 3.17, 4.10, 4.11, 4.12, 5.11, 6.12, 6.13 and 7.4.
+- Decision: 2026-11-06 — review of the demo rescope: 8.15 waits on 1.14 and checks each demo ticket's full Verify line, 8.13 deletes demo seam M-01 once all other rows are removed, 8.11 becomes verify-only with failing startup and search checks, and 8.10 confirms no demo configuration remains in deployment settings.

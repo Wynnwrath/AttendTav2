@@ -20,14 +20,22 @@ Gives Administrators control of Roles and Account access and gives Management th
 
 For Administrators, cutting off a departed officer is one attributable action, shown by UJ-5 on the dev build.
 
+## Delivery (2026-11-06, demo rescope)
+
+- **Demo-critical surface.** 5.11 (queue 100) is demo-critical: account and membership access dialogs on the real 5.3 preview and accounts list. It waits on 5.3, 1.13 and 1.14; 2.13 and 5.11 touch different partials (5.11 the 1.13 slot partial, 2.13 the Edit trigger and form). Missing backend commands are served by demo data per `demo-mock-register.md` (rows M-14a, M-14b, M-15a, M-15b) with no visible sign in the UI.
+- **Integration tickets.** 5.4 and 5.5 remove rows M-14a and M-14b with the real account deactivation/reactivation commands; 5.6 and 5.7 remove rows M-15a and M-15b with the real membership status commands and cancellation cascade.
+- **Replaced delivery rules.** This rescope replaces the Development-only/conspicuous mock bullet and the per-ticket Impeccable critique and polish bullet below. Per-ticket checks in the demo phase are `dotnet build`, `npm run css:build` when views or styles change, and one look at the changed screen with `DemoData__Enabled=true`. No new automated tests, no per-ticket Impeccable critique or polish, and no separate code review; critique and polish run once in 8.15 and in 8.12.
+
 ## Delivery (2026-11-06)
 
-- 5.11 is the frontend account and membership access dialogs: the role, account deactivation/reactivation and membership status dialogs built on the real 5.1 accounts list and the real 5.3 preview. It waits on 5.3, 1.13 and 2.13, not on the deactivation commands. It is a parent-owned frontend slice recorded here as the epic's UI order. Reason: the accounts list and preview already exist, so the decision dialogs can be built and reviewed before the deactivation commands land.
-- The deactivation/reactivation commands (5.4–5.7) are not built yet, so 5.11 uses a Development-only mock of those contracts: conspicuous, no real writes, no silent fallback, same contract as the real service, tracked removal in `delivery-queue.md`. The finale removes the mock (8.11).
-- 5.11 is UI-facing and uses impeccable for implementation, rendered critique and polish per `AGENTS.md`.
+The bullets below stand where the demo rescope above does not replace them. It replaces the Development-only/conspicuous mock bullet and the per-ticket Impeccable critique and polish bullet.
+
+- 5.11 is the frontend account and membership access dialogs: the role, account deactivation/reactivation and membership status dialogs built on the real 5.1 accounts list and the real 5.3 preview. It waits on 5.3, 1.13 and 1.14, not on 2.13 or the deactivation commands: it fills the access-action slot partials 1.13 placed in the Accounts and Members list rows, separate from the 2.13 edit dialog. It is a parent-owned frontend slice recorded here as the epic's UI order. Reason: the accounts list and preview already exist, so the decision dialogs can be built and reviewed before the deactivation commands land.
+- (Replaced by demo rescope above) Demo data per demo-mock-register.md (rows M-14, M-15) serves 5.11 without visible sign on screen until 5.4–5.7 remove it.
+- (Replaced by demo rescope above) Per-ticket design critique and polish are replaced by 8.15 and 8.12.
 - Development checks are a clean build, a reproducible CSS build when views/styles change, and a manual smoke of the changed surface. Keep focused guards for the live last-administrator and deactivation-cascade mutations. Finale 8.5 (#78) authors/maps important cases before 8.4 (#77) runs the combined suite, followed by 8.6–8.8 acceptance.
 - 5.10 remains a focused backend cleanup at the finale; it is not a repeated whole-app or UI audit. Frontend review belongs to 8.12; backend hardening to 8.13.
-- Dependency note: 5.11 waits on 5.3, 1.13 and 2.13; these are contract-level waits, not whole-backend epic gates. The epic-level waits in Notes gate backend completion only.
+- Dependency note: 5.11 waits on 5.3 and 1.13; these are contract-level waits, not whole-backend epic gates. The epic-level waits in Notes gate backend completion only.
 
 ## Requirements
 
@@ -88,3 +96,5 @@ For Administrators, cutting off a departed officer is one attributable action, s
 - Decision: 2026-11-06 — development checks are minimal (build, reproducible CSS, manual smoke); the last-administrator guard and deactivation cascade keep focused regressions. Finale 8.5 (#78) authors/maps important cases before 8.4 (#77) executes the combined suite, then 8.6–8.8 acceptance.
 - Decision: 2026-11-06 — 5.10 stays a focused backend cleanup at the finale, not a repeated whole-app/UI audit. Frontend review is 8.12; backend hardening is 8.13.
 - Note: 2026-11-06 — no container status change and no implementation starts from this planning edit.
+- Decision: 2026-11-06 — demo rescope: 5.11 is demo-critical (queue 100) on demo data M-14 and M-15 and no longer waits on 2.13 (its membership actions live in the Members list rows, separate from the 2.13 edit dialog); 5.4–5.7 integrate the real commands and remove M-14 and M-15.
+- Decision: 2026-11-06 — review of the demo rescope: Split M-14 into M-14a/b and M-15 into M-15a/b with sole removers, add 1.14 dependency to 5.11, and clarify that 2.13 and 5.11 touch different partials in the Members list.

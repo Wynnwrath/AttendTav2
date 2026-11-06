@@ -1,4 +1,6 @@
-# AttendTa — frontend-first dependency graphs
+# AttendTa — frontend-first dependency graphs (superseded)
+
+> **Superseded 2026-11-06** by [dependency-graphs-demo-first.md](dependency-graphs-demo-first.md), which reflects the demo rescope in [delivery-queue.md](delivery-queue.md): 1.12 became the closing demo rehearsal 8.15, 1.13 starts first and owns the shared demo store, 5.11 and 2.13 no longer depend on each other, 2.10 waits on 2.12–2.14, 6.6 waits on 6.5, and 2.11 moved to the finale. Kept for history only; do not dispatch from it.
 
 Snapshot: **6 November 2026**, planning baseline `45d1c20` and wave guide `e33c5dd`.
 This is a separate, current companion to [dependency-graphs.md](dependency-graphs.md).
