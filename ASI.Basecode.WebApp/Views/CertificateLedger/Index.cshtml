@@ -49,7 +49,6 @@ else if (Model.Rows.Count > 0)
             <tr>
                 <th scope="col">Member</th>
                 <th scope="col">Student number</th>
-                <th scope="col">Event</th>
                 <th scope="col">Attended</th>
                 <th scope="col">Eligibility</th>
                 <th scope="col">Certificate</th>
@@ -62,7 +61,6 @@ else if (Model.Rows.Count > 0)
                 <tr data-registration-id="@row.RegistrationId">
                     <td data-label="Member">@row.MemberName</td>
                     <td data-label="Student number" class="numeric cell-identifier">@row.StudentNumber</td>
-                    <td data-label="Event">@row.EventTitle</td>
                     <td data-label="Attended" class="numeric cell-date">@(row.AttendedAt is null ? "Not recorded" : ManilaTimeFormatter.Format(row.AttendedAt.Value))</td>
                     <td data-label="Eligibility">
                         <span class="badge @row.StatusBadgeClass">@row.StatusLabel</span>
