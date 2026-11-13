@@ -3,14 +3,21 @@
   /* The scroll region is the containing block for the absolutely positioned visually-hidden
      spans inside it, so their off-screen boxes stay inside this scroller instead of widening
      the document. */
-  .ledger-table { margin-top: 1rem; position: relative; }
+  .ledger-table { margin-top: 1rem; position: relative; --table-chrome: 420px; }
   .ledger-table .data-table { min-width: 960px; }
-  .ledger-table .data-table th:nth-child(3), .ledger-table .data-table td:nth-child(3) { position: static; box-shadow: none; }
   .ledger-table .data-table th:first-child, .ledger-table .data-table td:first-child { min-width: 11rem; }
   .ledger-table .data-table td:nth-child(2) { max-width: 12rem; overflow-wrap: anywhere; }
   .ledger-actions-heading { text-align: right; }
   .ledger-table .row-actions { align-items: center; flex-wrap: nowrap; }
-  .ledger-reason { margin: .4rem 0 0; max-width: 20rem; min-width: 12rem; font-size: .85rem; overflow-wrap: anywhere; color: var(--color-ink-muted); }
+  /* The base table pins cells to 48px with no vertical padding, which leaves a badge plus a
+     reason with a single pixel of slack. Padding lets a row carrying a reason grow to 69px
+     while badge-only rows stay at 48px. */
+  .ledger-table .data-table td { height: 48px; padding-top: 10px; padding-bottom: 10px; }
+  /* The eligibility reason is the only free text in the ledger. It takes the width the
+     removed Event column freed; max-width stops a very long reason from claiming the
+     column's whole max-content width and squeezing the other five. The text is never
+     truncated, so a long decline reason makes its row taller rather than hiding anything. */
+  .ledger-reason { margin: 8px 0 0; max-width: 32rem; min-width: 0; font-size: 12.5px; overflow-wrap: anywhere; color: var(--color-ink-muted); }
   .ledger-issued-at { margin: .4rem 0 0; font-size: .8rem; }
   .ledger-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
   .certificate-dialog { margin: auto; color: var(--color-ink); background: var(--color-surface); }
@@ -35,7 +42,6 @@
     .ledger-table .data-table td::before { content: attr(data-label); display: block; margin-bottom: .15rem; font-size: .75rem; font-weight: 600; color: var(--color-ink-muted); }
     .ledger-table .data-table td:first-child::before, .ledger-table .data-table td:last-child::before { display: none; }
     .ledger-table .row-actions { justify-content: flex-start; flex-wrap: wrap; }
-    .ledger-reason { min-width: 0; }
     .certificate-dialog { width: calc(100vw - 32px); }
     .certificate-dialog .dialog-actions { flex-wrap: wrap; }
     .certificate-viewer { padding: .4rem; }

@@ -747,9 +747,16 @@
   .filter-tab[aria-current="page"] .filter-tab-count { color: var(--color-cobalt); }
 
   /* --- Rosters ------------------------------------------------------------ */
+  /* Capped so the table becomes its own vertical scrollport: the page itself stops
+     scrolling and the pager stays on screen. overflow-x: auto already forces
+     overflow-y to compute as auto, so the max-height is what makes the sticky
+     header below actually engage. --table-chrome is the vertical space a page
+     spends on everything except the table; screens with an event selector and
+     filter tabs raise it. The floor keeps a usable box on short viewports. */
   .table-scroll {
     max-width: 100%;
-    overflow-x: auto;
+    max-height: max(320px, calc(100dvh - var(--table-chrome, 280px)));
+    overflow: auto;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-panel);
     background: var(--color-surface);
@@ -766,6 +773,17 @@
     letter-spacing: 0.07em;
     text-transform: uppercase;
     white-space: nowrap;
+  }
+  /* Column labels stay pinned while the capped .table-scroll scrolls, so a long
+     table never loses its context. border-collapse: collapse leaves the cell
+     border behind when a cell sticks, hence the inset shadow instead. The header
+     sits above the pinned body column (1-2) so a row header can never paint over
+     the labels. */
+  .data-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    box-shadow: inset 0 -1px 0 var(--color-border);
   }
   .data-table td {
     height: 48px;
@@ -957,6 +975,20 @@
     box-shadow: 1px 0 0 var(--color-border);
   }
   .table-sticky-first th:first-child { z-index: 2; background: var(--color-surface-subtle); }
+
+  /* Corner headers sit above both the pinned header row and the pinned column, and
+     keep the header's bottom rule that the sticky-column shadow would otherwise
+     replace. Scoped to thead so a body row header (scope="row") keeps the lower
+     z-index it needs and does not paint over the labels. */
+  .table-sticky thead th:first-child,
+  .table-sticky-first thead th:first-child {
+    z-index: 4;
+    box-shadow: inset 0 -1px 0 var(--color-border), 1px 0 0 var(--color-border);
+  }
+  .table-sticky thead th:last-child {
+    z-index: 4;
+    box-shadow: inset 0 -1px 0 var(--color-border), -1px 0 0 var(--color-border);
+  }
 
   /* The account-request sheet carries ten columns. Below the desktop width the pinned identity and
      actions edges would cover most of the viewport, so both edges release and the sheet scrolls as
