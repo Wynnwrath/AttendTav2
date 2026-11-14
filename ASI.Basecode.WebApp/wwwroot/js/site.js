@@ -129,7 +129,7 @@ $(function () {
             return;
         }
 
-        const submit = event.target.querySelector('button[type="submit"]');
+        const submit = event.submitter || event.target.querySelector('button[type="submit"]');
         if (!submit) return;
         const label = submit.dataset.submittingLabel;
         submit.disabled = true;

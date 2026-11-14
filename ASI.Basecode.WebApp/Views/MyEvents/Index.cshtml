@@ -1,5 +1,6 @@
 @model MyEventsViewModel
 @{
+    ViewData["ListControls"] = true;
     ViewData["Title"] = "Participation History";
     var tabs = new[]
     {
@@ -30,11 +31,20 @@
     </div>
 </div>
 
+@{
+    var historyFilters = Model.ActiveTab switch {
+        MyEventsTab.Attendance => new[] { new ListFilterOption("valid", "Valid attendance"), new ListFilterOption("invalidated", "Invalidated") },
+        MyEventsTab.Certificates => new[] { new ListFilterOption("Pending", "Pending"), new ListFilterOption("Eligible", "Eligible"), new ListFilterOption("Declined", "Declined"), new ListFilterOption("Issued", "Issued"), new ListFilterOption("Unavailable", "Unavailable") },
+        _ => new[] { new ListFilterOption("Pending", "Pending"), new ListFilterOption("Confirmed", "Confirmed"), new ListFilterOption("Waitlisted", "Waitlisted"), new ListFilterOption("Cancelled", "Cancelled") }
+    };
+}
+<partial name="_ListToolbar" model='@(new ListToolbarViewModel("Search event title", new[] { ListToolbarViewModel.Status(historyFilters) }))' />
+<p class="muted" data-list-status role="status" data-list-busy-label="Loading records…"></p>
 <div class="panel my-events-panel">
     <nav class="filter-tabs" aria-label="Participation history sections">
         @foreach (var tab in tabs)
         {
-            <a class="filter-tab" asp-action="@tab.Action" aria-current="@(Model.ActiveTab == tab.Tab ? "page" : null)">
+            <a class="filter-tab" href='@ListNavigation.Url(Context.Request, new Dictionary<string, string> { ["filter"] = null }, Url.Action(tab.Action))' aria-current="@(Model.ActiveTab == tab.Tab ? "page" : null)">
                 @tab.Label
             </a>
         }

@@ -68,7 +68,7 @@ public sealed class AccountRequestQueueTests : IClassFixture<SqlServerDatabaseFi
         var ids = await SeedRequestsAsync();
 
         var defaultPending = await adminClient.GetStringAsync("/AccountRequest", TestContext.Current.CancellationToken);
-        Assert.Contains("Page 1 of 2", defaultPending, StringComparison.Ordinal);
+        Assert.Contains("Page 1 of 6", defaultPending, StringComparison.Ordinal);
         Assert.Contains("Pending Queue Request", defaultPending, StringComparison.Ordinal);
         Assert.Contains("Reason for declining", defaultPending, StringComparison.Ordinal);
         Assert.Contains("/AccountRequest/Approve", defaultPending, StringComparison.Ordinal);
@@ -83,46 +83,46 @@ public sealed class AccountRequestQueueTests : IClassFixture<SqlServerDatabaseFi
             .Cast<Match>()
             .Select(match => int.Parse(match.Groups[1].Value))
             .ToArray();
-        Assert.Equal(25, pageIds.Length);
-        Assert.Equal(ids.Skip(1).Reverse(), pageIds);
+        Assert.Equal(5, pageIds.Length);
+        Assert.Equal(ids.AsEnumerable().Reverse().Take(5), pageIds);
         Assert.Contains($"data-request-id=\"{ids[^1]}\"", firstPage, StringComparison.Ordinal);
         Assert.DoesNotContain($"data-request-id=\"{ids[0]}\"", firstPage, StringComparison.Ordinal);
-        Assert.Contains("2026-11-05 20:30 Asia/Manila", firstPage, StringComparison.Ordinal);
+        Assert.Contains("2026-11-05 20:30", firstPage, StringComparison.Ordinal);
         Assert.DoesNotContain(PasswordHashMarker, firstPage, StringComparison.Ordinal);
         Assert.Contains("status=pending&amp;keep=alpha&amp;keep=beta&amp;page=2", firstPage, StringComparison.Ordinal);
         Assert.Contains("aria-label=\"Next page\"", firstPage, StringComparison.Ordinal);
-        Assert.Contains("Showing 1–25 of 26 requests.", firstPage, StringComparison.Ordinal);
+        Assert.Contains("Showing 1–5 of 26 matching requests", firstPage, StringComparison.Ordinal);
 
         var searched = await adminClient.GetStringAsync("/AccountRequest?status=pending&search=Queue%20Request%2001", TestContext.Current.CancellationToken);
         Assert.Contains("Pending Queue Request 01", searched, StringComparison.Ordinal);
         Assert.DoesNotContain("Pending Queue Request 02", searched, StringComparison.Ordinal);
-        Assert.Contains("Showing 1–1 of 1 request.", searched, StringComparison.Ordinal);
+        Assert.Contains("Showing 1–1 of 1 matching request", searched, StringComparison.Ordinal);
 
         var oldestFirst = await adminClient.GetStringAsync("/AccountRequest?status=pending&sort=oldest", TestContext.Current.CancellationToken);
         var oldestIds = Regex.Matches(oldestFirst, "data-request-id=\"(\\d+)\"")
             .Cast<Match>()
             .Select(match => int.Parse(match.Groups[1].Value))
             .ToArray();
-        Assert.Equal(ids.Take(25), oldestIds);
+        Assert.Equal(ids.Take(5), oldestIds);
 
         var lastPage = await adminClient.GetStringAsync("/AccountRequest?status=pending&page=999999999&keep=alpha&keep=beta", TestContext.Current.CancellationToken);
-        Assert.Contains("Page 2 of 2", lastPage, StringComparison.Ordinal);
+        Assert.Contains("Page 6 of 6", lastPage, StringComparison.Ordinal);
         Assert.Contains($"data-request-id=\"{ids[0]}\"", lastPage, StringComparison.Ordinal);
-        Assert.Contains("status=pending&amp;keep=alpha&amp;keep=beta&amp;page=1", lastPage, StringComparison.Ordinal);
+        Assert.Contains("status=pending&amp;keep=alpha&amp;keep=beta&amp;page=5", lastPage, StringComparison.Ordinal);
         Assert.DoesNotContain("aria-label=\"Next page\"", lastPage, StringComparison.Ordinal);
 
         foreach (var invalidPage in new[] { "not-a-number", "0", "-1", "2147483648" })
         {
             var invalid = await adminClient.GetStringAsync($"/AccountRequest?status=pending&page={invalidPage}", TestContext.Current.CancellationToken);
-            Assert.Contains("Page 1 of 2", invalid, StringComparison.Ordinal);
+            Assert.Contains("Page 1 of 6", invalid, StringComparison.Ordinal);
         }
 
         var rejected = await adminClient.GetStringAsync("/AccountRequest?status=rejected&keep=retained", TestContext.Current.CancellationToken);
         Assert.Contains("Rejected Queue Request", rejected, StringComparison.Ordinal);
         Assert.DoesNotContain("Pending Queue Request", rejected, StringComparison.Ordinal);
-        Assert.DoesNotContain("aria-label=\"Pagination\"", rejected, StringComparison.Ordinal);
+        Assert.Contains("Page 1 of 1", rejected, StringComparison.Ordinal);
         Assert.DoesNotContain(PasswordHashMarker, rejected, StringComparison.Ordinal);
-        Assert.DoesNotContain("data-dialog-open", rejected, StringComparison.Ordinal);
+        Assert.Contains("Show details", rejected, StringComparison.Ordinal);
 
         var empty = await adminClient.GetStringAsync("/AccountRequest?status=approved", TestContext.Current.CancellationToken);
         Assert.Contains("No approved account requests found.", empty, StringComparison.Ordinal);
@@ -138,7 +138,7 @@ public sealed class AccountRequestQueueTests : IClassFixture<SqlServerDatabaseFi
         Assert.Contains("Decline", all, StringComparison.Ordinal);
         Assert.Contains("reject-dialog", all, StringComparison.Ordinal);
 
-        var allLastPage = await adminClient.GetStringAsync("/AccountRequest?status=all&page=2", TestContext.Current.CancellationToken);
+        var allLastPage = await adminClient.GetStringAsync("/AccountRequest?status=all&page=6", TestContext.Current.CancellationToken);
         Assert.Contains("Rejected Queue Request", allLastPage, StringComparison.Ordinal);
 
         var token = Regex.Match(all, "name=\"__RequestVerificationToken\"[^>]*value=\"([^\"]+)\"", RegexOptions.IgnoreCase).Groups[1].Value;

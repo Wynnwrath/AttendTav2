@@ -8,6 +8,7 @@ public sealed class EventListItem
 {
     public int EventId { get; set; }
     public string Title { get; set; }
+    public string Description { get; set; }
     public string TypeName { get; set; }
     public string VenueName { get; set; }
     public DateTime StartsAt { get; set; }

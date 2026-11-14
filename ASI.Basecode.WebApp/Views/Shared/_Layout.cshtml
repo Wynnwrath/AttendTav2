@@ -41,6 +41,11 @@
     </div>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    @if (ViewData["ListControls"] is true)
+    {
+        <script src="~/js/features/list-controls.js" asp-append-version="true"></script>
+        <script src="~/js/features/list-feedback.js" asp-append-version="true"></script>
+    }
     @{
         var feature = ViewData["Feature"] as string;
     }

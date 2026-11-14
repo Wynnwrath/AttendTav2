@@ -378,30 +378,30 @@ public class EventLifecycleServiceTests
 
         var first = await harness.Service.GetPageAsync(1, TestContext.Current.CancellationToken);
         Assert.Equal(26, first.TotalCount);
-        Assert.Equal(2, first.TotalPages);
+        Assert.Equal(6, first.TotalPages);
         Assert.Equal(1, first.PageNumber);
-        Assert.Equal(25, first.Items.Count);
-        Assert.Equal(Enumerable.Range(1, 25).Select(index => $"Event {index:D2}"), first.Items.Select(item => item.Title));
+        Assert.Equal(5, first.Items.Count);
+        Assert.Equal(Enumerable.Range(1, 5).Select(index => $"Event {index:D2}"), first.Items.Select(item => item.Title));
         Assert.Equal("Workshop", first.Items[0].TypeName);
         Assert.Equal("Room A", first.Items[0].VenueName);
 
-        var second = await harness.Service.GetPageAsync(2, TestContext.Current.CancellationToken);
-        Assert.Equal(2, second.PageNumber);
+        var second = await harness.Service.GetPageAsync(6, TestContext.Current.CancellationToken);
+        Assert.Equal(6, second.PageNumber);
         Assert.Single(second.Items);
         Assert.Equal("Event 26", second.Items[0].Title);
 
         var pastEnd = await harness.Service.GetPageAsync(999, TestContext.Current.CancellationToken);
-        Assert.Equal(2, pastEnd.PageNumber);
+        Assert.Equal(6, pastEnd.PageNumber);
         Assert.Single(pastEnd.Items);
         Assert.Equal("Event 26", pastEnd.Items[0].Title);
 
         var zero = await harness.Service.GetPageAsync(0, TestContext.Current.CancellationToken);
         Assert.Equal(1, zero.PageNumber);
-        Assert.Equal(25, zero.Items.Count);
+        Assert.Equal(5, zero.Items.Count);
 
         var missing = await harness.Service.GetPageAsync(null, TestContext.Current.CancellationToken);
         Assert.Equal(1, missing.PageNumber);
-        Assert.Equal(25, missing.Items.Count);
+        Assert.Equal(5, missing.Items.Count);
     }
 
     [Fact]

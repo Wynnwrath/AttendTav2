@@ -25,6 +25,9 @@ namespace ASI.Basecode.WebApp
         {
             // Framework
             this._services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            this._services.AddScoped<ASI.Basecode.Data.Queries.ListReadOptions>(services =>
+                Models.ListReadOptionsFactory.From(services.GetRequiredService<IHttpContextAccessor>().HttpContext?.Request));
+            this._services.Configure<Microsoft.AspNetCore.Mvc.MvcOptions>(options => options.Filters.Add<Mvc.ListReturnFilter>());
 
             // Common
             this._services.AddScoped<IUnitOfWork, UnitOfWork>();

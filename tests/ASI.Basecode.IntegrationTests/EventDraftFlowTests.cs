@@ -92,8 +92,8 @@ public sealed class EventDraftFlowTests(SqlServerDatabaseFixture fixture) : ICla
 
         var list = await officerClient.GetStringAsync("/Event", ct);
         Assert.Contains($"data-event-id=\"{eventId}\"", list, StringComparison.Ordinal);
-        Assert.Contains("2026-12-10 09:00 Asia/Manila", list, StringComparison.Ordinal);
-        Assert.Contains("2026-12-09 17:30 Asia/Manila", list, StringComparison.Ordinal);
+        Assert.Contains("2026-12-10 09:00", list, StringComparison.Ordinal);
+        Assert.Contains("2026-12-09 17:30", list, StringComparison.Ordinal);
         Assert.Contains("Active Type", list, StringComparison.Ordinal);
         Assert.Contains("Active Room", list, StringComparison.Ordinal);
         Assert.Contains($"href=\"/Event/Edit?id={eventId}\"", list, StringComparison.Ordinal);
@@ -391,13 +391,13 @@ public sealed class EventDraftPagingFlowTests(SqlServerDatabaseFixture fixture) 
         await EventDraftTestSupport.SignInAsync(officerClient, officerEmail, password, ct);
 
         var firstPage = await officerClient.GetStringAsync("/Event", ct);
-        Assert.Contains("Page 1 of 2", firstPage, StringComparison.Ordinal);
+        Assert.Contains("Page 1 of 6", firstPage, StringComparison.Ordinal);
         Assert.Equal(pageOne, EventIds(firstPage));
         Assert.Contains("aria-label=\"Next page\"", firstPage, StringComparison.Ordinal);
         Assert.DoesNotContain("aria-label=\"Previous page\"", firstPage, StringComparison.Ordinal);
 
-        var lastPage = await officerClient.GetStringAsync("/Event?page=2", ct);
-        Assert.Contains("Page 2 of 2", lastPage, StringComparison.Ordinal);
+        var lastPage = await officerClient.GetStringAsync("/Event?page=6", ct);
+        Assert.Contains("Page 6 of 6", lastPage, StringComparison.Ordinal);
         Assert.Equal(pageTwo, EventIds(lastPage));
         Assert.Contains("aria-label=\"Previous page\"", lastPage, StringComparison.Ordinal);
         Assert.DoesNotContain("aria-label=\"Next page\"", lastPage, StringComparison.Ordinal);
@@ -699,7 +699,7 @@ internal static class EventDraftTestSupport
         await context.SaveChangesAsync(cancellationToken);
 
         var ordered = events.OrderBy(item => item.StartsAt).ThenBy(item => item.EventId).Select(item => item.EventId).ToArray();
-        return (ordered[..25], ordered[25..]);
+        return (ordered[..5], ordered[25..]);
     }
 
     public static FormUrlEncodedContent Form(Dictionary<string, string> values) => new(values);

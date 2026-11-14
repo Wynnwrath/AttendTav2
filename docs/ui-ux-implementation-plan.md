@@ -1,8 +1,20 @@
 # AttendTa UI/UX phased implementation plan
 
-Status: implementation in progress on `feature/ui-ux-consistency`. Each phase receives a separate commit.
-Date: 2026-11-14.
+Status: implementation in progress on `feature/ui-ux-consistency`. Commit and stop after each phase for review.
+Updated: 2026-11-15.
 Baseline last verified: local dev tracked upstream/dev at da1f048. Recheck Git state before implementation and preserve concurrent work.
+
+## Progress
+
+| Phase | Status | Commit |
+| --- | --- | --- |
+| 1. Shared layout and component foundations | Complete, including convention correction | `f3c8804`, `ba9bbbc` |
+| 2. Compact tables, search, filters and pagination | Implemented; committed for review with integration limitation below | Phase 2 commit (see Git log) |
+| 3. Draft events, publishing and cover management | Not started | — |
+| 4. Registration and certificate review, including bulk approval | Not started | — |
+| 5. Event detail hierarchy and reports | Not started | — |
+| 6. Login and remaining member journeys | Not started | — |
+| 7. Integrated critique, polish and verification | Not started | — |
 
 ## Agreed scope
 
@@ -147,6 +159,38 @@ tests passed, including Escape/discard, keeping edited text, baseline cleanup an
 failed dossier reason remaining protected. Shared/feature JS syntax checks passed; the detector
 reported no findings. Independent review confirmed the retry-reason correction. Phase 2 working
 changes were excluded from this validation and remain uncommitted.
+
+### Phase 2 delivery evidence — 2026-11-15
+
+Compact management tables share a typed search/filter toolbar, Show details dialog and one
+pagination footer. Identity and decision facts remain visible; secondary contact information,
+full reasons and exact timestamps move to details. Certificate Eligibility omits the redundant
+unissued-certificate column; Issued Registry keeps certificate information. Registration reasons
+appear only after choosing the relevant decision. Shared display timestamps retain Manila
+conversion without repeating the timezone suffix.
+
+Server-side queries filter before counting and paging. The default is five records; the shared
+feature script measures table rows or card rows to reduce the size for shorter windows and
+preserves query context across paging and native decisions. Narrow tables stack labelled fields
+with natural page scrolling. Participation History propagates the actual requested size into
+its footer; a regression test covers this contract.
+
+Validation: Release solution build passed with 0 warnings/0 errors; all 329 service tests and
+19 JavaScript tests passed; CSS regenerated; diff whitespace check passed; Impeccable detector
+reported no findings. Independent critique identified toolbar action/query handling and missing
+card Auto-fit support; both were corrected. Rendered Razor snapshots with synthetic records
+were inspected at 1366×768, 1024×600 and 390×844 for representative tables and dialogs. The
+checked tables had no horizontal overflow or internal vertical scroll region. Mobile certificate
+column-width drift found during polish was corrected.
+
+Integration limitation: the expanded affected suite reached 108/111 passing before the final
+corrections. Follow-up checks passed activity-log and member-attendance assertions; the remaining
+certificate browser test required adjustments to its TestServer redirect relay. Its final retry
+could not initialize SQL Server LocalDB (instance startup failure), so complete certificate
+issuance verification remains outstanding. Do not treat Phase 2 as a fully green integration
+run. The integrated responsive/long-content/accessibility pass remains Phase 7.
+
+Phase 3 has not started. Stop after this phase's commit for user review.
 
 Preserve the current visual identity and existing authorization, audit, date conversion, capacity and state rules. Add targeted backend support for agreed query/paging/approval capabilities. Do not introduce bulk declines, bulk issuance, a scheduled registration-opening feature, database resets or unrelated business-rule changes as part of UI refinement.
 

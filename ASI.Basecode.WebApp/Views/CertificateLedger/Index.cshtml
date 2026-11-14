@@ -1,9 +1,11 @@
 @model CertificateLedgerViewModel
 @using ASI.Basecode.Data.Models.Lookups
 @{
+    ViewData["ListControls"] = true;
     ViewData["Title"] = "Certificates";
     ViewData["Feature"] = "certificate-ledger";
     var tab = Model.ActiveTab == CertificateLedgerTab.Issued ? "issued" : "eligibility";
+    ViewData["ResultNoun"] = tab == "issued" ? "certificate" : "review";
 }
 
 <div class="page-heading">
@@ -14,7 +16,8 @@
 </div>
 
 <partial name="_EventSelector" model="Model.Selector" />
-
+<partial name="_ListToolbar" model='@(new ListToolbarViewModel("Search member, student number, or certificate", new ListFilterField[] { ListToolbarViewModel.Status(new ListFilterOption("PendingApproval", "Pending review"), new ListFilterOption("Eligible", "Eligible"), new ListFilterOption("NotEligible", "Declined"), new ListFilterOption("Issued", "Issued")) }))' />
+<p class="muted" data-list-status role="status" data-list-busy-label="Loading records…"></p>
 @if (ViewData["LedgerError"] is string error)
 {
     <div class="notice notice-error" role="alert">
@@ -24,11 +27,11 @@
 }
 
 <nav class="filter-tabs" aria-label="Certificate sections">
-    <a class="filter-tab" asp-action="Index" asp-route-tab="eligibility" asp-route-eventId="@Model.Selector.SelectedEventId" aria-current="@(Model.ActiveTab == CertificateLedgerTab.Eligibility ? "page" : null)">
+    <a class="filter-tab" href='@ListNavigation.Url(Context.Request, new Dictionary<string, string> { ["tab"] = "eligibility", ["filter"] = null })' aria-current="@(Model.ActiveTab == CertificateLedgerTab.Eligibility ? "page" : null)">
         Eligibility Review
         <span class="filter-tab-count numeric">@Model.EligibilityCount</span>
     </a>
-    <a class="filter-tab" asp-action="Index" asp-route-tab="issued" asp-route-eventId="@Model.Selector.SelectedEventId" aria-current="@(Model.ActiveTab == CertificateLedgerTab.Issued ? "page" : null)">
+    <a class="filter-tab" href='@ListNavigation.Url(Context.Request, new Dictionary<string, string> { ["tab"] = "issued", ["filter"] = null })' aria-current="@(Model.ActiveTab == CertificateLedgerTab.Issued ? "page" : null)">
         Issued Registry
         <span class="filter-tab-count numeric">@Model.IssuedCount</span>
     </a>
@@ -43,29 +46,28 @@
 }
 else if (Model.Rows.Count > 0)
 {
-<div class="table-scroll ledger-table" role="region" aria-label="Certificate ledger" tabindex="0">
+<div class="table-scroll ledger-table" role="region" aria-label="Certificate ledger" tabindex="0" data-list-region>
     <table class="data-table">
         <thead>
             <tr>
                 <th scope="col">Member</th>
-                <th scope="col">Student number</th>
-                <th scope="col">Attended</th>
-                <th scope="col">Eligibility</th>
-                <th scope="col">Certificate</th>
-                <th scope="col" class="ledger-actions-heading">Actions</th>
+                @if (tab == "eligibility") { <th scope="col">Attended</th><th scope="col">Eligibility</th> }
+                @if (tab == "issued") { <th scope="col">Certificate</th> }
+                <th scope="col" class="actions">Actions</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var row in Model.Rows)
             {
                 <tr data-registration-id="@row.RegistrationId">
-                    <td data-label="Member">@row.MemberName</td>
-                    <td data-label="Student number" class="numeric cell-identifier">@row.StudentNumber</td>
-                    <td data-label="Attended" class="numeric cell-date">@(row.AttendedAt is null ? "Not recorded" : ManilaTimeFormatter.Format(row.AttendedAt.Value))</td>
+                    <td data-label="Member">@row.MemberName<small class="cell-meta">@row.StudentNumber</small></td>
+                    @if (tab == "eligibility") {
+                    <td data-label="Attended" class="numeric cell-date">@(row.AttendedAt is null ? "Not recorded" : "Confirmed")</td>
                     <td data-label="Eligibility">
                         <span class="badge @row.StatusBadgeClass">@row.StatusLabel</span>
-                        @if (!string.IsNullOrWhiteSpace(row.Reason)) { <p class="ledger-reason">@row.Reason</p> }
                     </td>
+                    }
+                    @if (tab == "issued") {
                     <td data-label="Certificate">
                         @if (row.CertificateNumber is null)
                         {
@@ -77,8 +79,10 @@ else if (Model.Rows.Count > 0)
                         }
                         @if (row.IssuedAt is DateTime issuedAt) { <p class="muted ledger-issued-at">@ManilaTimeFormatter.Format(issuedAt)</p> }
                     </td>
+                    }
                     <td data-label="Actions" class="actions">
                         <div class="row-actions">
+<partial name="_DetailsButton" model='@(new RecordDetailsViewModel($"certificate-details-{row.RegistrationId}", row.MemberName, new Dictionary<string, string> { ["Student number"] = row.StudentNumber, ["Event"] = row.EventTitle, ["Attended"] = row.AttendedAt is null ? "Not recorded" : ManilaTimeFormatter.Format(row.AttendedAt.Value), ["Eligibility"] = row.StatusLabel, ["Reason"] = row.Reason, ["Certificate number"] = row.CertificateNumber, ["Issued"] = row.IssuedAt is null ? "Not issued" : ManilaTimeFormatter.Format(row.IssuedAt.Value) }, null))' />
                         @if (row.Status == CertificateStatusCode.PendingApproval)
                         {
                             <button type="button" class="button" data-certificate-open="approve-certificate" data-id="@row.RegistrationId" data-member="@row.MemberName" data-event="@row.EventTitle">Approve</button>
@@ -101,8 +105,10 @@ else if (Model.Rows.Count > 0)
     </table>
 </div>
 <partial name="_Pager" model="Model.Page" />
-<p class="result-count muted">Showing @Model.Page.FirstItemNumber–@Model.Page.LastItemNumber of @Model.Page.TotalCount</p>
+
 }
+
+<partial name="_ResultCount" model="Model.Page" />
 
 @foreach (var action in new[] { "approve", "decline", "issue" })
 {

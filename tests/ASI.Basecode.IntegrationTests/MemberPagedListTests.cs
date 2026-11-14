@@ -86,43 +86,43 @@ public sealed class MemberPagedListTests(SqlServerDatabaseFixture fixture) : ICl
         await SignInAsync(officerClient, officer.UserId, password, ct);
 
         var unfiltered = await officerClient.GetStringAsync("/Member", ct);
-        Assert.Equal(ids[..25], MemberIds(unfiltered));
-        Assert.Contains("<td class=\"numeric\">", unfiltered, StringComparison.Ordinal);
-        Assert.Contains("<td><span class=\"badge badge-", unfiltered, StringComparison.Ordinal);
+        Assert.Equal(ids[..5], MemberIds(unfiltered));
+        Assert.Contains("Show details", unfiltered, StringComparison.Ordinal);
+        Assert.Contains("data-label=\"Status\"", unfiltered, StringComparison.Ordinal);
 
         var inactiveOnly = await officerClient.GetStringAsync("/Member?status=inactive", ct);
         Assert.Equal(new[] { ids[25] }, MemberIds(inactiveOnly));
         var activeOnly = await officerClient.GetStringAsync("/Member?status=active", ct);
         Assert.DoesNotContain(ids[25], MemberIds(activeOnly));
-        Assert.Contains("Page 1 of 3", unfiltered, StringComparison.Ordinal);
+        Assert.Contains("Page 1 of 11", unfiltered, StringComparison.Ordinal);
         var nameSearch = $"{key}%20Member";
         var first = await officerClient.GetStringAsync($"/Member?search={nameSearch}", ct);
-        Assert.Equal(ids[..25], MemberIds(first));
-        Assert.Contains("Page 1 of 2", first, StringComparison.Ordinal);
+        Assert.Equal(ids[..5], MemberIds(first));
+        Assert.Contains("Page 1 of 6", first, StringComparison.Ordinal);
         Assert.Contains($"search={nameSearch}&amp;page=2", first, StringComparison.Ordinal);
         Assert.DoesNotContain("ToggleStatus", first, StringComparison.OrdinalIgnoreCase);
         Assert.Contains($"/Member/Edit/{ids[0]}", first, StringComparison.Ordinal);
 
-        var second = await officerClient.GetStringAsync($"/Member?search={nameSearch}&page=2", ct);
+        var second = await officerClient.GetStringAsync($"/Member?search={nameSearch}&page=6", ct);
         Assert.Equal(ids[25..], MemberIds(second));
-        Assert.Contains("Page 2 of 2", second, StringComparison.Ordinal);
-        Assert.Contains($"search={nameSearch}&amp;page=1", second, StringComparison.Ordinal);
+        Assert.Contains("Page 6 of 6", second, StringComparison.Ordinal);
+        Assert.Contains($"search={nameSearch}&amp;page=5", second, StringComparison.Ordinal);
         Assert.DoesNotContain("aria-label=\"Next page\"", second, StringComparison.Ordinal);
         Assert.Contains("inactive", second, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("ToggleStatus", second, StringComparison.OrdinalIgnoreCase);
 
         foreach (var page in new[] { "0", "-1", "not-a-number", "2147483648" })
-            Assert.Equal(ids[..25], MemberIds(await officerClient.GetStringAsync($"/Member?search={nameSearch}&page={page}", ct)));
+            Assert.Equal(ids[..5], MemberIds(await officerClient.GetStringAsync($"/Member?search={nameSearch}&page={page}", ct)));
         Assert.Equal(ids[25..], MemberIds(await officerClient.GetStringAsync($"/Member?search={nameSearch}&page=999999", ct)));
 
         var studentFirst = await officerClient.GetStringAsync($"/Member?search=STU{key}", ct);
-        Assert.Equal(ids[..25], MemberIds(studentFirst));
-        Assert.Contains("Page 1 of 2", studentFirst, StringComparison.Ordinal);
+        Assert.Equal(ids[..5], MemberIds(studentFirst));
+        Assert.Contains("Page 1 of 6", studentFirst, StringComparison.Ordinal);
         Assert.Contains($"search=STU{key}&amp;page=2", studentFirst, StringComparison.Ordinal);
-        var studentSearch = await officerClient.GetStringAsync($"/Member?search=STU{key}&page=2", ct);
+        var studentSearch = await officerClient.GetStringAsync($"/Member?search=STU{key}&page=6", ct);
         Assert.Equal(ids[25..], MemberIds(studentSearch));
-        Assert.Contains("Page 2 of 2", studentSearch, StringComparison.Ordinal);
-        Assert.Contains($"search=STU{key}&amp;page=1", studentSearch, StringComparison.Ordinal);
+        Assert.Contains("Page 6 of 6", studentSearch, StringComparison.Ordinal);
+        Assert.Contains($"search=STU{key}&amp;page=5", studentSearch, StringComparison.Ordinal);
         Assert.DoesNotContain("aria-label=\"Next page\"", studentSearch, StringComparison.Ordinal);
         var emailSearch = await officerClient.GetStringAsync($"/Member?search=page-{key}-1%40attendta.test", ct);
         Assert.Equal(new[] { ids[0] }, MemberIds(emailSearch));

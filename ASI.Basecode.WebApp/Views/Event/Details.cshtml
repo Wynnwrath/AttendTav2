@@ -4,6 +4,7 @@
 @using System.Linq
 @{
     var item = Model.Event;
+    ViewData["ListControls"] = true;
     ViewData["Title"] = item.Title;
     ViewData["Feature"] = "record-dialog";
     var mutable = item.EventStatusId is EventStatusCode.Draft or EventStatusCode.Published;
@@ -85,18 +86,20 @@
     @if (!mutable) { <p class="notice">This event is @item.StatusLabel.ToLowerInvariant(). Its roster is read-only.</p> }
     else if (Model.HasStarted) { <p class="notice">The event start cutoff has passed. Reviews and promotions are closed. Pending and waitlisted participants were not confirmed before cutoff.</p> }
     else if (!published) { <p class="notice">Publish this event to review registrations.</p> }
-    <nav class="filter-tabs" aria-label="Registration status">
+    <partial name="_ListToolbar" model='@(new ListToolbarViewModel("Search participant or student number"))' />
+<p class="muted" data-list-status role="status" data-list-busy-label="Loading records…"></p>
+<nav class="filter-tabs" aria-label="Registration status">
         @foreach (var tab in tabs)
         {
-            <a asp-action="Details" asp-route-id="@item.EventId" asp-route-status="@tab.Item1" class="filter-tab" aria-current="@(Model.Status == tab.Item1 ? "page" : null)">@tab.Item2 <span class="filter-tab-count">@tab.Item3</span></a>
+            <a href='@ListNavigation.Url(Context.Request, new Dictionary<string, string> { ["status"] = tab.Item1 })' class="filter-tab" aria-current="@(Model.Status == tab.Item1 ? "page" : null)">@tab.Item2 <span class="filter-tab-count">@tab.Item3</span></a>
         }
-        <a asp-action="Details" asp-route-id="@item.EventId" asp-route-status="cancelled" class="filter-tab" aria-current="@(Model.Status == "cancelled" ? "page" : null)">Cancelled / declined</a>
+        <a href='@ListNavigation.Url(Context.Request, new Dictionary<string, string> { ["status"] = "cancelled" })' class="filter-tab" aria-current="@(Model.Status == "cancelled" ? "page" : null)">Cancelled / declined</a>
     </nav>
-    <div class="table-scroll" role="region" aria-label="Registration roster" tabindex="0">
+    <div class="table-scroll" role="region" aria-label="Registration roster" tabindex="0" data-list-region>
         <table class="data-table dossier-roster table-sticky">
-            <thead><tr><th scope="col">Participant</th><th scope="col">Student number</th><th scope="col">Submitted</th><th scope="col">Status</th><th scope="col" class="actions">Actions</th></tr></thead>
+            <thead><tr><th scope="col">Participant</th><th scope="col">Status</th><th scope="col" class="actions">Actions</th></tr></thead>
             <tbody>
-                @if (Model.Roster.Items.Count == 0) { <tr><td colspan="5" class="empty-state">No @Model.Status registrations for this event.</td></tr> }
+                @if (Model.Roster.Items.Count == 0) { <tr><td colspan="3" class="empty-state">No @Model.Status registrations for this event.</td></tr> }
                 @foreach (var row in Model.Roster.Items)
                 {
                     var initials = string.Concat(row.MemberName
@@ -105,16 +108,15 @@
                         .Select(part => char.ToUpperInvariant(part[0])));
                     var cutoffLabel = Model.HasStarted && row.Status is RegistrationStatusCode.Pending or RegistrationStatusCode.Waitlisted;
                     <tr data-registration-id="@row.RegistrationId">
-                        <td class="cell-name">
+                        <td data-label="Participant" class="cell-name">
                             <span class="name-cell">
                                 <span class="name-initials" aria-hidden="true">@initials</span>
-                                <span class="name-text">@row.MemberName</span>
+                                <span class="name-text">@row.MemberName<small class="cell-meta">@row.StudentNumber</small></span>
                             </span>
                         </td>
-                        <td class="numeric cell-identifier">@row.StudentNumber</td>
-                        <td class="numeric cell-date">@ManilaTimeFormatter.Format(row.SubmittedAt)</td>
-                        <td><span class="badge @(cutoffLabel ? "badge-closed" : RegistrationStatusDisplay.BadgeClass(row.Status, false))">@(cutoffLabel ? "Not confirmed before cutoff" : row.Status.ToString())</span></td>
-                        <td class="actions"><div class="row-actions">
+                        <td data-label="Status"><span class="badge @(cutoffLabel ? "badge-closed" : RegistrationStatusDisplay.BadgeClass(row.Status, false))">@(cutoffLabel ? "Not confirmed before cutoff" : row.Status.ToString())</span></td>
+                        <td data-label="Actions" class="actions"><div class="row-actions">
+<partial name="_DetailsButton" model='@(new RecordDetailsViewModel($"registration-details-{row.RegistrationId}", row.MemberName, new Dictionary<string, string> { ["Student number"] = row.StudentNumber, ["Event"] = item.Title, ["Submitted"] = ManilaTimeFormatter.Format(row.SubmittedAt), ["Status"] = row.Status.ToString() }, null))' />
                             @if (Model.CanReview && row.Status == RegistrationStatusCode.Pending)
                             {
                                 <button type="button" class="button button-primary button-small" data-dialog-open="approve" data-dialog-value-id="@row.RegistrationId" data-dialog-value-summary="Review @row.MemberName (@row.StudentNumber) for approval?">Approve</button>

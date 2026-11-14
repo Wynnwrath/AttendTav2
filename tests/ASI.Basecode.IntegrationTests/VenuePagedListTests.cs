@@ -75,7 +75,7 @@ public sealed class VenuePagedListTests : IClassFixture<SqlServerDatabaseFixture
         var (pageOne, pageTwo) = await SeedVenuesAsync(ct);
 
         var firstPage = await officerClient.GetStringAsync("/Venue", ct);
-        Assert.Contains("Page 1 of 2", firstPage, StringComparison.Ordinal);
+        Assert.Contains("Page 1 of 6", firstPage, StringComparison.Ordinal);
         Assert.Equal(pageOne, VenueIds(firstPage));
         Assert.Contains("aria-label=\"Next page\"", firstPage, StringComparison.Ordinal);
         Assert.DoesNotContain("aria-label=\"Previous page\"", firstPage, StringComparison.Ordinal);
@@ -86,27 +86,27 @@ public sealed class VenuePagedListTests : IClassFixture<SqlServerDatabaseFixture
             // through the Venue Photo endpoint and the edit form. Assert the intended contract
             // so the omission is a decision, not a silent regression.
             Assert.DoesNotContain("venue-thumb", row, StringComparison.Ordinal);
-            Assert.DoesNotContain("/Venue/Photo?id=", row, StringComparison.Ordinal);
+            Assert.Contains("Show details", row, StringComparison.Ordinal);
             Assert.Contains($"action=\"/Venue/ToggleActive?id={venueId}\"", row, StringComparison.Ordinal);
         }
 
         Assert.DoesNotContain($"data-venue-id=\"{pageTwo[0]}\"", firstPage, StringComparison.Ordinal);
 
-        var lastPage = await officerClient.GetStringAsync("/Venue?page=2", ct);
-        Assert.Contains("Page 2 of 2", lastPage, StringComparison.Ordinal);
+        var lastPage = await officerClient.GetStringAsync("/Venue?page=6", ct);
+        Assert.Contains("Page 6 of 6", lastPage, StringComparison.Ordinal);
         Assert.Equal(pageTwo, VenueIds(lastPage));
         Assert.Contains("aria-label=\"Previous page\"", lastPage, StringComparison.Ordinal);
         Assert.DoesNotContain("aria-label=\"Next page\"", lastPage, StringComparison.Ordinal);
 
         var pastEnd = await officerClient.GetStringAsync("/Venue?page=999999999", ct);
-        Assert.Contains("Page 2 of 2", pastEnd, StringComparison.Ordinal);
+        Assert.Contains("Page 6 of 6", pastEnd, StringComparison.Ordinal);
         Assert.Equal(pageTwo, VenueIds(pastEnd));
         Assert.DoesNotContain("aria-label=\"Next page\"", pastEnd, StringComparison.Ordinal);
 
         foreach (var invalidPage in new[] { "0", "-1", "not-a-number", "2147483648" })
         {
             var invalid = await officerClient.GetStringAsync($"/Venue?page={invalidPage}", ct);
-            Assert.Contains("Page 1 of 2", invalid, StringComparison.Ordinal);
+            Assert.Contains("Page 1 of 6", invalid, StringComparison.Ordinal);
             Assert.Equal(pageOne, VenueIds(invalid));
         }
 
@@ -159,7 +159,7 @@ public sealed class VenuePagedListTests : IClassFixture<SqlServerDatabaseFixture
         await context.SaveChangesAsync(cancellationToken);
 
         var ordered = venues.OrderBy(venue => venue.RoomName, StringComparer.Ordinal).ThenBy(venue => venue.VenueId).Select(venue => venue.VenueId).ToArray();
-        return (ordered[..25], ordered[25..]);
+        return (ordered[..5], ordered[25..]);
     }
 
     private async Task<int> SeedUserAsync(string email, RoleCode role)

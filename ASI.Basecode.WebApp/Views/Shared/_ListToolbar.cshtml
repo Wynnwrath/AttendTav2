@@ -1,0 +1,37 @@
+@model ListToolbarViewModel
+@{
+    var query = Context.Request.Query;
+    var search = query["search"].ToString();
+    var fields = Model.Fields ?? Array.Empty<ListFilterField>();
+    var managed = new HashSet<string>(fields.Select(field => field.Name), StringComparer.OrdinalIgnoreCase) { "search", "page", "fit" };
+    var hasFilters = fields.Any(field => !string.IsNullOrWhiteSpace(query[field.Name])) || !string.IsNullOrWhiteSpace(query["status"]);
+    var clearFilters = fields.ToDictionary(field => field.Name, field => (string)null);
+    clearFilters["status"] = null;
+}
+<form method="get" action="@(ListNavigation.Url(Context.Request, new Dictionary<string, string>()).Split('?')[0])" class="list-toolbar" role="search" data-list-search data-applied-search="@search">
+    @foreach (var pair in query.Where(pair => !managed.Contains(pair.Key)))
+    {
+        foreach (var value in pair.Value) { <input type="hidden" name="@pair.Key" value="@value" /> }
+    }
+    <div class="search-group">
+        <input type="search" name="search" value="@search" class="field-control" aria-label="@Model.SearchLabel" placeholder="@Model.SearchLabel" />
+        <button type="submit" class="button button-secondary" data-search-submit hidden="@(!string.IsNullOrWhiteSpace(search))">Search</button>
+        <a href="@ListNavigation.Url(Context.Request, new Dictionary<string, string> { ["search"] = null })" class="button button-secondary" data-search-clear hidden="@(string.IsNullOrWhiteSpace(search))">Clear</a>
+    </div>
+    @foreach (var field in fields)
+    {
+        <div class="field">
+            <label for="list-@field.Name">@field.Label</label>
+            @if (field.Options != null)
+            {
+                <select id="list-@field.Name" name="@field.Name">
+                    @if (field.AllowEmpty) { <option value="">All</option> }
+                    @foreach (var option in field.Options) { <option value="@option.Value" selected="@(string.Equals(query[field.Name], option.Value, StringComparison.OrdinalIgnoreCase))">@option.Label</option> }
+                </select>
+            }
+            else { <input id="list-@field.Name" name="@field.Name" type="@field.Type" value="@query[field.Name]" /> }
+        </div>
+    }
+    @if (fields.Count > 0) { <button type="submit" class="button button-secondary">Apply filters</button> }
+    @if (hasFilters) { <a href="@ListNavigation.Url(Context.Request, clearFilters)" class="button button-secondary" data-filter-clear>Clear filters</a> }
+</form>

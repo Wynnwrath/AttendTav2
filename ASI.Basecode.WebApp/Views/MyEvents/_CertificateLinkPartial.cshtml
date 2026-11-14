@@ -31,11 +31,11 @@ else if (Model.Rows.Count > 0)
                         _ => ("Unavailable", "badge-closed", "No certificate is available yet. Contact an officer if you need help.")
                     };
                     <tr data-certificate-id="@row.CertificateId">
-                        <th scope="row" class="certificate-event">
+                        <th scope="row" data-label="Event" class="certificate-event">
                             <span>@row.EventTitle</span>
                             <span class="certificate-meta numeric">@ManilaTimeFormatter.Format(row.StartsAt)</span>
                         </th>
-                        <td>
+                        <td data-label="Review status">
                             <span class="badge @badge">@label</span>
                             <p class="certificate-context">@message</p>
                             @if (!string.IsNullOrWhiteSpace(row.Reason))
@@ -43,7 +43,7 @@ else if (Model.Rows.Count > 0)
                                 <p class="certificate-reason"><strong>Reason:</strong> @row.Reason</p>
                             }
                         </td>
-                        <td>
+                        <td data-label="Issue details">
                             @if (row.State == MyCertificateState.Issued && row.IssuedAt.HasValue)
                             {
                                 <span class="numeric">@row.CertificateNumber</span>
@@ -54,7 +54,7 @@ else if (Model.Rows.Count > 0)
                                 <span class="muted">Not issued</span>
                             }
                         </td>
-                        <td>
+                        <td data-label="Certificate">
                             @if (row.State == MyCertificateState.Issued && row.HasDocument)
                             {
                                 <div class="certificate-actions">

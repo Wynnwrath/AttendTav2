@@ -1,0 +1,117 @@
+using System.Net;
+using System.Text.RegularExpressions;
+using ASI.Basecode.Data;
+using ASI.Basecode.Data.Models;
+using ASI.Basecode.Data.Models.Lookups;
+using ASI.Basecode.Services.Security;
+using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.EntityFrameworkCore;
+using Xunit;
+
+namespace ASI.Basecode.IntegrationTests;
+
+public sealed class CompactListFlowTests(SqlServerDatabaseFixture fixture) : IClassFixture<SqlServerDatabaseFixture>
+{
+    [Fact]
+    public async Task RealListsFilterBeforePagingAndRenderCompactDetailsWithoutExposingHashes()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var now = DateTime.UtcNow;
+        var password = $"Test#{Guid.NewGuid():N}a1";
+        var hash = new Argon2PasswordHasher().Hash(password);
+        await using var db = new AsiBasecodeDBContext(new DbContextOptionsBuilder<AsiBasecodeDBContext>().UseSqlServer(fixture.ConnectionString).Options);
+        var officer = new User { UserId = "ui-officer@attendta.test", Name = "UI Review Officer", Password = hash, RoleId = RoleCode.Admin, IsActive = true };
+        db.Users.Add(officer);
+        await db.SaveChangesAsync(ct);
+        var users = Enumerable.Range(1, 8).Select(i => new User { UserId = $"ui-member-{i}@attendta.test", Name = $"Review Member {i:D2}", Password = hash, RoleId = RoleCode.Member, IsActive = true }).ToArray();
+        db.Users.AddRange(users);
+        await db.SaveChangesAsync(ct);
+        var members = users.Select((user, index) => new Member { UserId = user.Id, StudentNumber = $"UI-{index + 1:D4}", Course = index < 6 ? "BSIT" : "BSCS", YearLevel = 2, Section = "A", MobileNumber = "09000000000", MembershipStatusId = MembershipStatusCode.Active, CreatedBy = officer.Id, CreatedAt = now }).ToArray();
+        db.Members.AddRange(members);
+        var type = new EventType { TypeName = "Review Workshop", Description = "A longer description retained in Show details.", IsActive = true, CreatedBy = officer.Id, CreatedAt = now };
+        var venue = new Venue { RoomName = "Review Hall", Location = "Campus building A", Capacity = 50, AvailabilityNotes = "Contact the officer before setup.", ContactPerson = "Sample contact", ImagePath = "uploads/venues/review.png", IsActive = true, CreatedBy = officer.Id, CreatedAt = now };
+        db.AddRange(type, venue);
+        await db.SaveChangesAsync(ct);
+        var upcoming = new Event { Title = "Review Upcoming Event", Description = "Full event information.", TypeId = type.TypeId, VenueId = venue.VenueId, StartsAt = now.AddDays(3), RegistrationDeadline = now.AddDays(2), ParticipantLimit = 20, EventStatusId = EventStatusCode.Published, PublishedBy = officer.Id, PublishedAt = now, CreatedBy = officer.Id, CreatedAt = now };
+        var completed = new Event { Title = "Review Completed Event", TypeId = type.TypeId, VenueId = venue.VenueId, StartsAt = now.AddDays(-2), RegistrationDeadline = now.AddDays(-3), ParticipantLimit = 20, EventStatusId = EventStatusCode.Completed, PublishedBy = officer.Id, PublishedAt = now.AddDays(-4), CompletedBy = officer.Id, CompletedAt = now.AddDays(-1), CreatedBy = officer.Id, CreatedAt = now.AddDays(-4) };
+        db.AddRange(upcoming, completed);
+        await db.SaveChangesAsync(ct);
+        var confirmed = new List<Registration>();
+        foreach (var member in members)
+        {
+            db.Registrations.Add(new Registration { MemberId = member.MemberId, EventId = upcoming.EventId, RegistrationStatusId = RegistrationStatusCode.Pending, CourseSnapshot = member.Course, YearLevelSnapshot = 2, SectionSnapshot = "A", SubmittedAt = now, CreatedBy = officer.Id, CreatedAt = now });
+            var registration = new Registration { MemberId = member.MemberId, EventId = completed.EventId, RegistrationStatusId = RegistrationStatusCode.Confirmed, CourseSnapshot = member.Course, YearLevelSnapshot = 2, SectionSnapshot = "A", SubmittedAt = now.AddDays(-4), ReviewedBy = officer.Id, ReviewedAt = now.AddDays(-3), ConfirmedBy = officer.Id, ConfirmedAt = now.AddDays(-3), QrToken = Guid.NewGuid().ToString("N"), CreatedBy = officer.Id, CreatedAt = now.AddDays(-4) };
+            confirmed.Add(registration); db.Registrations.Add(registration);
+        }
+        await db.SaveChangesAsync(ct);
+        foreach (var registration in confirmed)
+        {
+            db.Set<Attendance>().Add(new Attendance { RegistrationId = registration.RegistrationId, CheckInMethodId = CheckInMethodCode.ManualSearch, RecordedBy = officer.Id, RecordedAt = now.AddDays(-2) });
+            db.Certificates.Add(new Certificate { RegistrationId = registration.RegistrationId, CertificateStatusId = CertificateStatusCode.PendingApproval, CreatedBy = officer.Id, CreatedAt = now.AddDays(-1) });
+        }
+        db.AccountRequests.Add(new AccountRequest { FullName = "Sample Applicant", StudentNumber = "UI-APPLICANT", Email = "applicant@attendta.test", PasswordHash = hash, Course = "BSIT", YearLevel = 2, Section = "A", MobileNumber = "09000000001", AccountRequestStatusId = AccountRequestStatusCode.Pending, RequestedAt = now });
+        await db.SaveChangesAsync(ct);
+
+        await using var factory = new AttendTaWebApplicationFactory(fixture.ConnectionString);
+        using var client = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false, HandleCookies = true });
+        await SignIn(client, officer.UserId, password, ct);
+        var first = await client.GetStringAsync("/Member", ct);
+        Assert.Equal(5, Regex.Matches(first, "data-member-id=").Count);
+        Assert.Contains("Showing 1–5 of 8 members", first);
+        var filtered = await client.GetStringAsync("/Member?search=Review&course=BSIT&year=2&pageSize=2&page=2", ct);
+        Assert.Equal(members.Skip(2).Take(2).Select(member => member.MemberId), Regex.Matches(filtered, "data-member-id=\"(\\d+)\"").Select(match => int.Parse(match.Groups[1].Value)));
+        Assert.Contains("Showing 3–4 of 6 matching members", filtered);
+        Assert.Contains("Page 2 of 3", filtered);
+        Assert.Contains("course=BSIT", filtered);
+        Assert.Contains("Show details", filtered);
+        Assert.Contains("<dialog", filtered);
+        Assert.DoesNotContain(hash, filtered);
+        var empty = await client.GetStringAsync("/Member?search=nobody-matches", ct);
+        Assert.Contains("0 matching members", empty);
+        Assert.DoesNotContain("aria-label=\"Pagination\"", empty);
+
+        var pages = new Dictionary<string, string> {
+            ["members"] = "/Member", ["venues"] = "/Venue", ["event-types"] = "/EventType", ["events"] = "/Event",
+            ["requests"] = "/AccountRequest", ["accounts"] = "/admin/accounts", ["activity"] = "/admin/auditlogs",
+            ["registrations"] = $"/RegistrationReview/Index?eventId={upcoming.EventId}", ["dossier"] = $"/Event/{upcoming.EventId}",
+            ["eligibility"] = $"/Certificates?eventId={completed.EventId}", ["report"] = $"/Reports/Participation?eventId={completed.EventId}", ["browse-events"] = "/MemberEvents"
+        };
+        var capture = Environment.GetEnvironmentVariable("ATTENDTA_UI_CAPTURE_DIR");
+        if (!string.IsNullOrWhiteSpace(capture)) Directory.CreateDirectory(capture);
+        foreach (var page in pages)
+        {
+            using var response = await client.GetAsync(page.Value, ct);
+            Assert.True(response.StatusCode == HttpStatusCode.OK, $"{page.Value} returned {response.StatusCode}");
+            var html = await response.Content.ReadAsStringAsync(ct);
+            Assert.DoesNotContain(hash, html);
+            Assert.Contains("features/list-controls.js", html);
+            if (!string.IsNullOrWhiteSpace(capture)) await File.WriteAllTextAsync(Path.Combine(capture, page.Key + ".html"), html, ct);
+        }
+
+        var filteredRegistrations = await client.GetStringAsync($"/RegistrationReview/Index?eventId={upcoming.EventId}&search=Review%20Member%2001", ct);
+        Assert.Single(Regex.Matches(filteredRegistrations, "data-registration-id="));
+        Assert.Contains("Showing 1–1 of 1 matching registration", filteredRegistrations);
+        var filteredEvents = await client.GetStringAsync("/Event?search=Upcoming&type=Workshop", ct);
+        Assert.Contains("Showing 1–1 of 1 matching event", filteredEvents);
+        Assert.DoesNotContain("Review Completed Event", filteredEvents);
+        var filteredCertificates = await client.GetStringAsync($"/Certificates?eventId={completed.EventId}&search=UI-0001", ct);
+        Assert.Contains("Showing 1–1 of 1 matching review", filteredCertificates);
+
+        using var memberClient = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false, HandleCookies = true });
+        await SignIn(memberClient, users[0].UserId, password, ct);
+        foreach (var action in new[] { "Registrations", "Attendance", "Certificates" })
+        {
+            var html = await memberClient.GetStringAsync($"/MyEvents/{action}", ct);
+            Assert.DoesNotContain("Review Member 02", html);
+            if (!string.IsNullOrWhiteSpace(capture)) await File.WriteAllTextAsync(Path.Combine(capture, "my-" + action.ToLowerInvariant() + ".html"), html, ct);
+        }
+    }
+
+    private static async Task SignIn(HttpClient client, string email, string password, CancellationToken ct)
+    {
+        var html = await client.GetStringAsync("/Account/Login", ct);
+        var token = Regex.Match(html, "__RequestVerificationToken[^>]*value=\"([^\"]+)\"").Groups[1].Value;
+        using var response = await client.PostAsync("/Account/Login", new FormUrlEncodedContent(new Dictionary<string, string> { ["Email"] = email, ["Password"] = password, ["__RequestVerificationToken"] = token }), ct);
+        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+    }
+}

@@ -25,19 +25,26 @@
     }
 }
 
-@if (Model.TotalPages > 1)
+@if (Model.TotalCount > 0)
 {
-    <nav class="pager" aria-label="Pagination">
-        <span aria-live="polite" class="numeric">Page @Model.PageNumber of @Model.TotalPages</span>
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString();
+    var noun = ListPagingLabels.Noun(controller, ViewContext.RouteData.Values["action"]?.ToString(), Model.TotalCount, ViewData["ResultNoun"] as string);
+    var filtered = ListPagingLabels.IsFiltered(Context.Request);
+    <nav class="pager" aria-label="Pagination" data-paging-size="@Model.PageSize" data-paging-page="@Model.PageNumber">
+        <p class="pagination-summary" aria-live="polite">Showing @Model.FirstItemNumber–@Model.LastItemNumber of @Model.TotalCount @(filtered ? "matching " : "")@noun</p>
+        <span class="paging-mode muted">@(ViewData["ListControls"] as bool? == true ? "Auto · " : "")@Model.PageSize per page</span>
         <div class="pager-actions">
             @if (Model.HasPreviousPage)
             {
                 <a class="button button-secondary" rel="prev" href="@PageUrl(Model.PageNumber - 1)" aria-label="Previous page">Previous</a>
             }
+            else { <button type="button" class="button button-secondary" disabled>Previous</button> }
+            <span class="numeric">Page @Model.PageNumber of @Model.TotalPages</span>
             @if (Model.HasNextPage)
             {
                 <a class="button button-secondary" rel="next" href="@PageUrl(Model.PageNumber + 1)" aria-label="Next page">Next</a>
             }
+            else { <button type="button" class="button button-secondary" disabled>Next</button> }
         </div>
     </nav>
 }

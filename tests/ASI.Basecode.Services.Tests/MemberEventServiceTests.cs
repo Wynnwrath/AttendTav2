@@ -43,18 +43,18 @@ public sealed class MemberEventServiceTests
         var first = await harness.Service.GetFeedAsync(1, TestContext.Current.CancellationToken);
 
         Assert.Equal(27, first.TotalCount);
-        Assert.Equal(2, first.TotalPages);
-        Assert.Equal(25, first.Items.Count);
+        Assert.Equal(6, first.TotalPages);
+        Assert.Equal(5, first.Items.Count);
         Assert.DoesNotContain(first.Items, item => item.EventId == draft.EventId);
         Assert.Contains(first.Items, item => item.EventId == closed.EventId);
         Assert.False(first.Items.Single(item => item.EventId == closed.EventId).IsSignupOpen);
         Assert.Equal(first.Items.OrderBy(item => item.StartsAt).ThenBy(item => item.EventId).Select(item => item.EventId), first.Items.Select(item => item.EventId));
 
-        var second = await harness.Service.GetFeedAsync(2, TestContext.Current.CancellationToken);
+        var second = await harness.Service.GetFeedAsync(6, TestContext.Current.CancellationToken);
         Assert.Equal(2, second.Items.Count);
 
         var pastEnd = await harness.Service.GetFeedAsync(999, TestContext.Current.CancellationToken);
-        Assert.Equal(2, pastEnd.PageNumber);
+        Assert.Equal(6, pastEnd.PageNumber);
         Assert.Equal(2, pastEnd.Items.Count);
 
         var invalid = await harness.Service.GetFeedAsync(0, TestContext.Current.CancellationToken);

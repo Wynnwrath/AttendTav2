@@ -46,29 +46,29 @@ public sealed class EventTypeManagementFlowTests(SqlServerDatabaseFixture fixtur
         var firstPageResponse = await officerClient.GetAsync("/EventType", ct);
         Assert.Equal(HttpStatusCode.OK, firstPageResponse.StatusCode);
         var firstPage = await firstPageResponse.Content.ReadAsStringAsync(ct);
-        Assert.Contains("Page 1 of 2", firstPage, StringComparison.Ordinal);
-        Assert.Equal(25, Regex.Matches(firstPage, "data-type-id=\"(\\d+)\"").Count);
+        Assert.Contains("Page 1 of 6", firstPage, StringComparison.Ordinal);
+        Assert.Equal(5, Regex.Matches(firstPage, "data-type-id=\"(\\d+)\"").Count);
         Assert.Contains("Flow Type 01", firstPage, StringComparison.Ordinal);
-        Assert.Contains("Flow Type 25", firstPage, StringComparison.Ordinal);
+        Assert.Contains("Flow Type 05", firstPage, StringComparison.Ordinal);
         Assert.DoesNotContain("Flow Type 26", firstPage, StringComparison.Ordinal);
         Assert.Contains("data-table", firstPage, StringComparison.Ordinal);
         Assert.Contains("class=\"badge badge-active\">Active</span>", firstPage, StringComparison.Ordinal);
         Assert.Contains("page=2", firstPage, StringComparison.Ordinal);
         Assert.Contains("aria-label=\"Next page\"", firstPage, StringComparison.Ordinal);
 
-        var lastPage = await officerClient.GetStringAsync("/EventType?page=2", ct);
-        Assert.Contains("Page 2 of 2", lastPage, StringComparison.Ordinal);
-        Assert.Contains("name=\"page\" value=\"2\"", lastPage, StringComparison.Ordinal);
+        var lastPage = await officerClient.GetStringAsync("/EventType?page=6", ct);
+        Assert.Contains("Page 6 of 6", lastPage, StringComparison.Ordinal);
+        Assert.Contains("name=\"page\" value=\"6\"", lastPage, StringComparison.Ordinal);
         Assert.Contains("Flow Type 26", lastPage, StringComparison.Ordinal);
         Assert.DoesNotContain("Flow Type 01", lastPage, StringComparison.Ordinal);
         Assert.DoesNotContain("aria-label=\"Next page\"", lastPage, StringComparison.Ordinal);
 
         var pastEnd = await officerClient.GetStringAsync("/EventType?page=999", ct);
-        Assert.Contains("Page 2 of 2", pastEnd, StringComparison.Ordinal);
+        Assert.Contains("Page 6 of 6", pastEnd, StringComparison.Ordinal);
         Assert.Contains("Flow Type 26", pastEnd, StringComparison.Ordinal);
 
         var zero = await officerClient.GetStringAsync("/EventType?page=0", ct);
-        Assert.Contains("Page 1 of 2", zero, StringComparison.Ordinal);
+        Assert.Contains("Page 1 of 6", zero, StringComparison.Ordinal);
 
         var duplicateToken = await AntiforgeryTokenAsync(officerClient, "/EventType/Create", ct);
         var duplicateResponse = await officerClient.PostAsync("/EventType/Create", Form(new Dictionary<string, string>

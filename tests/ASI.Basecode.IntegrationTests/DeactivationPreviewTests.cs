@@ -112,7 +112,7 @@ public sealed class DeactivationPreviewTests : IClassFixture<SqlServerDatabaseFi
         Assert.DoesNotContain("Preview Attended Event", html, StringComparison.Ordinal);
         Assert.Contains(memberUser.Name, html, StringComparison.Ordinal);
         Assert.Contains(memberUser.UserId, html, StringComparison.Ordinal);
-        Assert.Contains("Asia/Manila", html, StringComparison.Ordinal);
+        Assert.DoesNotContain("Asia/Manila", html, StringComparison.Ordinal);
         Assert.Contains("method=\"dialog\"", html, StringComparison.Ordinal);
         Assert.True(html.IndexOf("Preview First Event", StringComparison.Ordinal) < html.IndexOf("Preview Second Event", StringComparison.Ordinal),
             "The preview must be ordered by start time.");

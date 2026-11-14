@@ -26,7 +26,7 @@ public sealed class MyCertificatesService(
     IEventRepository events,
     ICertificateRepository certificates,
     ICertificateLedgerService ledger,
-    ICurrentActor actor) : IMyCertificatesService
+    ICurrentActor actor, ListReadOptions readOptions = null) : IMyCertificatesService
 {
     public async Task<PagedResult<MyEventCertificateRowViewModel>> GetPageAsync(
         int? page,
@@ -84,15 +84,17 @@ public sealed class MyCertificatesService(
         }
 
         var ordered = rows
+            .Where(row => string.IsNullOrWhiteSpace(readOptions?.Search) || row.EventTitle.Contains(readOptions.Search, StringComparison.OrdinalIgnoreCase))
+            .Where(row => string.IsNullOrWhiteSpace(readOptions?.Filter) || string.Equals(row.State.ToString(), readOptions.Filter, StringComparison.OrdinalIgnoreCase))
             .OrderByDescending(row => row.StartsAt)
             .ThenByDescending(row => row.CertificateId)
             .ToList();
-        var request = new PageRequest(page);
+        var request = new PageRequest(page, readOptions?.PageSize);
         var normalized = request.NormalizePageNumber(ordered.Count);
         return new PagedResult<MyEventCertificateRowViewModel>(
-            ordered.Skip(request.GetOffset(normalized)).Take(PageRequest.FixedPageSize).ToList(),
+            ordered.Skip(request.GetOffset(normalized)).Take(PageRequest.NormalizeSize(readOptions?.PageSize)).ToList(),
             normalized,
-            ordered.Count);
+            ordered.Count, PageRequest.NormalizeSize(readOptions?.PageSize));
     }
 
     /// <summary>

@@ -1,6 +1,7 @@
 @model PagedResult<MemberEventListItemViewModel>
 @using ASI.Basecode.Data.Models.Lookups
 @{
+    ViewData["ListControls"] = true;
     ViewData["Title"] = "Events";
 }
 
@@ -11,13 +12,15 @@
     </div>
 </header>
 
+<partial name="_ListToolbar" model='@(new ListToolbarViewModel("Search event title", new ListFilterField[] { ListToolbarViewModel.Status(new ListFilterOption("Published", "Published"), new ListFilterOption("Completed", "Completed")), new ListFilterField("type", "Event type"), new ListFilterField("from", "From date", "date"), new ListFilterField("to", "Through date", "date") }))' />
+<p class="muted" data-list-status role="status" data-list-busy-label="Loading records…"></p>
 @if (Model.Items.Count == 0)
 {
     <p class="empty-state">No published events are available yet.</p>
 }
 else
 {
-    <div class="event-grid">
+    <div class="event-grid" data-paging-grid>
         @foreach (var eventItem in Model.Items)
         {
             var remainingSeats = Math.Max(0, eventItem.ParticipantLimit - eventItem.ConfirmedCount);
@@ -90,3 +93,5 @@ else
 
     <partial name="_Pager" model="Model" />
 }
+
+<partial name="_ResultCount" model="Model" />

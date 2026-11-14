@@ -39,7 +39,7 @@ public sealed class CertificateLedgerService(
     IActivityLogWriter audit,
     TimeProvider clock,
     ICertificatePdfRenderer renderer,
-    IPrivateFileStore files) : ICertificateLedgerService
+    IPrivateFileStore files, ListReadOptions readOptions = null) : ICertificateLedgerService
 {
     private const int MaxReasonLength = 1000;
     private const string NotFoundMessage = "Certificate review not found.";
@@ -113,7 +113,7 @@ public sealed class CertificateLedgerService(
     }
 
     /// <summary>Builds one tab's page from a full read.</summary>
-    private static CertificateLedgerViewModel BuildPage(
+    private CertificateLedgerViewModel BuildPage(
         CertificateLedgerRead read,
         CertificateLedgerTab tab,
         int? page)
@@ -123,14 +123,16 @@ public sealed class CertificateLedgerService(
         var issuedCount = read.Rows.Count(row => row.Status == CertificateStatusCode.Issued);
         var filtered = read.Rows
             .Where(row => (row.Status == CertificateStatusCode.Issued) == (tab == CertificateLedgerTab.Issued))
+            .Where(row => string.IsNullOrWhiteSpace(readOptions?.Search) || row.MemberName.Contains(readOptions.Search, StringComparison.OrdinalIgnoreCase) || row.StudentNumber.Contains(readOptions.Search, StringComparison.OrdinalIgnoreCase) || (row.CertificateNumber?.Contains(readOptions.Search, StringComparison.OrdinalIgnoreCase) ?? false))
+            .Where(row => string.IsNullOrWhiteSpace(readOptions?.Filter) || string.Equals(row.Status.ToString(), readOptions.Filter, StringComparison.OrdinalIgnoreCase))
             .OrderBy(row => row.MemberName, StringComparer.OrdinalIgnoreCase)
             .ThenBy(row => row.RegistrationId)
             .ToList();
-        var request = new PageRequest(page);
+        var request = new PageRequest(page, readOptions?.PageSize);
         var normalized = request.NormalizePageNumber(filtered.Count);
         var items = filtered
             .Skip(request.GetOffset(normalized))
-            .Take(PageRequest.FixedPageSize)
+            .Take(PageRequest.NormalizeSize(readOptions?.PageSize))
             .ToList();
 
         return new CertificateLedgerViewModel
@@ -139,7 +141,7 @@ public sealed class CertificateLedgerService(
             EligibilityCount = read.Rows.Count - issuedCount,
             IssuedCount = issuedCount,
             Rows = items,
-            Page = new PagedResult<CertificateLedgerRowViewModel>(items, normalized, filtered.Count),
+            Page = new PagedResult<CertificateLedgerRowViewModel>(items, normalized, filtered.Count, PageRequest.NormalizeSize(readOptions?.PageSize)),
             Selector = new EventSelectorViewModel
             {
                 Label = read.Selector.Label,

@@ -2,6 +2,8 @@ using System;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Linq;
 using ASI.Basecode.Data.Interfaces;
 using ASI.Basecode.Data.Models;
 using ASI.Basecode.Data.Models.Lookups;
@@ -15,17 +17,25 @@ namespace ASI.Basecode.Services.Services;
 
 public sealed class RegistrationReviewService(IRegistrationRepository registrations, IUserRepository users,
     IMemberRepository members, IEventRepository events, IUnitOfWork unitOfWork, ICurrentActor actor,
-    IRegistrationCancellationService cancellation, IActivityLogWriter audit, TimeProvider clock) : IRegistrationReviewService
+    IRegistrationCancellationService cancellation, IActivityLogWriter audit, TimeProvider clock, ListReadOptions readOptions = null) : IRegistrationReviewService
 {
+    public async Task<IReadOnlyList<EventSelectorOption>> GetEventOptionsAsync(CancellationToken ct = default)
+    {
+        RequireManagement();
+        var count = await events.CountAsync(ct);
+        if (count == 0) return Array.Empty<EventSelectorOption>();
+        return (await events.GetPageAsync(0, count, ct)).Select(row => new EventSelectorOption(row.EventId, row.Title)).ToList();
+    }
+
     public async Task<PagedResult<RegistrationReviewRow>> GetPageAsync(string status, int? eventId, int? page, CancellationToken ct = default)
     {
         RequireManagement();
         var parsed = ParseStatus(status);
         var count = await registrations.CountReviewQueueAsync(parsed, eventId, ct);
-        var request = new PageRequest(page);
+        var request = new PageRequest(page, readOptions?.PageSize);
         var normalized = request.NormalizePageNumber(count);
-        var rows = await registrations.GetReviewQueueAsync(parsed, eventId, request.GetOffset(normalized), PageRequest.FixedPageSize, ct);
-        return new PagedResult<RegistrationReviewRow>(rows, normalized, count);
+        var rows = await registrations.GetReviewQueueAsync(parsed, eventId, request.GetOffset(normalized), PageRequest.NormalizeSize(readOptions?.PageSize), ct);
+        return new PagedResult<RegistrationReviewRow>(rows, normalized, count, PageRequest.NormalizeSize(readOptions?.PageSize));
     }
 
     public Task ApproveAsync(int id, CancellationToken ct = default) => ExecuteAsync(id, null, ReviewOperation.Approve, ct);

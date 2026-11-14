@@ -11,16 +11,16 @@ public class ManilaTimeFormatterTests
     public void UtcDatabaseTimestampRollsOverToNextManilaDay(DateTimeKind kind)
     {
         var timestamp = new DateTime(2026, 1, 1, 18, 30, 0, kind);
-        Assert.Equal("2026-01-02 02:30 Asia/Manila", ManilaTimeFormatter.Format(timestamp));
-        Assert.Equal("2026-01-02 02:30 Asia/Manila", ManilaTimeFormatter.Format((DateTime?)timestamp));
+        Assert.Equal("2026-01-02 02:30", ManilaTimeFormatter.Format(timestamp));
+        Assert.Equal("2026-01-02 02:30", ManilaTimeFormatter.Format((DateTime?)timestamp));
     }
 
     [Fact]
     public void OffsetIsConvertedAsAnInstant()
     {
         var timestamp = new DateTimeOffset(2026, 1, 1, 13, 30, 0, TimeSpan.FromHours(-5));
-        Assert.Equal("2026-01-02 02:30 Asia/Manila", ManilaTimeFormatter.Format(timestamp));
-        Assert.Equal("2026-01-02 02:30 Asia/Manila", ManilaTimeFormatter.Format((DateTimeOffset?)timestamp));
+        Assert.Equal("2026-01-02 02:30", ManilaTimeFormatter.Format(timestamp));
+        Assert.Equal("2026-01-02 02:30", ManilaTimeFormatter.Format((DateTimeOffset?)timestamp));
     }
 
     [Fact]

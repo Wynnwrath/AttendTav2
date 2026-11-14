@@ -1,3 +1,4 @@
+using ASI.Basecode.Data.Queries;
 using ASI.Basecode.Data.Interfaces;
 using ASI.Basecode.Data.Models;
 using ASI.Basecode.Data.Models.Lookups;
@@ -16,6 +17,7 @@ namespace ASI.Basecode.Services.Services
 {
     public class MemberService : IMemberService
     {
+        private readonly ListReadOptions _readOptions;
         private readonly IMemberRepository _repository;
         private readonly IUserRepository _userRepository;
         private readonly IUnitOfWork _unitOfWork;
@@ -29,8 +31,9 @@ namespace ASI.Basecode.Services.Services
             IUnitOfWork unitOfWork,
             TimeProvider timeProvider,
             ICurrentActor currentActor,
-            IActivityLogWriter audit)
+            IActivityLogWriter audit, ListReadOptions readOptions = null)
         {
+            _readOptions = readOptions;
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
@@ -42,10 +45,10 @@ namespace ASI.Basecode.Services.Services
         public async Task<PagedResult<MemberViewModel>> GetPageAsync(string search, string status, int? pageNumber, CancellationToken cancellationToken = default)
         {
             var totalCount = await _repository.CountAsync(search, status, cancellationToken);
-            var request = new PageRequest(pageNumber);
+            var request = new PageRequest(pageNumber, _readOptions?.PageSize);
             var page = request.NormalizePageNumber(totalCount);
-            var records = await _repository.GetPageAsync(search, status, request.GetOffset(page), PageRequest.FixedPageSize, cancellationToken);
-            return new PagedResult<MemberViewModel>(records.Select(ToViewModel).ToList(), page, totalCount);
+            var records = await _repository.GetPageAsync(search, status, request.GetOffset(page), PageRequest.NormalizeSize(_readOptions?.PageSize), cancellationToken);
+            return new PagedResult<MemberViewModel>(records.Select(ToViewModel).ToList(), page, totalCount, PageRequest.NormalizeSize(_readOptions?.PageSize));
         }
 
         public async Task<MemberViewModel> GetMemberAsync(int id, CancellationToken cancellationToken = default)

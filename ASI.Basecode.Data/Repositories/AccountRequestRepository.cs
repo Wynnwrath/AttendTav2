@@ -1,3 +1,4 @@
+using ASI.Basecode.Data.Queries;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ASI.Basecode.Data.Repositories;
 
-public sealed class AccountRequestRepository(IUnitOfWork unitOfWork) : BaseRepository(unitOfWork), IAccountRequestRepository
+public sealed class AccountRequestRepository(IUnitOfWork unitOfWork, ListReadOptions readOptions = null) : BaseRepository(unitOfWork), IAccountRequestRepository
 {
     public Task<int> CountByStatusAsync(AccountRequestStatusCode? status, string search, CancellationToken cancellationToken = default) =>
         FilterByStatus(status, search).CountAsync(cancellationToken);
@@ -59,7 +60,8 @@ public sealed class AccountRequestRepository(IUnitOfWork unitOfWork) : BaseRepos
                 Section = request.Section,
                 MobileNumber = request.MobileNumber,
                 Status = request.AccountRequestStatusId,
-                RequestedAt = request.RequestedAt
+                RequestedAt = request.RequestedAt,
+                ReviewNotes = request.ReviewNotes
             })
             .ToListAsync(cancellationToken);
     }
@@ -102,6 +104,8 @@ public sealed class AccountRequestRepository(IUnitOfWork unitOfWork) : BaseRepos
     private IQueryable<AccountRequest> FilterByStatus(AccountRequestStatusCode? status, string search)
     {
         var query = GetDbSet<AccountRequest>().AsNoTracking();
+        if (!string.IsNullOrWhiteSpace(readOptions?.Course)) query = query.Where(row => row.Course == readOptions.Course);
+        if (readOptions?.Year is int year) query = query.Where(row => row.YearLevel == year);
         if (status is not null)
         {
             query = query.Where(request => request.AccountRequestStatusId == status);

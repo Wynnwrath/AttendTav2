@@ -23,6 +23,7 @@ public sealed class RegistrationReviewController(IHttpContextAccessor accessor, 
     {
         ViewBag.Status = status;
         ViewBag.EventId = eventId;
+        ViewData["EventOptions"] = await review.GetEventOptionsAsync(cancellationToken);
         return View(await review.GetPageAsync(status, eventId, page, cancellationToken));
     }
 
@@ -49,6 +50,12 @@ public sealed class RegistrationReviewController(IHttpContextAccessor accessor, 
                 TempData["DossierDialog"] = dialog;
                 TempData["DossierId"] = id;
                 TempData["DossierReason"] = reason;
+            }
+            else
+            {
+                TempData["ReviewDialog"] = dialog;
+                TempData["ReviewId"] = id;
+                TempData["ReviewReason"] = reason;
             }
         }
         if (dossier) return RedirectToAction("Details", "Event", new { id = eventId, status, page });

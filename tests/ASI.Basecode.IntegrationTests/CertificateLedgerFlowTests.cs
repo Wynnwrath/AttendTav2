@@ -88,6 +88,7 @@ public sealed class CertificateLedgerFlowTests(SqlServerDatabaseFixture fixture)
         using var playwright = await Playwright.CreateAsync();
         await using var browser = await playwright.Chromium.LaunchAsync(new() { Headless = true });
         var page = await browser.NewPageAsync();
+        var relayFailure = string.Empty;
         await page.RouteAsync("**/*", async route =>
         {
             using var request = new HttpRequestMessage(new HttpMethod(route.Request.Method), route.Request.Url);
@@ -98,7 +99,7 @@ public sealed class CertificateLedgerFlowTests(SqlServerDatabaseFixture fixture)
                     request.Content.Headers.TryAddWithoutValidation("Content-Type", contentType);
             }
             var response = await client.SendAsync(request, ct);
-            // TestServer has no listening socket; resolve redirects inside the browser relay.
+            // TestServer has no listening socket; resolve redirects inside the relay.
             for (var redirects = 0; (int)response.StatusCode is 301 or 302 or 303 && redirects < 5; redirects++)
             {
                 var location = new Uri(new Uri(route.Request.Url), response.Headers.Location!);
@@ -106,6 +107,8 @@ public sealed class CertificateLedgerFlowTests(SqlServerDatabaseFixture fixture)
                 response = await client.GetAsync(location, ct);
             }
             using var finalResponse = response;
+            if ((int)finalResponse.StatusCode >= 400)
+                relayFailure = $"{route.Request.Method} {route.Request.Url}: {finalResponse.StatusCode}; content type {request.Content?.Headers.ContentType}";
             var headers = finalResponse.Headers.Concat(finalResponse.Content.Headers)
                 .Where(header => header.Key is not ("Transfer-Encoding" or "Content-Length" or "Content-Encoding"))
                 .ToDictionary(header => header.Key, header => string.Join(", ", header.Value));
@@ -135,6 +138,7 @@ public sealed class CertificateLedgerFlowTests(SqlServerDatabaseFixture fixture)
             Assert.Equal(CertificateStatusCode.PendingApproval, pending.CertificateStatusId);
         }
         Assert.Contains("Enter a decline reason", await client.GetStringAsync("/Certificates", ct), StringComparison.Ordinal);
+        await page.GotoAsync("http://localhost/Certificates?search=Participant%204&pageSize=5&fit=1");
         await page.Locator($"[data-certificate-open='decline-certificate'][data-id='{registrationIds[3]}']").ClickAsync();
         await page.Locator("#certificate-decline-reason").FillAsync("Participation requirements not met.");
         await page.ScreenshotAsync(new() { Path = Path.Combine(Path.GetTempPath(), "attendta-6-12-decline-phone.png") });
@@ -143,6 +147,7 @@ public sealed class CertificateLedgerFlowTests(SqlServerDatabaseFixture fixture)
         Assert.True(await page.GetByText("Certificate eligibility declined.", new() { Exact = true }).IsVisibleAsync(),
             page.Url + "\n" + await page.Locator("body").InnerTextAsync());
         await page.SetViewportSizeAsync(1440, 900);
+        await page.GotoAsync("http://localhost/Certificates?search=Participant%202&pageSize=5&fit=1");
         await page.Locator($"[data-certificate-open='approve-certificate'][data-id='{registrationIds[1]}']").ClickAsync();
         await page.Locator("#approve-certificate button[type='submit']").ClickAsync();
         await page.GetByText("Certificate eligibility approved.", new() { Exact = true }).WaitForAsync();
@@ -156,10 +161,20 @@ public sealed class CertificateLedgerFlowTests(SqlServerDatabaseFixture fixture)
             Assert.Equal(CertificateStatusCode.NotEligible, declined.CertificateStatusId);
             Assert.Null(declined.FilePath);
         }
+        // The relay displays redirect content at the POST URL. Re-enter the GET route
+        // before the next decision so its return context matches a real browser.
+        await page.GotoAsync("http://localhost/Certificates?search=Participant%202&pageSize=5&fit=1");
         await page.Locator($"[data-certificate-open='issue-certificate'][data-id='{registrationIds[1]}']").ClickAsync();
         await page.ScreenshotAsync(new() { Path = Path.Combine(Path.GetTempPath(), "attendta-6-12-issue-desktop.png") });
         await page.Locator("#issue-certificate button[type='submit']").ClickAsync();
-        await page.GetByText("Certificate issued. View it in the Issued Registry.", new() { Exact = true }).WaitForAsync();
+        try
+        {
+            await page.GetByText("Certificate issued. View it in the Issued Registry.", new() { Exact = true }).WaitForAsync();
+        }
+        catch (TimeoutException)
+        {
+            Assert.Fail(relayFailure + "\n" + page.Url + "\n" + await page.Locator("body").InnerTextAsync());
+        }
         await using (var issuedCheck = MemberEventTestSupport.Context(fixture.ConnectionString))
         {
             var issued = await issuedCheck.Certificates.AsNoTracking()

@@ -432,11 +432,11 @@ public sealed class RegistrationReviewTests(SqlServerDatabaseFixture fixture) : 
         await MemberEventTestSupport.SignInAsync(officer, officerEmail, password, ct);
         var query = $"status=pending&eventId={setup.Event.EventId}";
         var first = await officer.GetStringAsync($"/RegistrationReview/Index?{query}&page=1", ct);
-        Assert.Contains("Page 1 of 2", first, StringComparison.Ordinal);
-        Assert.Equal(ids.Take(25), QueueIds(first));
+        Assert.Contains("Page 1 of 6", first, StringComparison.Ordinal);
+        Assert.Equal(ids.Take(5), QueueIds(first));
         Assert.Contains($"status=pending&amp;eventId={setup.Event.EventId}&amp;page=2", first, StringComparison.Ordinal);
         var second = await officer.GetStringAsync($"/RegistrationReview/Index?{query}&page=2", ct);
-        Assert.Equal(ids.Skip(25), QueueIds(second));
+        Assert.Equal(ids.Skip(5).Take(5), QueueIds(second));
         foreach (var action in new[] { "Approve", "Decline", "Cancel" })
         {
             var missingToken = await officer.PostAsync($"/RegistrationReview/{action}?id={ids[0]}", MemberEventTestSupport.Form(new()), ct);

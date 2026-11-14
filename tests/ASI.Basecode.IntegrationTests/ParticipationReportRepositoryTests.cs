@@ -134,7 +134,7 @@ public sealed class ParticipationReportRepositoryTests(SqlServerDatabaseFixture 
 
         // The service derives every panel from that one snapshot, so the composed read is exercised
         // against real SQL rather than a fake.
-        var service = new ParticipationReportService(new EventRepository(new UnitOfWork(context)), repository);
+        var service = new ParticipationReportService(new EventRepository(new UnitOfWork(context)), repository, new ListReadOptions { PageSize = 25 });
         var report = await service.GetReportAsync(completed.EventId, null, ct);
 
         Assert.Equal(7, report.TotalCount);
@@ -391,13 +391,13 @@ public sealed class ParticipationReportRepositoryTests(SqlServerDatabaseFixture 
         await context.SaveChangesAsync(ct);
 
         var repository = new ParticipationReportRepository(new UnitOfWork(context));
-        var service = new ParticipationReportService(new EventRepository(new UnitOfWork(context)), repository);
+        var service = new ParticipationReportService(new EventRepository(new UnitOfWork(context)), repository, new ListReadOptions { PageSize = 25 });
 
         var firstPage = await service.GetReportAsync(completed.EventId, 1, ct);
         var secondPage = await service.GetReportAsync(completed.EventId, 2, ct);
         var defaultPage = await service.GetReportAsync(completed.EventId, null, ct);
 
-        // The page carries 25 rows, the totals do not follow it.
+        // The explicitly requested page carries 25 rows, the totals do not follow it.
         Assert.Equal(25, firstPage.Rows.Count);
         Assert.Equal(5, secondPage.Rows.Count);
         Assert.Equal(25, defaultPage.Rows.Count);

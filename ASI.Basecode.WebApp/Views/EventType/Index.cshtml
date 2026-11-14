@@ -1,6 +1,7 @@
 @model PagedResult<EventTypeViewModel>
 @using Microsoft.AspNetCore.Http.Extensions
 @{
+    ViewData["ListControls"] = true;
     ViewData["Title"] = "Event Classifications";
     ViewData["Feature"] = "record-dialog";
     var statusFilter = ViewBag.Status as string;
@@ -12,11 +13,12 @@
     <a asp-action="Create" class="button button-primary" data-record-open="create-event-type" data-record-title="New Event Type">New Event Type</a>
 </div>
 
+<partial name="_ListToolbar" model='@(new ListToolbarViewModel("Search event type or description"))' />
 <div class="sheet-keys">
     <nav class="filter-tabs" aria-label="Event type status">
-        <a class="filter-tab" asp-action="Index" aria-current="@(string.IsNullOrEmpty(statusFilter) ? "page" : null)">All</a>
-        <a class="filter-tab" asp-action="Index" asp-route-status="active" aria-current="@(statusFilter == "active" ? "page" : null)">Active</a>
-        <a class="filter-tab" asp-action="Index" asp-route-status="inactive" aria-current="@(statusFilter == "inactive" ? "page" : null)">Inactive</a>
+        <a href='@ListNavigation.Url(Context.Request, new Dictionary<string, string> { ["status"] = null })' class="filter-tab" aria-current="@(string.IsNullOrEmpty(statusFilter) ? "page" : null)">All</a>
+        <a href='@ListNavigation.Url(Context.Request, new Dictionary<string, string> { ["status"] = "active" })' class="filter-tab" aria-current="@(statusFilter == "active" ? "page" : null)">Active</a>
+        <a href='@ListNavigation.Url(Context.Request, new Dictionary<string, string> { ["status"] = "inactive" })' class="filter-tab" aria-current="@(statusFilter == "inactive" ? "page" : null)">Inactive</a>
     </nav>
 </div>
 
@@ -86,11 +88,12 @@ else
                 @foreach (var eventType in Model.Items)
                 {
                     <tr data-type-id="@eventType.TypeId">
-                        <td class="cell-name"><span class="cell-strong">@eventType.TypeName</span></td>
-                        <td class="cell-description">@eventType.Description</td>
-                        <td><span class="badge @(eventType.IsActive ? "badge-active" : "badge-inactive")">@(eventType.IsActive ? "Active" : "Inactive")</span></td>
-                        <td class="actions">
+                        <td data-label="Type Name" class="cell-name"><span class="cell-strong">@eventType.TypeName</span></td>
+                        <td data-label="Description" class="cell-description"><span class="line-clamp-two">@eventType.Description</span></td>
+                        <td data-label="Status"><span class="badge @(eventType.IsActive ? "badge-active" : "badge-inactive")">@(eventType.IsActive ? "Active" : "Inactive")</span></td>
+                        <td data-label="Actions" class="actions">
                             <div class="row-actions">
+<partial name="_DetailsButton" model='@(new RecordDetailsViewModel($"type-details-{eventType.TypeId}", eventType.TypeName, new Dictionary<string, string> { ["Description"] = eventType.Description }, null))' />
                                 <a asp-action="Edit" asp-route-id="@eventType.TypeId" class="button button-small button-secondary" data-record-open="edit-event-type-@eventType.TypeId" data-record-title="Edit Event Type">Edit</a>
                                 <partial name="_RowMenuTrigger" model="@($"row-menu-event-type-{eventType.TypeId}")" />
                             </div>
@@ -114,7 +117,3 @@ else
 
 <partial name="_ResultCount" model="Model" />
 <partial name="_RecordDialog" />
-
-@section Scripts {
-    <script src="~/js/features/list-feedback.js" asp-append-version="true"></script>
-}

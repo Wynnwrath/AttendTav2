@@ -205,10 +205,17 @@ button, or a card with no outline is not part of this system.
 - **Cells:** 13px, Ink Secondary; the name cell is 600 Ink with a 26px initials tile.
 - **Numbers:** tabular figures, Ink, right-aligned where the column is numeric.
 - **Actions:** compact bordered buttons with 8px gaps. Use an overflow menu for secondary actions.
-- **Count and pager:** the pager sits directly below the table and the result count
-  directly below the pager, both full-width under the panel. The count is one line
-  of Micro type reading the real `PagedResult.TotalCount`; it is not a KPI card and
-  never sits above the table.
+- **Density:** keep identity and decision facts visible; combine related fields and put
+  secondary information in a shared Show details dialog. No internal table scroll region.
+  Below 640px, rows become labelled blocks with natural page scrolling.
+- **Search and filters:** each list declares appropriate fields through the shared Razor
+  toolbar. An applied search shows Clear; changing its text restores Search. Preserve
+  unrelated query criteria across filters, paging and native decisions.
+- **Count and pager:** one full-width footer directly below the table shows the actual
+  range and filtered total, Auto size, page number, and visible disabled boundaries.
+  Zero results show a count without a fabricated page. Auto-fit targets five records,
+  reduces the page for short windows using measured rows/cards, and holds that size while
+  paging until filters or viewport dimensions change. Never clip content to force a fit.
 - **List spacing:** page heads end with 16px of space. Filter toolbars keep 16px of
   bottom padding; lists with loading feedback reserve one compact 16px live line before
   the table, without an additional blank paragraph margin.

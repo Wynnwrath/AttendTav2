@@ -1,6 +1,7 @@
 @model PagedResult<EventViewModel>
 @using ASI.Basecode.Data.Models.Lookups
 @{
+    ViewData["ListControls"] = true;
     ViewData["Title"] = "Events";
     ViewData["Feature"] = "record-dialog";
 }
@@ -10,18 +11,16 @@
     <a asp-action="Create" class="button button-primary" data-record-open="create-event" data-record-title="Create draft event">Create draft event</a>
 </div>
 
-<div class="table-scroll" role="region" aria-label="Event table" tabindex="0">
+<partial name="_ListToolbar" model='@(new ListToolbarViewModel("Search event title", new ListFilterField[] { ListToolbarViewModel.Status(new ListFilterOption("Draft", "Draft"), new ListFilterOption("Published", "Published"), new ListFilterOption("Completed", "Completed"), new ListFilterOption("Cancelled", "Cancelled")), new ListFilterField("type", "Event type"), new ListFilterField("from", "From date", "date"), new ListFilterField("to", "Through date", "date") }))' />
+<p class="muted" data-list-status role="status" data-list-busy-label="Loading records…"></p>
+<div class="table-scroll" role="region" aria-label="Event table" tabindex="0" data-list-region>
     <table class="data-table table-sticky">
         <thead>
             <tr>
                 <th scope="col">Title</th>
-                <th scope="col">Event type</th>
                 <th scope="col">Venue</th>
                 <th scope="col">Starts</th>
-                <th scope="col">Signup deadline</th>
-                <th scope="col">Participant limit</th>
                 <th scope="col">Status</th>
-                <th scope="col">Check-in</th>
                 <th scope="col" class="actions">Actions</th>
             </tr>
         </thead>
@@ -29,7 +28,7 @@
             @if (Model.Items.Count == 0)
             {
                 <tr>
-                    <td colspan="9" class="empty-state">No records found.</td>
+                    <td colspan="5" class="empty-state">No records found.</td>
                 </tr>
             }
             else
@@ -44,18 +43,13 @@
                             ? $"Closed by {eventItem.CheckInClosedByName} · {ManilaTimeFormatter.Format(eventItem.CheckInClosedAt)}"
                             : null);
                     <tr data-event-id="@eventItem.EventId">
-                        <td class="cell-title"><a asp-action="Details" asp-route-id="@eventItem.EventId">@eventItem.Title</a></td>
-                        <td>@eventItem.TypeName</td>
-                        <td>@eventItem.VenueName</td>
-                        <td class="numeric cell-date">@ManilaTimeFormatter.Format(eventItem.StartsAt)</td>
-                        <td class="numeric cell-date">@ManilaTimeFormatter.Format(eventItem.RegistrationDeadline)</td>
-                        <td class="numeric">@eventItem.ParticipantLimit</td>
-                        <td><span class="badge @EventStatusDisplay.BadgeClass(eventItem.EventStatusId)">@eventItem.StatusLabel</span></td>
-                        <td class="cell-checkin">
-                            <span class="badge @(eventItem.IsCheckInOpen ? "badge-checkin-open" : "badge-checkin-closed")" title="@checkInMeta">@(eventItem.IsCheckInOpen ? "Check-in open" : "Check-in closed")</span>
-                        </td>
-                        <td class="actions">
+                        <td data-label="Title" class="cell-title"><a asp-action="Details" asp-route-id="@eventItem.EventId">@eventItem.Title</a><small class="cell-meta">@eventItem.TypeName</small></td>
+                        <td data-label="Venue">@eventItem.VenueName</td>
+                        <td data-label="Starts" class="numeric cell-date">@ManilaTimeFormatter.Format(eventItem.StartsAt)</td>
+                        <td data-label="Status"><span class="badge @EventStatusDisplay.BadgeClass(eventItem.EventStatusId)">@eventItem.StatusLabel</span></td>
+                        <td data-label="Actions" class="actions">
                             <div class="row-actions">
+<partial name="_DetailsButton" model='@(new RecordDetailsViewModel($"event-details-{eventItem.EventId}", eventItem.Title, new Dictionary<string, string> { ["Venue"] = eventItem.VenueName, ["Event starts"] = ManilaTimeFormatter.Format(eventItem.StartsAt), ["Registration closes"] = ManilaTimeFormatter.Format(eventItem.RegistrationDeadline), ["Participant limit"] = eventItem.ParticipantLimit.ToString(), ["Description"] = eventItem.Description, ["Check-in"] = eventItem.IsCheckInOpen ? "Open" : "Closed" }, null))' />
                                 @if (eventItem.EventStatusId == EventStatusCode.Draft)
                                 {
                                     <form asp-action="Publish" method="post" class="inline-form">

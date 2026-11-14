@@ -31,7 +31,13 @@ Used by a University of Cebu student organization on a laptop at the door and on
 
 - Authentication by email and password with role-based access for administrator, officer, and member.
 - Membership requests are reviewed and approved or declined with a reason; decisions are audited.
-- Account-request tables lead with applicant identity and release both sticky edges below 1024px so every field remains horizontally readable. Fetched account/membership decisions and deactivation previews restore focus to the visible row-menu button when dismissed; impact previews include the server-read target name and email.
+- Compact operational lists keep identity, status and decision facts visible; secondary
+  contact information, full reasons and exact timestamps use shared Show details dialogs.
+  The server applies search and page-specific filters before counting and paging. Auto-fit
+  targets five records and reduces that number for short windows; narrow screens stack
+  labelled rows and retain natural page scrolling. One footer shows the real range, total
+  and page boundaries. Fetched account/membership decisions and deactivation previews restore
+  focus to the visible row-menu button; impact previews include the server-read target name and email.
 - Master data covers members, event types, and venues; records are deactivated rather than hard-deleted.
 - Master Data lists announce a loading state while a filter, pager, search or status toggle is in flight, and a failed read keeps the shell, tabs and table headers with an in-shell notice and a Try again link instead of an empty-state row.
 - Member, Event Type, Venue and Event create/edit use the same centered keyboard-operable record dialog with required markers, retained server validation, focus containment and restore, and a venue photo preview. Clicks on the dialog's own padding keep it open; only a backdrop click, Escape or Cancel dismisses it. Events open the same editor from the Events list and from the event dossier. Standalone form routes remain available.

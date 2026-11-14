@@ -16,7 +16,7 @@ namespace ASI.Basecode.IntegrationTests;
 
 /// <summary>
 /// Focused SQL coverage for 6.6: the real review queue, both decisions, the single audit entry, every
-/// refusal in the ticket matrix, and in-memory paging at 25. The DI check also asserts that the real
+/// refusal in the ticket matrix, and in-memory paging at five. The DI check also asserts that the real
 /// ledger and the real member history resolve from the container.
 /// </summary>
 public sealed class CertificateReviewDecisionTests(SqlServerDatabaseFixture fixture) : IClassFixture<SqlServerDatabaseFixture>
@@ -225,7 +225,7 @@ public sealed class CertificateReviewDecisionTests(SqlServerDatabaseFixture fixt
     }
 
     [Fact]
-    public async Task QueueShowsTwentyFiveRowsAndClampsAPagePastTheEnd()
+    public async Task QueueShowsFiveRowsAndClampsAPagePastTheEnd()
     {
         var ct = TestContext.Current.CancellationToken;
         var setup = await SeedAsync(confirmedCount: 28);
@@ -235,7 +235,7 @@ public sealed class CertificateReviewDecisionTests(SqlServerDatabaseFixture fixt
         var first = await service.GetPageAsync(setup.EventId, CertificateLedgerTab.Eligibility, 1, ct);
         Assert.Equal(28, first.EligibilityCount);
         Assert.Equal(0, first.IssuedCount);
-        Assert.Equal(25, first.Rows.Count);
+        Assert.Equal(5, first.Rows.Count);
         Assert.Equal(1, first.Page.PageNumber);
         Assert.Equal(28, first.Page.TotalCount);
         Assert.True(first.Page.HasNextPage);
@@ -243,7 +243,7 @@ public sealed class CertificateReviewDecisionTests(SqlServerDatabaseFixture fixt
 
         var last = await service.GetPageAsync(setup.EventId, CertificateLedgerTab.Eligibility, int.MaxValue, ct);
         Assert.Equal(3, last.Rows.Count);
-        Assert.Equal(2, last.Page.PageNumber);
+        Assert.Equal(6, last.Page.PageNumber);
         Assert.False(last.Page.HasNextPage);
 
         var issued = await service.GetPageAsync(setup.EventId, CertificateLedgerTab.Issued, 1, ct);

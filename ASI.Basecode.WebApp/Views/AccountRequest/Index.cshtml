@@ -2,6 +2,7 @@
 @using System
 @using System.Linq
 @{
+    ViewData["ListControls"] = true;
     ViewData["Title"] = "Account requests";
     ViewData["ResultNoun"] = "request";
     var filters = new[]
@@ -46,32 +47,14 @@
     }
 }
 
+<partial name="_ListToolbar" model='@(new ListToolbarViewModel("Search name, email, or student number", new ListFilterField[] { new ListFilterField("course", "Course"), ListToolbarViewModel.Year }))' />
+<p class="muted" data-list-status role="status" data-list-busy-label="Loading records…"></p>
 <div class="sheet-keys">
-    <form asp-action="Index" method="get" class="search-group" role="search">
-        <input type="hidden" name="status" value="@Model.Status" />
-        <input type="hidden" name="sort" value="@Model.Sort" />
-        <input id="request-search"
-               name="search"
-               value="@Model.Search"
-               type="search"
-               class="field-control"
-               placeholder="Search name, email, or student number"
-               aria-label="Search account requests" />
-        <button type="submit" class="button button-secondary">Search</button>
-        @if (!string.IsNullOrWhiteSpace(Model.Search))
-        {
-            <a class="button button-secondary" asp-action="Index" asp-route-status="@Model.Status" asp-route-sort="@Model.Sort">Clear</a>
-        }
-    </form>
 
     <nav class="filter-tabs" aria-label="Request status">
         @foreach (var filter in filters)
         {
-            <a class="filter-tab"
-               asp-action="Index"
-               asp-route-status="@filter.Key"
-               asp-route-search="@Model.Search"
-               asp-route-sort="@Model.Sort"
+            <a href='@ListNavigation.Url(Context.Request, new Dictionary<string, string> { ["status"] = filter.Key })' class="filter-tab"
                aria-current="@(Model.Status == filter.Key ? "page" : null)">
                 @filter.Label
                 <span class="filter-tab-count">@filter.Count</span>
@@ -80,22 +63,14 @@
     </nav>
 </div>
 
-<div class="table-scroll" role="region" aria-label="Account request table" tabindex="0">
+<div class="table-scroll" role="region" aria-label="Account request table" tabindex="0" data-list-region>
     <table class="data-table table-sticky request-table">
         <thead>
             <tr>
                 <th scope="col">Full Name</th>
-                <th scope="col">Student Number</th>
-                <th scope="col">Email</th>
                 <th scope="col">Course</th>
-                <th scope="col">Year</th>
-                <th scope="col">Section</th>
-                <th scope="col">Mobile</th>
                 <th scope="col">
-                    <a asp-action="Index"
-                       asp-route-status="@Model.Status"
-                       asp-route-search="@Model.Search"
-                       asp-route-sort="@Model.NextSort"
+                    <a href='@ListNavigation.Url(Context.Request, new Dictionary<string, string> { ["sort"] = Model.NextSort })'
                        aria-label="Sort by requested time, currently @(Model.Sort == "oldest" ? "oldest first" : "newest first")">
                         Requested @(Model.Sort == "oldest" ? "↑" : "↓")
                     </a>
@@ -108,7 +83,7 @@
             @if (Model.Items.Count == 0)
             {
                 <tr>
-                    <td colspan="10" class="empty-state">No @emptyLabel found.</td>
+                    <td colspan="5" class="empty-state">No @emptyLabel found.</td>
                 </tr>
             }
             else
@@ -116,19 +91,16 @@
                 foreach (var request in Model.Items)
                 {
                     <tr data-request-id="@request.RequestId">
-                        <td class="cell-name"><span class="cell-strong">@request.FullName</span></td>
-                        <td class="numeric cell-identifier">@request.StudentNumber</td>
-                        <td class="cell-email">@request.Email</td>
-                        <td>@request.Course</td>
-                        <td class="numeric">@request.YearLevel</td>
-                        <td>@request.Section</td>
-                        <td class="numeric cell-identifier">@request.MobileNumber</td>
-                        <td class="numeric cell-date"><time datetime="@(DateTime.SpecifyKind(request.RequestedAt, DateTimeKind.Utc).ToString("O"))" aria-label="Requested at in Asia/Manila">@ManilaTimeFormatter.Format(request.RequestedAt)</time></td>
-                        <td><span class="@BadgeClass(request.Status)">@request.Status</span></td>
-                        <td class="actions actions-wide">
+                        <td data-label="Full Name" class="cell-name"><span class="cell-strong">@request.FullName<small class="cell-meta">@request.StudentNumber</small></span></td>
+                        <td data-label="Course">@request.Course · Year @request.YearLevel</td>
+                        <td data-label="Requested" class="numeric cell-date"><time datetime="@(DateTime.SpecifyKind(request.RequestedAt, DateTimeKind.Utc).ToString("O"))" aria-label="Requested at in Asia/Manila">@ManilaTimeFormatter.Format(request.RequestedAt)</time></td>
+                        <td data-label="Status"><span class="@BadgeClass(request.Status)">@request.Status</span></td>
+                        <td data-label="Actions" class="actions actions-wide">
+                            <div class="row-actions">
+                                <partial name="_DetailsButton" model='@(new RecordDetailsViewModel($"request-details-{request.RequestId}", request.FullName, new Dictionary<string, string> { ["Student number"] = request.StudentNumber, ["Email"] = request.Email, ["Course"] = request.Course, ["Year"] = request.YearLevel.ToString(), ["Section"] = request.Section, ["Mobile"] = request.MobileNumber, ["Requested"] = ManilaTimeFormatter.Format(request.RequestedAt), ["Review notes"] = request.ReviewNotes }, null))' />
                             @if (request.Status == "Pending")
                             {
-                                <div class="row-actions">
+
                                     <button type="button"
                                             class="button button-small button-primary"
                                             data-dialog-open="approve-dialog"
@@ -143,12 +115,8 @@
                                             data-dialog-value-summary="Decline the request from @request.FullName (@request.StudentNumber)?">
                                         Decline
                                     </button>
-                                </div>
                             }
-                            else
-                            {
-                                <span class="muted">Reviewed</span>
-                            }
+                            </div>
                         </td>
                     </tr>
                 }

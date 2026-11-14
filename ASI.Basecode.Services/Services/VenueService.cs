@@ -1,3 +1,4 @@
+using ASI.Basecode.Data.Queries;
 using ASI.Basecode.Data.Interfaces;
 using ASI.Basecode.Data.Models;
 using ASI.Basecode.Resources;
@@ -16,6 +17,7 @@ namespace ASI.Basecode.Services.Services
 {
     public class VenueService : IVenueService
     {
+        private readonly ListReadOptions _readOptions;
         private readonly IVenueRepository _repository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly TimeProvider _timeProvider;
@@ -25,8 +27,9 @@ namespace ASI.Basecode.Services.Services
         private readonly ICurrentActor _actor;
         private readonly ILogger<VenueService> _logger;
 
-        public VenueService(IVenueRepository repository, IUnitOfWork unitOfWork, IMapper mapper, TimeProvider timeProvider, IPrivateFileStore files, IActivityLogWriter audit, ICurrentActor actor, ILogger<VenueService> logger)
+        public VenueService(IVenueRepository repository, IUnitOfWork unitOfWork, IMapper mapper, TimeProvider timeProvider, IPrivateFileStore files, IActivityLogWriter audit, ICurrentActor actor, ILogger<VenueService> logger, ListReadOptions readOptions = null)
         {
+            _readOptions = readOptions;
             _repository = repository;
             _unitOfWork = unitOfWork;
             _timeProvider = timeProvider;
@@ -40,15 +43,15 @@ namespace ASI.Basecode.Services.Services
         public async Task<PagedResult<VenueViewModel>> GetPageAsync(string status, int? pageNumber, CancellationToken cancellationToken = default)
         {
             var totalCount = await _repository.CountAsync(status, cancellationToken);
-            var pageRequest = new PageRequest(pageNumber);
+            var pageRequest = new PageRequest(pageNumber, _readOptions?.PageSize);
             var normalizedPage = pageRequest.NormalizePageNumber(totalCount);
             var venues = await _repository.GetPageAsync(
                 status,
                 pageRequest.GetOffset(normalizedPage),
-                PageRequest.FixedPageSize,
+                PageRequest.NormalizeSize(_readOptions?.PageSize),
                 cancellationToken);
             var items = _mapper.Map<List<VenueViewModel>>(venues);
-            return new PagedResult<VenueViewModel>(items, normalizedPage, totalCount);
+            return new PagedResult<VenueViewModel>(items, normalizedPage, totalCount, PageRequest.NormalizeSize(_readOptions?.PageSize));
         }
 
         public VenueViewModel GetVenue(int id)
