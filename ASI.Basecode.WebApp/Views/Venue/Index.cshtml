@@ -35,9 +35,9 @@
             <thead>
                 <tr>
                     <th scope="col">Room Name</th>
-                    <th scope="col" class="numeric">Capacity</th>
                     <th scope="col">Location</th>
-                    <th scope="col">Status</th>
+                    <th scope="col" class="numeric">Capacity</th>
+                    <th scope="col" class="column-status">Status</th>
                     <th scope="col" class="actions actions-tight">Actions</th>
                 </tr>
             </thead>
@@ -51,9 +51,9 @@ else if (Model.Items.Count == 0)
             <thead>
                 <tr>
                     <th scope="col">Room Name</th>
-                    <th scope="col" class="numeric">Capacity</th>
                     <th scope="col">Location</th>
-                    <th scope="col">Status</th>
+                    <th scope="col" class="numeric">Capacity</th>
+                    <th scope="col" class="column-status">Status</th>
                     <th scope="col" class="actions actions-tight">Actions</th>
                 </tr>
             </thead>
@@ -81,20 +81,20 @@ else
             <thead>
                 <tr>
                     <th scope="col">Room Name</th>
-                    <th scope="col" class="numeric">Capacity</th>
                     <th scope="col">Location</th>
-                    <th scope="col">Status</th>
+                    <th scope="col" class="numeric">Capacity</th>
+                    <th scope="col" class="column-status">Status</th>
                     <th scope="col" class="actions actions-tight">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var venue in Model.Items)
                 {
-                    var details = new RecordDetailsViewModel($"venue-details-{venue.VenueId}", venue.RoomName, new Dictionary<string, string> { ["Location"] = venue.Location, ["Capacity"] = venue.Capacity.ToString(), ["Availability notes"] = venue.AvailabilityNotes, ["Contact person"] = venue.ContactPerson }, Url.Action("Photo", "Venue", new { id = venue.VenueId }));
+                    var details = new RecordDetailsViewModel($"venue-details-{venue.VenueId}", venue.RoomName, new Dictionary<string, string> { ["Availability notes"] = venue.AvailabilityNotes, ["Contact person"] = venue.ContactPerson }, Url.Action("Photo", "Venue", new { id = venue.VenueId }));
                     <tr data-venue-id="@venue.VenueId">
                         <td data-label="Room Name" class="cell-name"><span class="cell-strong">@venue.RoomName</span></td>
-                        <td data-label="Capacity" class="numeric">@venue.Capacity</td>
                         <td data-label="Location">@venue.Location</td>
+                        <td data-label="Capacity" class="numeric">@venue.Capacity</td>
                         <td data-label="Status"><span class="badge @(venue.IsActive ? "badge-active" : "badge-inactive")">@(venue.IsActive ? "Active" : "Inactive")</span></td>
                         <td data-label="Actions" class="actions">
                             <div class="row-actions">

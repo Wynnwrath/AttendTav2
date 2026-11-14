@@ -1,6 +1,35 @@
 (() => {
     'use strict';
     const searches = Array.from(document.querySelectorAll('[data-list-search]'));
+    const disclosures = Array.from(document.querySelectorAll('[data-expandable-text]')).map(host => {
+        const content = host.querySelector('[data-expandable-content]');
+        const toggle = host.querySelector('[data-expandable-toggle]');
+        const label = toggle.querySelector('[data-expandable-label]');
+        let expanded = false;
+        function measure() {
+            if (expanded) return;
+            content.classList.add('line-clamp-two');
+            toggle.hidden = content.scrollHeight <= content.clientHeight + 1;
+            if (toggle.hidden) content.classList.remove('line-clamp-two');
+        }
+        toggle.addEventListener('click', () => {
+            expanded = !expanded;
+            content.classList.toggle('line-clamp-two', !expanded);
+            toggle.setAttribute('aria-expanded', String(expanded));
+            label.textContent = expanded ? 'Read less' : 'Read more';
+            if (!expanded) measure();
+        });
+        return measure;
+    });
+    if (disclosures.length) {
+        const measure = () => disclosures.forEach(refresh => refresh());
+        if (document.fonts) document.fonts.ready.then(measure); else measure();
+        let disclosureTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(disclosureTimer);
+            disclosureTimer = setTimeout(measure, 150);
+        });
+    }
     // AJAX record saves already reload the current URL; their JSON results stay intact.
     document.addEventListener('submit', event => {
         const form = event.target;
@@ -26,6 +55,7 @@
     let viewportWidth = window.innerWidth, viewportHeight = window.innerHeight;
     function fitRows() {
         if (document.querySelector('dialog[open]') || document.activeElement?.matches('input, select, textarea')) return;
+        if (document.querySelector('[data-expandable-toggle][aria-expanded="true"]')) return;
         if (searches.some(form => form.querySelector('[name="search"]').value.trim() !== form.dataset.appliedSearch.trim())) return;
         const table = footer.parentElement.querySelector('.table-scroll table') || document.querySelector('.table-scroll table');
         const grid = table ? null : document.querySelector('[data-paging-grid]');

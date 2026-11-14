@@ -46,14 +46,14 @@ Visible information and details:
 | Page | Visible | Details |
 | --- | --- | --- |
 | Membership requests | Applicant/student number, course/year, requested date, status, actions | Email, mobile, section, remaining application information, recorded decline reason |
-| Members | Name/student number, course/year/section, status, actions | Email, mobile, membership type |
+| Members | Name/student number, email, course/year/section, status, actions | Mobile, membership type; student number retained as identity context |
 | Events | Title/type, venue, start date/time, status, actions | Deadline, participant limit, description and secondary event information |
 | Registration review | Participant/student number, event, status, actions | Exact submission time and secondary registration information |
 | Dossier roster | Participant/student number, status, actions | Submission time and secondary registration information; event context remains above roster |
 | Certificate eligibility | Member/student number, attendance confirmation, eligibility status, actions | Exact attendance time, full reason, available certificate details |
 | Issued registry | Member/student number, certificate number, issue date, View PDF | Exact issuance time and attendance information |
 | Reports | Participant/student number, course/year, registration status, attendance result | Exact check-in time and additional available participant information |
-| Event types | Name, short description preview, status, actions | Full description when it needs more space |
+| Event types | Name, description preview with inline Read more only when clipped, status, actions | No separate details modal; expand description in the row |
 | Venues | Name, location, capacity, status, actions | Availability notes, contact person, full photo |
 | Accounts | Name, email, role, status, actions | Add details only if meaningful additional information exists |
 | Activity log | Date/time, actor, action, entity type, details action | Entity ID, actor type, full reason |
@@ -280,6 +280,25 @@ student numbers, and exactly eleven ASCII digits for mobile numbers when supplie
 are still 1–5 and backend year validation still accepts any positive integer. BSCS/BSIT course
 handling already exists. Email already accepts valid ordinary addresses, without a domain restriction.
 Apply aligned form/filter choices and validation together when that follow-up is authorized.
+
+### Phase 2 column balance and redundant details refinement
+
+Venues now orders Room Name, Location, Capacity, Status and Actions; compact numeric/status/action
+widths leave text columns the available space. Its details retain photo, contact and availability
+notes rather than repeating Location/Capacity. Members adds Email to the main table and uses compact
+Status/Actions widths instead of reserving 30% for Actions; details retain identity context, mobile
+and membership type. Event classifications no longer opens a redundant details modal: Read more/less
+expands the description inline only when actual rendered text exceeds two lines. Full text remains
+available without JavaScript, and resizing preserves an expanded description. Certificate details
+omit absent reason/issuance fields rather than displaying irrelevant "Not issued" placeholders.
+
+Validation: clean Release build and CSS generation; 24 JavaScript checks and the compact-list and
+certificate browser-flow integration tests passed. Rendered layouts at 1440, 1024 and 390px were
+captured; representative desktop/laptop/phone images were inspected. Checks cover no horizontal
+overflow, visible member email, numeric capacity/header alignment, conditional disclosure, keyboard
+expansion and preservation on resize. Existing certificate issuance/PDF checks still pass.
+Independent source review found no defect; the detector returned no findings. No backend validation,
+database schema or business rules changed. Phase 3 has not started.
 
 Phase 2 closeout review: checked the shared toolbar/Reset, declared filters, compact columns,
 details menus, context-preserving paging, adaptive row sizing and exact footer metadata against

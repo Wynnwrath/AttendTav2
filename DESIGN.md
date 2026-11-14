@@ -212,9 +212,16 @@ button, or a card with no outline is not part of this system.
   menu where available. Keep frequent Edit, Approve, Decline and PDF actions visible. Close the
   popover before opening its dialog, and restore focus to the visible menu trigger on dismissal.
   The menu is always the final action on the right, in both DOM and visual order.
+  Include a details action only when it adds information. Preserve a little identity context;
+  omit repeated table facts and unavailable certificate fields. Event classifications expand
+  clipped descriptions inline with Read more/Read less, without a generic details modal. Short
+  descriptions have no disclosure; without JavaScript the full description remains readable.
 - **Density:** keep identity and decision facts visible; combine related fields and put
   secondary information in a shared Show details dialog. No internal table scroll region.
   Below 640px, rows become labelled blocks with natural page scrolling.
+  Members show Email alongside name/student number and course/year/section; reserve compact
+  widths for Status and Edit/menu actions. Venues group Room Name and Location before the
+  compact Capacity, Status and Actions columns. Capacity headings and values align right.
 - **Search and filters:** each list declares appropriate fields through the shared Razor
   toolbar. Search keeps its action label. One Reset control clears search and list filters,
   preserving the selected event and history section. Preserve unrelated query criteria across

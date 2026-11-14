@@ -59,6 +59,13 @@ else if (Model.Rows.Count > 0)
         <tbody>
             @foreach (var row in Model.Rows)
             {
+                var detailFields = new Dictionary<string, string> {
+                    ["Student number"] = row.StudentNumber, ["Event"] = row.EventTitle,
+                    ["Attended"] = row.AttendedAt is null ? "Not recorded" : ManilaTimeFormatter.Format(row.AttendedAt.Value)
+                };
+                if (!string.IsNullOrWhiteSpace(row.Reason)) detailFields["Reason"] = row.Reason;
+                if (!string.IsNullOrWhiteSpace(row.CertificateNumber)) detailFields["Certificate number"] = row.CertificateNumber;
+                if (row.IssuedAt is DateTime detailIssuedAt) detailFields["Issued"] = ManilaTimeFormatter.Format(detailIssuedAt);
                 <tr data-registration-id="@row.RegistrationId">
                     <td data-label="Member">@row.MemberName<small class="cell-meta">@row.StudentNumber</small></td>
                     @if (tab == "eligibility") {
@@ -97,7 +104,7 @@ else if (Model.Rows.Count > 0)
                             <a class="button button-secondary button-small" asp-action="Viewer" asp-route-id="@row.RegistrationId">View PDF<span class="ledger-sr-only"> for @row.MemberName</span></a>
                         }
                         else { <span class="muted">Decision final</span> }
-                            <partial name="_DetailsButton" model='@(new RecordDetailsViewModel($"certificate-details-{row.RegistrationId}", row.MemberName, new Dictionary<string, string> { ["Student number"] = row.StudentNumber, ["Event"] = row.EventTitle, ["Attended"] = row.AttendedAt is null ? "Not recorded" : ManilaTimeFormatter.Format(row.AttendedAt.Value), ["Eligibility"] = row.StatusLabel, ["Reason"] = row.Reason, ["Certificate number"] = row.CertificateNumber, ["Issued"] = row.IssuedAt is null ? "Not issued" : ManilaTimeFormatter.Format(row.IssuedAt.Value) }, null))' />
+                            <partial name="_DetailsButton" model='@(new RecordDetailsViewModel($"certificate-details-{row.RegistrationId}", row.MemberName, detailFields, null))' />
                         </div>
                     </td>
                 </tr>

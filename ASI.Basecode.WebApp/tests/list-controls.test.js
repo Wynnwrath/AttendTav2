@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 
-function load({ height = 720, top = 250, rowHeight = 50, total = 50, url = 'http://localhost/Member?pageSize=5', editing = false, search = null, paging = true, grid = false, mode = 'auto' } = {}) {
+function load({ height = 720, top = 250, rowHeight = 50, total = 50, url = 'http://localhost/Member?pageSize=5', editing = false, expanded = false, search = null, paging = true, grid = false, mode = 'auto' } = {}) {
     const events = {}, changes = [], forms = [];
     const table = { getBoundingClientRect: () => ({ top }), querySelector: () => ({ getBoundingClientRect: () => ({ height: 40 }) }), querySelectorAll: () => Array.from({ length: 5 }, () => ({ querySelector: () => null, getBoundingClientRect: () => ({ top: top + 40, height: rowHeight }) })) };
     const footer = { dataset: { pagingSize: '5', pagingPage: new URL(url).searchParams.get('page') || '1', pagingMode: mode, pagingTotal: String(total) }, getBoundingClientRect: () => ({ height: 64 }), parentElement: { querySelector: () => grid ? null : table } };
@@ -12,8 +12,8 @@ function load({ height = 720, top = 250, rowHeight = 50, total = 50, url = 'http
     if (search) forms.push(search);
     const document = {
         activeElement: { matches: () => editing },
-        querySelectorAll: () => forms,
-        querySelector: selector => selector === '[data-paging-size]' ? paging ? footer : null : selector === 'dialog[open]' ? null : selector === '[data-paging-grid]' ? cards : grid ? null : table,
+        querySelectorAll: selector => selector === '[data-list-search]' ? forms : [],
+        querySelector: selector => selector === '[data-paging-size]' ? paging ? footer : null : selector === 'dialog[open]' ? null : selector === '[data-expandable-toggle][aria-expanded="true"]' ? expanded ? {} : null : selector === '[data-paging-grid]' ? cards : grid ? null : table,
         addEventListener: (event, callback) => { events[event] = callback; },
         createElement: () => ({})
     };
@@ -71,6 +71,13 @@ test('scrollbar-sized viewport changes do not restart a fitted page', () => {
 test('a pending search is not lost to an automatic viewport fit', () => {
     const search = { dataset: { appliedSearch: 'Ana' }, querySelector: () => ({ value: 'Ben' }) };
     const { changes } = load({ search, height: 1000 });
+    assert.equal(changes.length, 0);
+});
+
+test('an expanded description is not lost to automatic paging on resize', () => {
+    const { changes, events, window } = load({ expanded: true });
+    window.innerWidth -= 100;
+    events.resize();
     assert.equal(changes.length, 0);
 });
 

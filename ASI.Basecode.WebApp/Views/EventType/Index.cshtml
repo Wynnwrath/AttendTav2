@@ -36,8 +36,8 @@
                 <tr>
                     <th scope="col">Type Name</th>
                     <th scope="col">Description</th>
-                    <th scope="col">Status</th>
-                    <th scope="col" class="actions">Actions</th>
+                    <th scope="col" class="column-status">Status</th>
+                    <th scope="col" class="actions actions-tight">Actions</th>
                 </tr>
             </thead>
         </table>
@@ -51,8 +51,8 @@ else if (Model.Items.Count == 0)
                 <tr>
                     <th scope="col">Type Name</th>
                     <th scope="col">Description</th>
-                    <th scope="col">Status</th>
-                    <th scope="col" class="actions">Actions</th>
+                    <th scope="col" class="column-status">Status</th>
+                    <th scope="col" class="actions actions-tight">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -80,17 +80,21 @@ else
                 <tr>
                     <th scope="col">Type Name</th>
                     <th scope="col">Description</th>
-                    <th scope="col">Status</th>
-                    <th scope="col" class="actions">Actions</th>
+                    <th scope="col" class="column-status">Status</th>
+                    <th scope="col" class="actions actions-tight">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var eventType in Model.Items)
                 {
-                    var details = new RecordDetailsViewModel($"type-details-{eventType.TypeId}", eventType.TypeName, new Dictionary<string, string> { ["Description"] = eventType.Description }, null);
                     <tr data-type-id="@eventType.TypeId">
                         <td data-label="Type Name" class="cell-name"><span class="cell-strong">@eventType.TypeName</span></td>
-                        <td data-label="Description" class="cell-description"><span class="line-clamp-two">@eventType.Description</span></td>
+                        <td data-label="Description" class="cell-description">
+                            <div data-expandable-text>
+                                <p id="type-description-@eventType.TypeId" data-expandable-content>@eventType.Description</p>
+                                <button type="button" class="text-disclosure" data-expandable-toggle aria-expanded="false" aria-controls="type-description-@eventType.TypeId" hidden><span data-expandable-label>Read more</span><span class="sr-only"> about @eventType.TypeName</span></button>
+                            </div>
+                        </td>
                         <td data-label="Status"><span class="badge @(eventType.IsActive ? "badge-active" : "badge-inactive")">@(eventType.IsActive ? "Active" : "Inactive")</span></td>
                         <td data-label="Actions" class="actions">
                             <div class="row-actions">
@@ -99,7 +103,6 @@ else
                                 <partial name="_RowMenuTrigger" model="@($"row-menu-event-type-{eventType.TypeId}")" />
                             </div>
                             <div id="row-menu-event-type-@eventType.TypeId" popover class="row-menu">
-                                <partial name="_DetailsTrigger" model="details" />
                                 <form asp-action="ToggleActive" asp-route-id="@eventType.TypeId" method="post">
                                     <input type="hidden" name="page" value="@Model.PageNumber" />
                                     <div class="@(eventType.IsActive ? "row-menu-danger" : null)">
@@ -107,7 +110,6 @@ else
                                     </div>
                                 </form>
                             </div>
-                        <partial name="_DetailsDialog" model="details" />
                         </td>
                     </tr>
                 }

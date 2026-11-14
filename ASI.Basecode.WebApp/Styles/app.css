@@ -819,6 +819,12 @@
   .numeric { font-variant-numeric: tabular-nums; }
   .data-table .numeric { color: var(--color-ink); font-weight: 500; text-align: right; }
   .data-table th.numeric { width: 112px; color: var(--color-ink-muted); font-weight: 600; }
+  .data-table th.column-status { width: 112px; }
+  [data-expandable-content] { margin: 0; }
+  .text-disclosure { min-height: 32px; margin-top: 4px; padding: 4px 0; border: 0; background: transparent; color: var(--color-cobalt); font: inherit; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+  .text-disclosure:hover { color: var(--color-ink); }
+  .text-disclosure:focus-visible { outline: 2px solid var(--color-cobalt); outline-offset: 3px; }
+  @media (pointer: coarse) { .text-disclosure { min-height: 44px; } }
   /* A timestamp is read as text, so it keeps the row's left edge. */
   .data-table .numeric.cell-date { text-align: left; }
   /* An identifier is read as text too: tabular figures, but aligned with its heading. */

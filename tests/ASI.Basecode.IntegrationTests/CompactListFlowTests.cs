@@ -6,6 +6,7 @@ using ASI.Basecode.Data.Models.Lookups;
 using ASI.Basecode.Services.Security;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Playwright;
 using Xunit;
 
 namespace ASI.Basecode.IntegrationTests;
@@ -28,9 +29,10 @@ public sealed class CompactListFlowTests(SqlServerDatabaseFixture fixture) : ICl
         await db.SaveChangesAsync(ct);
         var members = users.Select((user, index) => new Member { UserId = user.Id, StudentNumber = $"UI-{index + 1:D4}", Course = index == 0 ? "BS Information Technology" : index < 6 ? "BSIT" : "BSCS", YearLevel = 2, Section = "A", MobileNumber = "09000000000", MembershipStatusId = MembershipStatusCode.Active, CreatedBy = officer.Id, CreatedAt = now }).ToArray();
         db.Members.AddRange(members);
-        var type = new EventType { TypeName = "Review Workshop", Description = "A longer description retained in Show details.", IsActive = true, CreatedBy = officer.Id, CreatedAt = now };
+        var type = new EventType { TypeName = "Review Workshop", Description = string.Join(" ", Enumerable.Repeat("A full classification description that remains readable without opening an editor.", 20)), IsActive = true, CreatedBy = officer.Id, CreatedAt = now };
+        var shortType = new EventType { TypeName = "Brief classification", Description = "Short description.", IsActive = true, CreatedBy = officer.Id, CreatedAt = now };
         var venue = new Venue { RoomName = "Review Hall", Location = "Campus building A", Capacity = 50, AvailabilityNotes = "Contact the officer before setup.", ContactPerson = "Sample contact", ImagePath = "uploads/venues/review.png", IsActive = true, CreatedBy = officer.Id, CreatedAt = now };
-        db.AddRange(type, venue);
+        db.AddRange(type, shortType, venue);
         await db.SaveChangesAsync(ct);
         var upcoming = new Event { Title = "Review Upcoming Event", Description = "Full event information.", TypeId = type.TypeId, VenueId = venue.VenueId, StartsAt = now.AddDays(3), RegistrationDeadline = now.AddDays(2), ParticipantLimit = 20, EventStatusId = EventStatusCode.Published, PublishedBy = officer.Id, PublishedAt = now, CreatedBy = officer.Id, CreatedAt = now };
         var completed = new Event { Title = "Review Completed Event", TypeId = type.TypeId, VenueId = venue.VenueId, StartsAt = now.AddDays(-2), RegistrationDeadline = now.AddDays(-3), ParticipantLimit = 20, EventStatusId = EventStatusCode.Completed, PublishedBy = officer.Id, PublishedAt = now.AddDays(-4), CompletedBy = officer.Id, CompletedAt = now.AddDays(-1), CreatedBy = officer.Id, CreatedAt = now.AddDays(-4) };
@@ -134,6 +136,9 @@ public sealed class CompactListFlowTests(SqlServerDatabaseFixture fixture) : ICl
         Assert.DoesNotContain("Review Upcoming Event", completedEvents);
         var filteredCertificates = await client.GetStringAsync($"/Certificates?eventId={completed.EventId}&search=UI-0001", ct);
         Assert.Contains("Showing 1–1 of 1 matching review", filteredCertificates);
+        Assert.DoesNotContain("<dt>Issued</dt>", filteredCertificates);
+        Assert.DoesNotContain("<dt>Certificate number</dt>", filteredCertificates);
+        await VerifyTableDisclosureAsync(client, type.TypeId, shortType.TypeId, ct);
 
         using var memberClient = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false, HandleCookies = true });
         await SignIn(memberClient, users[0].UserId, password, ct);
@@ -143,6 +148,76 @@ public sealed class CompactListFlowTests(SqlServerDatabaseFixture fixture) : ICl
             Assert.DoesNotContain("Review Member 02", html);
             if (!string.IsNullOrWhiteSpace(capture)) await File.WriteAllTextAsync(Path.Combine(capture, "my-" + action.ToLowerInvariant() + ".html"), html, ct);
         }
+    }
+
+    private static async Task VerifyTableDisclosureAsync(HttpClient client, int longTypeId, int shortTypeId, CancellationToken ct)
+    {
+        using var playwright = await Playwright.CreateAsync();
+        await using var browser = await playwright.Chromium.LaunchAsync(new() { Headless = true });
+        var page = await browser.NewPageAsync();
+        var errors = new List<string>();
+        page.PageError += (_, error) => errors.Add(error);
+        await page.RouteAsync("**/*", async route =>
+        {
+            using var response = await client.GetAsync(route.Request.Url, ct);
+            var headers = response.Headers.Concat(response.Content.Headers)
+                .Where(header => header.Key is not ("Transfer-Encoding" or "Content-Length" or "Content-Encoding"))
+                .ToDictionary(header => header.Key, header => string.Join(", ", header.Value));
+            await route.FulfillAsync(new() { Status = (int)response.StatusCode, Headers = headers, BodyBytes = await response.Content.ReadAsByteArrayAsync(ct) });
+        });
+        foreach (var width in new[] { 1440, 1024, 390 })
+        {
+            await page.SetViewportSizeAsync(width, 900);
+            foreach (var (name, route) in new[] { ("members", "/Member"), ("venues", "/Venue"), ("types", "/EventType") })
+            {
+                await page.GotoAsync($"http://localhost{route}?fit=2");
+                await page.EvaluateAsync("document.fonts.ready");
+                Assert.True(await page.EvaluateAsync<bool>("document.documentElement.scrollWidth <= window.innerWidth"), $"{name} overflow at {width}px");
+                if (name == "members")
+                {
+                    Assert.Equal(5, await page.Locator("thead th").CountAsync());
+                    Assert.True(await page.Locator("td[data-label='Email']").First.IsVisibleAsync());
+                    Assert.Contains("BSIT · 2 · A", await page.Locator("tbody tr").First.InnerTextAsync());
+                    await page.Locator(".row-menu-trigger").First.ClickAsync();
+                    await page.GetByRole(AriaRole.Button, new() { Name = "Show details", Exact = false }).First.ClickAsync();
+                    var fields = await page.Locator("dialog[open] dt").AllTextContentsAsync();
+                    Assert.DoesNotContain("Email", fields);
+                    Assert.DoesNotContain("Course", fields);
+                    Assert.Contains("Mobile", fields);
+                    await page.Keyboard.PressAsync("Escape");
+                }
+                if (name == "venues")
+                {
+                    Assert.Equal(new[] { "Room Name", "Location", "Capacity", "Status", "Actions" }, await page.Locator("thead th").AllTextContentsAsync());
+                    if (width > 640)
+                    {
+                        Assert.Equal("right", await page.Locator("td[data-label='Capacity']").First.EvaluateAsync<string>("cell => getComputedStyle(cell).textAlign"));
+                        Assert.Equal("right", await page.Locator("thead th.numeric").EvaluateAsync<string>("cell => getComputedStyle(cell).textAlign"));
+                    }
+                }
+                if (name == "types")
+                {
+                    Assert.Equal(0, await page.Locator("[id^='type-details-']").CountAsync());
+                    var longRow = page.Locator($"[data-type-id='{longTypeId}']");
+                    var toggle = longRow.Locator("[data-expandable-toggle]");
+                    Assert.True(await toggle.IsVisibleAsync());
+                    Assert.False(await page.Locator($"[data-type-id='{shortTypeId}'] [data-expandable-toggle]").IsVisibleAsync());
+                    await toggle.FocusAsync();
+                    await page.Keyboard.PressAsync("Enter");
+                    Assert.Equal("true", await toggle.GetAttributeAsync("aria-expanded"));
+                    Assert.True(await longRow.Locator("[data-expandable-content]").EvaluateAsync<bool>("text => text.scrollHeight <= text.clientHeight + 1"));
+                    await page.SetViewportSizeAsync(width - 40, 900);
+                    await page.WaitForTimeoutAsync(550);
+                    Assert.Equal("true", await toggle.GetAttributeAsync("aria-expanded"));
+                    await page.SetViewportSizeAsync(width, 900);
+                    await toggle.ClickAsync();
+                    Assert.Equal("false", await toggle.GetAttributeAsync("aria-expanded"));
+                }
+                await page.EvaluateAsync("window.scrollTo(0, 0)");
+                await page.ScreenshotAsync(new() { Path = Path.Combine(Path.GetTempPath(), $"attendta-table-{name}-{width}.png"), FullPage = true });
+            }
+        }
+        Assert.Empty(errors);
     }
 
     private static async Task SignIn(HttpClient client, string email, string password, CancellationToken ct)
