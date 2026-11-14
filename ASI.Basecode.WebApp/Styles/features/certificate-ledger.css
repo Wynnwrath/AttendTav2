@@ -9,7 +9,17 @@
   .certificate-toolbar-actions { display: flex; flex-wrap: wrap; gap: 8px; }
   .certificate-viewer { margin-top: 1rem; padding: 1rem; background: var(--color-surface-subtle); border: 1px solid var(--color-border); border-radius: var(--radius-panel); }
   .certificate-viewer iframe { display: block; width: 100%; height: 72vh; min-height: 320px; border: 0; background: var(--color-surface); }
+  .record-dialog.certificate-preview { width: min(1120px, calc(100vw - 48px)); }
+  .certificate-preview-pages { max-height: 60dvh; overflow: auto; margin-top: 16px; padding: 12px; border: 1px solid var(--color-border); background: var(--color-surface-subtle); }
+  .certificate-preview-pages canvas { display: block; width: auto; max-width: 100%; height: auto; max-height: calc(60dvh - 26px); margin: 0 auto 12px; }
+  .certificate-preview-pages canvas:last-child { margin-bottom: 0; }
+  .certificate-preview [data-pdf-message] { margin: 12px 0; font-size: 13px; color: var(--color-ink-muted); }
+  .certificate-preview .record-dialog-actions { margin-top: 16px; }
+  .certificate-preview [hidden] { display: none; }
   @media (max-width: 640px) {
+    .record-dialog.certificate-preview { width: calc(100vw - 24px); }
+    .certificate-preview-pages { max-height: 50dvh; padding: 4px; }
+    .certificate-preview-pages canvas { max-height: calc(50dvh - 10px); }
     .certificate-dialog { width: calc(100vw - 32px); }
     .certificate-dialog .dialog-actions { flex-wrap: wrap; }
     .certificate-viewer { padding: .4rem; }

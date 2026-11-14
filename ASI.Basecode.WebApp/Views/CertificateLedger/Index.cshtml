@@ -4,6 +4,7 @@
     ViewData["ListControls"] = true;
     ViewData["Title"] = "Certificates";
     ViewData["Feature"] = "certificate-ledger";
+    ViewData["CertificatePreview"] = true;
     var tab = Model.ActiveTab == CertificateLedgerTab.Issued ? "issued" : "eligibility";
     ViewData["ResultNoun"] = tab == "issued" ? "certificate" : "review";
 }
@@ -99,10 +100,11 @@ else if (Model.Rows.Count > 0)
                         {
                             <button type="button" class="button button-secondary button-small" data-certificate-open="issue-certificate" data-id="@row.RegistrationId" data-member="@row.MemberName" data-event="@row.EventTitle">Issue certificate</button>
                         }
-                        else if (row.Status == CertificateStatusCode.Issued)
+                        else if (row.Status == CertificateStatusCode.Issued && row.HasDocument)
                         {
-                            <a class="button button-secondary button-small" asp-action="Viewer" asp-route-id="@row.RegistrationId">View PDF<span class="ledger-sr-only"> for @row.MemberName</span></a>
+                            <a class="button button-secondary button-small" asp-action="Viewer" asp-route-id="@row.RegistrationId" data-certificate-pdf="@Url.Action("Pdf", new { id = row.RegistrationId })" data-certificate-title="@row.MemberName · @row.EventTitle" data-certificate-number="@row.CertificateNumber">View PDF<span class="ledger-sr-only"> for @row.MemberName</span></a>
                         }
+                        else if (row.Status == CertificateStatusCode.Issued) { <span class="muted" role="status">Document unavailable</span> }
                         else { <span class="muted">Decision final</span> }
                             <partial name="_DetailsButton" model='@(new RecordDetailsViewModel($"certificate-details-{row.RegistrationId}", row.MemberName, detailFields, null))' />
                         </div>

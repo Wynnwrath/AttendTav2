@@ -67,7 +67,13 @@ public sealed class CertificateLedgerService(
         CancellationToken cancellationToken = default)
     {
         var read = await ReadAsync(eventId, cancellationToken);
-        return BuildPage(read, tab, page);
+        var result = BuildPage(read, tab, page);
+        foreach (var row in result.Rows.Where(row => row.Status == CertificateStatusCode.Issued))
+        {
+            var certificate = await certificates.GetByRegistrationIdNoTrackingAsync(row.RegistrationId, cancellationToken);
+            row.HasDocument = await CertificateFileAvailability.IsAvailableAsync(files, certificate?.FilePath, cancellationToken);
+        }
+        return result;
     }
 
     /// <summary>
@@ -262,6 +268,8 @@ public sealed class CertificateLedgerService(
     {
         RequireManagement();
         var (certificate, identity) = await RequireIssuedDocumentAsync(registrationId, cancellationToken);
+
+        if (!await CertificateFileAvailability.IsAvailableAsync(files, certificate.FilePath, cancellationToken)) throw NotFound();
 
         return new CertificateViewerViewModel
         {
@@ -532,7 +540,9 @@ public sealed class CertificateLedgerService(
             await using var stream = await files.OpenReadAsync(certificate.FilePath, cancellationToken);
             using var copy = new MemoryStream();
             await stream.CopyToAsync(copy, cancellationToken);
-            return new CertificateDocument(copy.ToArray(), certificate.CertificateNumber);
+            var bytes = copy.ToArray();
+            if (bytes.Length < 5 || !bytes.AsSpan(0, 5).SequenceEqual("%PDF-"u8)) throw NotFound();
+            return new CertificateDocument(bytes, certificate.CertificateNumber);
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or InvalidDataException or ArgumentException)
         {

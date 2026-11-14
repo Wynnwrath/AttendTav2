@@ -117,7 +117,10 @@ public sealed class CertificateLedgerController : ControllerBase<CertificateLedg
             OutcomeCode.Forbidden => StatusCodes.Status403Forbidden,
             _ => StatusCodes.Status409Conflict
         };
-        ViewData["DocumentError"] = exception.Message;
+        ViewData["DocumentError"] = exception.Outcome == OutcomeCode.NotFound
+            && (User.IsInRole(RoleCodes.Admin) || User.IsInRole(RoleCodes.Officer))
+            ? "The certificate document is unavailable. Return to the registry or ask an administrator to check the stored PDF."
+            : exception.Message;
         return View("Viewer", CertificateViewerViewModel.Empty(id));
     }
 }

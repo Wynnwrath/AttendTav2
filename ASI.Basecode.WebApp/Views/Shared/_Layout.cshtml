@@ -37,6 +37,7 @@
                 <div class="notice @(isError ? "notice-error" : "notice-success")" role="@(isError ? "alert" : "status")">@message</div>
             }
             @RenderBody()
+            @if (ViewData["CertificatePreview"] is true) { <partial name="_CertificatePreview" /> }
         </main>
     </div>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
@@ -54,5 +55,9 @@
         <script src="~/js/features/@(feature).js" asp-append-version="true"></script>
     }
     @await RenderSectionAsync("Scripts", required: false)
+    @if (ViewData["CertificatePreview"] is true)
+    {
+        <script src="~/js/features/certificate-preview.js" asp-append-version="true"></script>
+    }
 </body>
 </html>

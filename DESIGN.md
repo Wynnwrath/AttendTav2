@@ -238,6 +238,13 @@ button, or a card with no outline is not part of this system.
 - **Account role changes:** reuse the shared record editor dialog, including its field spacing,
   validation, loading/recovery states, unsaved-change protection, and focus restoration. Keep
   the full-page form available as a fallback; both paths use the same fields and audited command.
+- **Certificate preview:** View PDF opens a read-only modal from the issued registry and member
+  history, preserving the current list and focus. Render retained PDF pages with locally bundled
+  PDF.js; provide Open in new tab and Download PDF as native document alternatives. Loading is
+  cancellable, errors offer Retry, and closing cancels work and releases document resources.
+  Check retained PDF availability before showing links. Missing/corrupt files show Document
+  unavailable while the original Issued state and metadata remain intact. Never regenerate an
+  issued certificate as part of viewing or availability checks.
 - **Filter scope:** Members and Membership Requests share BSCS/BSIT Course and Year choices.
   Event Management uses existing classification IDs in a dropdown; Registration Review chooses
   a specific event. Campus Events uses Search and Active/Completed tabs, with Active including

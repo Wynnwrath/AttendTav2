@@ -2,6 +2,7 @@
 @{
     ViewData["ListControls"] = true;
     ViewData["Title"] = "Participation History";
+    ViewData["CertificatePreview"] = Model.ActiveTab == MyEventsTab.Certificates;
     var tabs = new[]
     {
         (Tab: MyEventsTab.Registrations, Label: "My Registrations", Action: "Registrations"),

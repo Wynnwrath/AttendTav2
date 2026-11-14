@@ -311,6 +311,35 @@ login/member journeys retain their assigned later phases. Deferred profile valid
 
 No further user design decisions are presently required. Surface genuinely new business-rule conflicts with a concrete example if implementation reveals one.
 
+### Certificate availability repair and PDF modal follow-up
+
+User-approved follow-up: replace misleading View PDF links for missing/corrupt files with Document
+unavailable, retaining Issued and its metadata. A shared service helper checks the private certificate
+key and readable PDF signature; direct reads keep ownership/authorization and now reject corrupt
+PDF bytes. Management/member lists use those facts. This is backend read-side support; issuance,
+decisions, audit rules, schema and profile validation are unchanged.
+
+View PDF now opens a shared read-only modal with the actual retained PDF, Close, Open in new tab
+and Download. The standalone viewer remains as a fallback. Loading can be dismissed; retry handles
+document/module failures, and closing cancels fetch/render work, releases blob/worker resources,
+restores focus and leaves list filters intact. PDF.js 6.5.438 is pinned and self-hosted under
+wwwroot/lib/pdfjs with its license/provenance; it loads only on demand and needs no CDN/plugin.
+Official usage reference: https://mozilla.github.io/pdf.js/examples/ . Visible canvas rendering
+and extracted accessible PDF text replace unreliable native PDF iframe rendering.
+
+Local data investigation found eight Issued rows: two retained PDFs, five missing referenced files
+and one missing path. No matching missing originals were found in the project local folders. These
+six remain unavailable until originals are restored; no local certificate records were altered,
+reset, reissued or regenerated. The UI repair does not claim to reconstruct missing documents.
+
+Validation: clean Release build and CSS generation; 329 service and 24 JavaScript checks passed.
+The 16 affected certificate/compact-list integration tests passed. Follow-up browser checks cover
+visible PDF pixels and accessible text, actual download bytes, desktop/phone layouts, filter/focus
+preservation, dismissal during a stalled fetch, module/document retry, unavailable/restored/corrupt
+files, unchanged issuance/audit and owner-only access. Independent review caught and resolved
+busy-loading dismissal and cached failed-import recovery; the detector and syntax checks passed.
+Phase 3 remains unstarted; remaining cross-app sign-off stays in Phase 7.
+
 Accounts no longer offers a separate Preview deactivation menu item. Deactivate opens the existing
 confirmation with affected registrations, required reason and Cancel/Confirm; authorization,
 audit and last-administrator protection are unchanged. This is a menu cleanup, not a backend rule change.
