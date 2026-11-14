@@ -45,10 +45,6 @@
                                 <partial name="_RowMenuTrigger" model="@($"row-menu-account-{account.AccountId}")" />
                             </div>
                             <div id="row-menu-account-@account.AccountId" popover class="row-menu">
-                                @if (account.IsActive)
-                                {
-                                    <button type="button" class="button" data-deactivation-preview="@Url.Action("Index", "DeactivationPreview", new { userId = account.AccountId })">Preview deactivation</button>
-                                }
                                 <div class="row-menu-danger">
                                     <partial name="_AccessActions" model="AccountAccessViewModel.For(account)" />
                                 </div>

@@ -217,15 +217,16 @@ public sealed class DeactivationPreviewTests : IClassFixture<SqlServerDatabaseFi
     }
 
     [Fact]
-    public async Task AccountsListExposesThePreviewTrigger()
+    public async Task AccountsListKeepsAccessConfirmationWithoutASeparatePreviewTrigger()
     {
         var ct = TestContext.Current.CancellationToken;
         await MemberEventTestSupport.SignInAsync(client, admin.UserId, password, ct);
 
         var html = await client.GetStringAsync($"/admin/accounts?search={Uri.EscapeDataString(memberUser.UserId)}", ct);
 
-        Assert.Contains("Preview deactivation", html, StringComparison.Ordinal);
-        Assert.Contains($"data-deactivation-preview=\"/DeactivationPreview/{memberUser.Id}\"", html, StringComparison.Ordinal);
+        Assert.DoesNotContain("Preview deactivation", html, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-deactivation-preview", html, StringComparison.Ordinal);
+        Assert.Contains($"data-access-dialog=\"/admin/accounts/{memberUser.Id}/access\"", html, StringComparison.Ordinal);
         Assert.Contains($"/admin/accounts/{memberUser.Id}/role", html, StringComparison.Ordinal);
     }
 

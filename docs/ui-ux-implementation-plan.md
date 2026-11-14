@@ -310,3 +310,9 @@ Draft/publish/cover improvements, bulk approvals, report card/detail hierarchy a
 login/member journeys retain their assigned later phases. Deferred profile validation remains pending.
 
 No further user design decisions are presently required. Surface genuinely new business-rule conflicts with a concrete example if implementation reveals one.
+
+Accounts no longer offers a separate Preview deactivation menu item. Deactivate opens the existing
+confirmation with affected registrations, required reason and Cancel/Confirm; authorization,
+audit and last-administrator protection are unchanged. This is a menu cleanup, not a backend rule change.
+Validation: clean Release build and all 12 affected preview/deactivation integration tests passed;
+independent source review and detector found no issue. Preview restarted on port 5099.
