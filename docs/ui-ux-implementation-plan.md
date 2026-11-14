@@ -134,6 +134,20 @@ Dual-agent critique and polish corrected coarse-pointer row-control specificity.
 component-fixture checks verified controls, modified-input warning, Keep editing, Discard changes
 and focus return. Full authenticated-page/mobile visual verification remains for Phase 7.
 
+Phase 1 convention review: shared unsaved-input protection belongs in the existing `site.js`
+dialog infrastructure, rather than a separately loaded global script. Record/certificate feature
+scripts reuse its small `AttendTaDialogs` API. Each opener establishes its initial field state
+explicitly; AJAX editors reset that state only after an initial load, not after validation errors.
+Existing Razor partials, native dialogs, progressive fallback routes and server-side business rules
+remain the implementation pattern. Phase 2 list behavior will follow the existing feature-script
+loading convention, and page-specific filters will be explicit rather than a growing route switch.
+
+Correction validation: isolated Phase 1 Release build passed with 0 warnings/0 errors. All 13 JS
+tests passed, including Escape/discard, keeping edited text, baseline cleanup and a server-rendered
+failed dossier reason remaining protected. Shared/feature JS syntax checks passed; the detector
+reported no findings. Independent review confirmed the retry-reason correction. Phase 2 working
+changes were excluded from this validation and remain uncommitted.
+
 Preserve the current visual identity and existing authorization, audit, date conversion, capacity and state rules. Add targeted backend support for agreed query/paging/approval capabilities. Do not introduce bulk declines, bulk issuance, a scheduled registration-opening feature, database resets or unrelated business-rule changes as part of UI refinement.
 
 No further user design decisions are presently required. Surface genuinely new business-rule conflicts with a concrete example if implementation reveals one.

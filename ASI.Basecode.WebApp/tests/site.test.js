@@ -37,6 +37,7 @@ function createElement(tagName) {
         addEventListener(type, handler) {
             (element.listeners[type] = element.listeners[type] || []).push(handler);
         },
+        querySelectorAll() { return []; },
         querySelector() {
             return null;
         },
@@ -77,7 +78,7 @@ function runSite(document, fetch) {
     $.ajaxSetup = () => {};
 
     const source = fs.readFileSync(path.join(__dirname, '..', 'wwwroot', 'js', 'site.js'), 'utf8');
-    vm.runInNewContext(source, { $, document, fetch, console });
+    vm.runInNewContext(source, { $, document, fetch, console, window: {} });
 
     const handlers = document.clickHandlers || [];
     assert.ok(handlers.length > 0, 'site.js must register a click handler');
@@ -124,6 +125,7 @@ test('a failed preview fetch shows an error notice and no dialog', async () => {
     const source = fs.readFileSync(path.join(__dirname, '..', 'wwwroot', 'js', 'site.js'), 'utf8');
     vm.runInNewContext(source, {
         $,
+        window: {},
         document,
         fetch: () => Promise.resolve({ ok: false, text: () => Promise.resolve('') }),
         console

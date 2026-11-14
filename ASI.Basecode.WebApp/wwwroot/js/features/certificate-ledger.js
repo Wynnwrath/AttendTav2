@@ -12,6 +12,7 @@
             });
             dialog.querySelectorAll('textarea').forEach(function (field) { field.value = ''; });
             dialog.addEventListener('close', function () { trigger.focus(); }, { once: true });
+            window.AttendTaDialogs.track(dialog, true);
             dialog.showModal();
             (dialog.querySelector('textarea') || dialog.querySelector('[data-certificate-close]'))?.focus();
         }

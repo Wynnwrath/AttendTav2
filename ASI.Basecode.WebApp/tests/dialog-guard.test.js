@@ -4,20 +4,55 @@ const vm = require('node:vm');
 const fs = require('node:fs');
 const path = require('node:path');
 
-function setup() {
+function setup({ reopen = false } = {}) {
     const handlers = {};
-    const context = { window: {}, document: {
+    function element(tagName) {
+        return {
+            tagName, dataset: {}, children: [], listeners: {},
+            setAttribute() {},
+            append(...children) { children.forEach(child => { child.parent = this; this.children.push(child); }); },
+            appendChild(child) { this.append(child); },
+            addEventListener(name, handler) { this.listeners[name] = handler; },
+            focus() { this.focused = true; },
+            remove() { if (this.parent) this.parent.children = this.parent.children.filter(child => child !== this); },
+            querySelector(selector) {
+                for (const child of this.children) {
+                    if ((selector === 'button' && child.tagName === 'button') || (selector === '[data-discard-prompt]' && child.dataset.discardPrompt !== undefined)) return child;
+                    const nested = child.querySelector(selector);
+                    if (nested) return nested;
+                }
+                return null;
+            }
+        };
+    }
+    class Dialog {}
+    const $ = callback => callback();
+    $.ajaxSetup = () => {};
+    const context = { $, window: {}, HTMLDialogElement: Dialog, document: {
+        body: { appendChild() {} },
+        createElement: element,
+        querySelector: () => null,
+        getElementById: () => null,
         addEventListener: (name, callback) => { handlers[name] = callback; }
     }};
-    vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../wwwroot/js/dialog-guard.js'), 'utf8'), context);
     const fields = [{ name: 'Title', type: 'text', value: 'Draft', disabled: false }];
-    const dialog = {
+    const dialog = Object.assign(new Dialog(), element('dialog'), {
         querySelectorAll: () => fields,
-        querySelector: () => null,
         getAttribute: () => null,
         close() { this.closed = true; }
-    };
-    return { api: context.window.AttendTaDialogs, fields, dialog };
+    });
+    if (reopen) {
+        const reason = { name: 'reason', type: 'textarea', value: 'Previously entered reason', focus() {} };
+        fields.push(reason);
+        dialog.dataset.reopenId = '7';
+        dialog.dataset.reopenReason = reason.value;
+        const query = dialog.querySelector.bind(dialog);
+        dialog.querySelector = selector => selector.startsWith('textarea') ? reason : selector === '[data-dialog-field="id"]' ? {} : query(selector);
+        dialog.showModal = () => { dialog.open = true; };
+        context.document.querySelector = selector => selector === 'dialog[data-reopen="true"]' ? dialog : null;
+    }
+    vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../wwwroot/js/site.js'), 'utf8'), context);
+    return { api: context.window.AttendTaDialogs, fields, dialog, handlers };
 }
 
 test('dialog guard recognizes edits and undoing edits', () => {
@@ -60,4 +95,54 @@ test('checkboxes and selected files participate in change detection', () => {
     fields[1].checked = false;
     fields[2].files = [{ name: 'cover.png', size: 42, lastModified: 1 }];
     assert.equal(api.hasChanges(dialog), true);
+});
+
+test('dismissing an edited dialog offers keep editing before it can discard input', () => {
+    const { api, dialog, fields } = setup();
+    api.track(dialog);
+    fields[0].value = 'Unsaved title';
+    assert.equal(api.requestClose(dialog), false);
+    assert.notEqual(dialog.closed, true);
+    const prompt = dialog.querySelector('[data-discard-prompt]');
+    assert.ok(prompt);
+    const keep = prompt.querySelector('button');
+    assert.equal(keep.textContent, 'Keep editing');
+    assert.equal(keep.focused, true);
+    keep.listeners.click();
+    assert.equal(dialog.querySelector('[data-discard-prompt]'), null);
+    assert.equal(fields[0].value, 'Unsaved title');
+    assert.notEqual(dialog.closed, true);
+});
+
+test('Escape uses the same discard choice and only explicit discard closes edited input', () => {
+    const { api, dialog, fields, handlers } = setup();
+    api.track(dialog);
+    fields[0].value = 'Unsaved title';
+    let prevented = false;
+    handlers.cancel({ target: dialog, preventDefault() { prevented = true; } });
+    assert.equal(prevented, true);
+    assert.notEqual(dialog.closed, true);
+    const prompt = dialog.querySelector('[data-discard-prompt]');
+    const discard = prompt.children[1].children[1];
+    assert.equal(discard.textContent, 'Discard changes');
+    discard.listeners.click();
+    assert.equal(dialog.closed, true);
+});
+
+test('closing a dialog clears its previous baseline for the next record', () => {
+    const { api, dialog, fields, handlers } = setup();
+    api.track(dialog);
+    fields[0].value = 'Different record';
+    handlers.close({ target: dialog });
+    api.track(dialog);
+    assert.equal(api.hasChanges(dialog), false);
+});
+
+test('server-restored failed reason remains protected even when already rendered in the textarea', () => {
+    const { api, dialog, fields } = setup({ reopen: true });
+    assert.equal(dialog.open, true);
+    assert.equal(fields[1].value, 'Previously entered reason');
+    assert.equal(api.hasChanges(dialog), true);
+    assert.equal(api.requestClose(dialog), false);
+    assert.ok(dialog.querySelector('[data-discard-prompt]'));
 });
