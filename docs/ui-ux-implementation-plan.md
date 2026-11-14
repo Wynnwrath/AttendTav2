@@ -2,6 +2,7 @@
 
 Status: implementation in progress on `feature/ui-ux-consistency`. Commit and stop after each phase for review.
 Updated: 2026-11-15.
+Backend follow-up: [frontend/backend alignment handoff](handoffs/ui-ux-backend-alignment-handoff.md).
 Baseline last verified: local dev tracked upstream/dev at da1f048. Recheck Git state before implementation and preserve concurrent work.
 
 ## Progress
