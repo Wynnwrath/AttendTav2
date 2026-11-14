@@ -7,6 +7,7 @@
     const recovery = dialog.querySelector('[data-record-recovery]');
     const subtitle = dialog.querySelector('[data-record-subtitle]');
     let trigger, busy = false, request, previewUrl;
+    const lockedControls = new Set();
     const headers = { 'X-Record-Dialog': 'true' };
     const restoreKey = 'attendta-record-focus';
     const previous = sessionStorage.getItem(restoreKey);
@@ -50,7 +51,14 @@
     function setBusy(value) {
         busy = value;
         dialog.setAttribute('aria-busy', String(value));
-        dialog.querySelectorAll('button').forEach(button => { button.disabled = value; });
+        if (value) {
+            dialog.querySelectorAll('button, input, select, textarea').forEach(control => {
+                if (!control.disabled) { lockedControls.add(control); control.disabled = true; }
+            });
+        } else {
+            lockedControls.forEach(control => { control.disabled = false; });
+            lockedControls.clear();
+        }
     }
     async function load() {
         request?.abort();

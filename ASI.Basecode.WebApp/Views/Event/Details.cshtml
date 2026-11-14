@@ -5,7 +5,7 @@
 @{
     var item = Model.Event;
     ViewData["ListControls"] = true;
-    ViewData["AutoFit"] = false;
+    ViewData["PagingMode"] = "roster";
     ViewData["ResultNoun"] = $"{Model.Status} registration";
     ViewData["Title"] = item.Title;
     ViewData["Feature"] = "record-dialog";

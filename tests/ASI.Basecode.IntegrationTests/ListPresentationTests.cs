@@ -18,16 +18,35 @@ public sealed class ListPresentationTests
     public void IntegrationPipeSupportRemainsLocalOnly(string source, bool allowed) =>
         Assert.Equal(allowed, SqlServerDatabaseFixture.IsLocalSqlServer(source));
 
-    [Fact]
-    public void DossierUsesStableFiveAndIgnoresPreviouslyFittedSize()
+    [Theory]
+    [InlineData(1, 5)]
+    [InlineData(12, 12)]
+    [InlineData(50, 25)]
+    public void DossierUsesFiveAsMinimumAndAllowsTallerViewports(int requested, int expected)
     {
         var context = new DefaultHttpContext();
         context.Request.RouteValues["controller"] = "Event";
         context.Request.RouteValues["action"] = "Details";
-        context.Request.QueryString = new("?pageSize=1&fit=1&search=Ana");
+        context.Request.QueryString = new($"?pageSize={requested}&fit=1&search=Ana");
         var options = ListReadOptionsFactory.From(context.Request);
-        Assert.Equal(5, options.PageSize);
+        Assert.Equal(expected, options.PageSize);
         Assert.Equal("Ana", options.Search);
+    }
+
+    [Fact]
+    public void ResetClearsSearchAndListFiltersButPreservesEventAndSection()
+    {
+        var context = new DefaultHttpContext();
+        context.Request.Path = "/Certificates";
+        context.Request.QueryString = new("?search=Ana&status=eligible&eventId=7&tab=issued&pageSize=12&page=3&fit=2");
+        var url = ListNavigation.Reset(context.Request, new[] { "eventId", "status" });
+        Assert.Contains("eventId=7", url);
+        Assert.Contains("tab=issued", url);
+        Assert.Contains("pageSize=12", url);
+        Assert.DoesNotContain("search=", url);
+        Assert.DoesNotContain("status=", url);
+        Assert.DoesNotContain("page=", url);
+        Assert.DoesNotContain("fit=", url);
     }
 
     [Fact]

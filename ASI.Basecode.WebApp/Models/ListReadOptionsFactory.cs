@@ -36,7 +36,7 @@ public static class ListReadOptionsFactory
         return new ListReadOptions
         {
             Surface = surface,
-            PageSize = !dossier && int.TryParse(Text("pageSize"), out var size) ? Math.Clamp(size, 1, 25) : 5,
+            PageSize = int.TryParse(Text("pageSize"), out var size) ? Math.Clamp(size, dossier ? 5 : 1, 25) : 5,
             Search = Text("search"), Filter = filter, Course = Text("course"),
             Year = int.TryParse(Text("year"), out var year) && year is >= 1 and <= 10 ? year : null,
             Type = surface is "Event" or "MemberEvents" or "ActivityLog" ? null : Text("type"),

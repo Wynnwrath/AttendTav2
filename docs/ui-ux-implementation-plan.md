@@ -58,9 +58,9 @@ Visible information and details:
 | Accounts | Name, email, role, status, actions | Add details only if meaningful additional information exists |
 | Activity log | Date/time, actor, action, entity type, details action | Entity ID, actor type, full reason |
 
-- Add/standardize server-backed search and relevant filters. Search becomes Clear for the applied query; editing allows a new search. Clear search preserves unrelated filters. A separate clear-filters action resets the relevant filters explicitly.
+- Add/standardize server-backed search and relevant filters. Search keeps its label; one Reset clears search and list filters while preserving the selected event/history section. This replaces the earlier Search-to-Clear proposal and separate clear-filters control.
 - Preserve search/filter/sort/event context across pagination and actions. Changed search/filter resets to page 1.
-- Replace fixed 25-row paging with validated server-backed page sizing and Auto-fit, targeting five records where space permits and fewer on short screens. The event dossier uses stable five-row roster pages with normal page scrolling so its summary cannot reduce the roster to one person per page. Larger choices only appear when they fit; unrestricted 10/25 choices are superseded by this agreement.
+- Replace fixed 25-row paging with validated server-backed page sizing and Auto-fit. Start at five, then measure actual row height and available window space to show 1–25 records. The event dossier uses a five-row minimum with normal page scrolling so its summary cannot reduce the roster to one person per page. Taller viewports can grow beyond five; unrestricted manual 10/25 choices are superseded by this agreement.
 - Measure available content space, not monitor height. Keep page/count metadata synchronized with fetched rows. Avoid unstable resize/refetch loops; page-size changes preserve a meaningful position where possible and clear selection.
 - Standardize footer: 'Showing 1–5 of 42 members', filtered totals, exact last-page ranges, 'Page 1 of 1', visible disabled boundary navigation and useful zero-result states. No fabricated totals or pagination when there are zero pages.
 - Remove desktop horizontal scrolling through column reduction and wrapping. Use a labelled stacked presentation for narrow screens when necessary. Do not shrink essential text to force a fit.
@@ -170,7 +170,7 @@ appear only after choosing the relevant decision. Shared display timestamps reta
 conversion without repeating the timezone suffix.
 
 Server-side queries filter before counting and paging. The default is five records; the shared
-feature script measures table rows or card rows to reduce the size for shorter windows and
+feature script measures table rows or card rows to adapt the size to available window space and
 preserves query context across paging and native decisions. Narrow tables stack labelled fields
 with natural page scrolling. Participation History propagates the actual requested size into
 its footer; a regression test covers this contract.
@@ -199,7 +199,7 @@ run. The integrated responsive/long-content/accessibility pass remains Phase 7.
   date fields. Event selection on Registration Review names a specific event, not its type.
 - Campus Events keeps Search and Active/Completed tabs, defaulting to Active. Active means
   published and not completed, including upcoming events; a separate Upcoming tab would overlap.
-- Use stable five-row dossier pagination, name the selected roster status in its count, and
+- Use a five-row dossier minimum, name the selected roster status in its count, and
   preserve status/search across pages. Avoid resize/refetch churn from small viewport changes.
 - Put Show details inside one three-dot menu per row. Keep frequent actions visible; align
   compact certificate decisions and return keyboard focus to the menu trigger after details close.
@@ -234,6 +234,25 @@ Validation: Release build passed without warnings; 329 service and 22 JS checks 
 list and certificate browser-flow integration tests passed, including DOM action ordering and shared
 Search labels. Desktop/phone certificate captures were regenerated; desktop alignment was inspected.
 Dual source review and the detector found no actionable issue. The port 5099 preview was restarted.
+
+### Phase 2 account modal and viewport refinement
+
+Accounts now opens Change role in the existing record editor dialog. The fallback page and
+modal share fields and the existing audited command. Inline validation retains role/reason;
+loading, retry, focus return and unsaved-change protection use the incumbent shared behavior.
+Fields lock while saving so edits cannot be lost during a pending request.
+
+Search stays Search. One Reset clears search and declared list filters while keeping event
+and history context. Auto-fit measures available space and actual row/card height, expanding
+beyond five to at most 25 records on taller screens. The dossier retains a five-row minimum.
+Old fitted URLs recalculate once; paging remains stable until filters or viewport change.
+
+Validation: clean Release build; 329 service, 23 JavaScript and 29 affected integration tests
+passed. Desktop/phone browser tests covered role modal focus, Escape, overflow, pending-save
+locking and failed-save input retention; captures were inspected. Reset URLs and expanded
+dossier rows were checked through real Razor responses. Independent Impeccable assessments
+identified the pending-save issue, now fixed; the detector returned no findings. The updated
+port 5099 preview returned HTTP 200 for Accounts and the modal partial. Phase 3 remains pending.
 
 Preserve the current visual identity and existing authorization, audit, date conversion, capacity and state rules. Add targeted backend support for agreed query/paging/approval capabilities. Do not introduce bulk declines, bulk issuance, a scheduled registration-opening feature, database resets or unrelated business-rule changes as part of UI refinement.
 

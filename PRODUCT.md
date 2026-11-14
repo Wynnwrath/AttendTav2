@@ -34,7 +34,7 @@ Used by a University of Cebu student organization on a laptop at the door and on
 - Compact operational lists keep identity, status and decision facts visible; secondary
   contact information, full reasons and exact timestamps use shared Show details dialogs.
   The server applies search and page-specific filters before counting and paging. Auto-fit
-  targets five records and reduces that number for short windows; narrow screens stack
+  starts at five records and adapts to available window space up to 25; narrow screens stack
   labelled rows and retain natural page scrolling. One footer shows the real range, total
   and page boundaries. Fetched account/membership decisions and deactivation previews restore
   focus to the visible row-menu button; impact previews include the server-read target name and email.
@@ -42,12 +42,15 @@ Used by a University of Cebu student organization on a laptop at the door and on
   member edits, with the same choices in Course filters. Legacy long program names remain
   searchable through those codes; historical registration snapshots are preserved. Event
   classification filters use existing records. Campus Events defaults to Active (published,
-  including upcoming) with a separate Completed section and search. The dossier keeps five-row
+  including upcoming) with a separate Completed section and search. The dossier keeps a five-row minimum on roster
   pages and identifies the roster status in its footer. Secondary Show details actions use one
   row menu, and certificate decisions retain compact visible controls.
 - Final Phase 2 polish keeps three-dot menus last in every action group, labels Search
   consistently beside filter fields, and distinguishes completed events in blue from cancelled
   events in red while preserving their visible status names.
+- Account role changes use the existing shared editor modal, with inline validation and the
+  same audited role command. Search remains Search; one Reset clears criteria while preserving
+  the selected event/history section. Taller screens show more rows through measured Auto-fit.
 - Master data covers members, event types, and venues; records are deactivated rather than hard-deleted.
 - Master Data lists announce a loading state while a filter, pager, search or status toggle is in flight, and a failed read keeps the shell, tabs and table headers with an in-shell notice and a Try again link instead of an empty-state row.
 - Member, Event Type, Venue and Event create/edit use the same centered keyboard-operable record dialog with required markers, retained server validation, focus containment and restore, and a venue photo preview. Clicks on the dialog's own padding keep it open; only a backdrop click, Escape or Cancel dismisses it. Events open the same editor from the Events list and from the event dossier. Standalone form routes remain available.

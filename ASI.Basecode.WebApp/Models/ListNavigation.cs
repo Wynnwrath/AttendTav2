@@ -8,6 +8,15 @@ namespace ASI.Basecode.WebApp.Models;
 
 public static class ListNavigation
 {
+    public static string Reset(HttpRequest request, IEnumerable<string> filterNames)
+    {
+        var changes = filterNames.Where(name => name != "eventId")
+            .ToDictionary(name => name, _ => (string)null, StringComparer.OrdinalIgnoreCase);
+        changes["search"] = null;
+        changes["status"] = null;
+        return Url(request, changes);
+    }
+
     public static bool IsLocal(string value) => !string.IsNullOrEmpty(value) && value[0] == '/'
         && (value.Length == 1 || value[1] is not ('/' or '\\')) && !value.Any(char.IsControl);
 

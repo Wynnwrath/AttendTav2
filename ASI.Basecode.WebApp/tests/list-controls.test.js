@@ -4,10 +4,10 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 
-function load({ height = 720, top = 250, rowHeight = 50, url = 'http://localhost/Member?pageSize=5', editing = false, search = null, paging = true, grid = false, mode = 'auto' } = {}) {
+function load({ height = 720, top = 250, rowHeight = 50, total = 50, url = 'http://localhost/Member?pageSize=5', editing = false, search = null, paging = true, grid = false, mode = 'auto' } = {}) {
     const events = {}, changes = [], forms = [];
     const table = { getBoundingClientRect: () => ({ top }), querySelector: () => ({ getBoundingClientRect: () => ({ height: 40 }) }), querySelectorAll: () => Array.from({ length: 5 }, () => ({ querySelector: () => null, getBoundingClientRect: () => ({ top: top + 40, height: rowHeight }) })) };
-    const footer = { dataset: { pagingSize: '5', pagingPage: '1', pagingMode: mode }, getBoundingClientRect: () => ({ height: 64 }), parentElement: { querySelector: () => grid ? null : table } };
+    const footer = { dataset: { pagingSize: '5', pagingPage: new URL(url).searchParams.get('page') || '1', pagingMode: mode, pagingTotal: String(total) }, getBoundingClientRect: () => ({ height: 64 }), parentElement: { querySelector: () => grid ? null : table } };
     const cards = { children: Array.from({ length: 5 }, (_, i) => ({ querySelector: () => null, getBoundingClientRect: () => ({ top: top + Math.floor(i / 2) * 220, height: 200 }) })), getBoundingClientRect: () => ({ top }) };
     if (search) forms.push(search);
     const document = {
@@ -29,46 +29,48 @@ test('auto fit uses the real row height and preserves filters when requesting fe
     assert.equal(url.searchParams.get('pageSize'), '4');
     assert.equal(url.searchParams.get('search'), 'Ana');
     assert.equal(url.searchParams.get('course'), 'BSIT');
-    assert.equal(url.searchParams.get('fit'), '1');
+    assert.equal(url.searchParams.get('fit'), '2');
 });
 
-test('fit does not navigate while a field is being edited or if five rows fit', () => {
+test('fit waits for editing and uses taller screens beyond five rows', () => {
     assert.equal(load({ height: 500, editing: true }).changes.length, 0);
-    assert.equal(load({ height: 1000 }).changes.length, 0);
+    assert.equal(new URL(load({ height: 1000 }).changes[0]).searchParams.get('pageSize'), '12');
+    assert.equal(new URL(load({ height: 2400 }).changes[0]).searchParams.get('pageSize'), '25');
+    assert.equal(load({ height: 1000, total: 4 }).changes.length, 0);
 });
 
 test('paging a fitted query is stable until a real resize', () => {
-    const { changes, events, window } = load({ height: 500, url: 'http://localhost/Member?pageSize=5&fit=1&page=2' });
+    const { changes, events, window } = load({ height: 500, url: 'http://localhost/Member?pageSize=5&fit=2&page=2' });
     assert.equal(changes.length, 0);
     window.innerWidth = 1200;
     events.resize();
     assert.equal(changes.length, 1);
     const url = new URL(changes[0]);
     assert.equal(url.searchParams.get('pageSize'), '2');
-    assert.equal(url.searchParams.get('page'), '1');
+    assert.equal(url.searchParams.get('page'), '3');
 });
 
-test('dossier rows stay at five even when the event summary leaves little viewport space', () => {
-    assert.equal(load({ height: 600, top: 650, mode: 'fixed' }).changes.length, 0);
+test('dossier has a five-row minimum but grows on taller screens', () => {
+    assert.equal(load({ height: 600, top: 650, mode: 'roster' }).changes.length, 0);
+    assert.equal(new URL(load({ height: 1400, top: 650, mode: 'roster' }).changes[0]).searchParams.get('pageSize'), '12');
+});
+
+test('old fitted URLs are recalculated once for the current viewport', () => {
+    const { changes } = load({ height: 1000, url: 'http://localhost/Member?pageSize=5&fit=1' });
+    assert.equal(new URL(changes[0]).searchParams.get('pageSize'), '12');
+    assert.equal(new URL(changes[0]).searchParams.get('fit'), '2');
 });
 
 test('scrollbar-sized viewport changes do not restart a fitted page', () => {
-    const { events, changes, window } = load({ height: 500, url: 'http://localhost/Member?fit=1' });
+    const { events, changes, window } = load({ height: 500, url: 'http://localhost/Member?fit=2' });
     window.innerWidth -= 15;
     events.resize();
     assert.equal(changes.length, 0);
 });
 
-test('editing an applied query restores Search instead of leaving only Clear', () => {
-    const listeners = {}, input = { value: 'Ana', addEventListener: (event, callback) => { listeners[event] = callback; } };
-    const clear = {}, submit = {};
-    const search = { dataset: { appliedSearch: 'Ana' }, querySelector: selector => selector === '[name="search"]' ? input : selector === '[data-search-clear]' ? clear : submit };
-    const { changes } = load({ search, paging: false });
-    assert.equal(clear.hidden, false);
-    assert.equal(submit.hidden, true);
-    input.value = 'Ben'; listeners.input();
-    assert.equal(clear.hidden, true);
-    assert.equal(submit.hidden, false);
+test('a pending search is not lost to an automatic viewport fit', () => {
+    const search = { dataset: { appliedSearch: 'Ana' }, querySelector: () => ({ value: 'Ben' }) };
+    const { changes } = load({ search, height: 1000 });
     assert.equal(changes.length, 0);
 });
 
@@ -82,7 +84,7 @@ test('list POSTs preserve their original view and do not replace the action rout
     assert.equal(origin.value, '/Member?search=Ana&page=2&pageSize=3');
 });
 
-test('event cards fit complete grid rows within the same five-record limit', () => {
+test('event cards fit complete grid rows within the supported capacity', () => {
     const { changes } = load({ height: 600, grid: true });
     assert.equal(new URL(changes[0]).searchParams.get('pageSize'), '2');
 });

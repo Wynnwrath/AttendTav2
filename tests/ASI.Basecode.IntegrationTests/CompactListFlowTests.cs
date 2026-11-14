@@ -91,6 +91,7 @@ public sealed class CompactListFlowTests(SqlServerDatabaseFixture fixture) : ICl
             Assert.DoesNotContain(hash, html);
             Assert.Contains("features/list-controls.js", html);
             Assert.Contains("<label for=\"list-search\" class=\"field-label\">Search</label>", html);
+            Assert.DoesNotContain("data-search-clear", html);
             if (page.Key == "requests")
             {
                 var row = Regex.Match(html, "<tr data-request-id=.*?</tr>", RegexOptions.Singleline).Value;
@@ -109,8 +110,16 @@ public sealed class CompactListFlowTests(SqlServerDatabaseFixture fixture) : ICl
         Assert.Contains("Showing 1–1 of 1 matching registration", filteredRegistrations);
         var dossier = await client.GetStringAsync($"/Event/{upcoming.EventId}?pageSize=1&status=pending", ct);
         Assert.Equal(5, Regex.Matches(dossier, "data-registration-id=").Count);
-        Assert.Contains("data-paging-mode=\"fixed\"", dossier);
+        Assert.Contains("data-paging-mode=\"roster\"", dossier);
         Assert.Contains("pending registrations", dossier);
+        var tallerDossier = await client.GetStringAsync($"/Event/{upcoming.EventId}?pageSize=8&status=pending", ct);
+        Assert.Equal(8, Regex.Matches(tallerDossier, "data-registration-id=").Count);
+        var resettable = await client.GetStringAsync($"/RegistrationReview/Index?eventId={upcoming.EventId}&search=Review&status=confirmed", ct);
+        var resetHref = WebUtility.HtmlDecode(Regex.Match(resettable, "href=\"([^\"]+)\"[^>]*data-filter-clear").Groups[1].Value);
+        Assert.Contains($"eventId={upcoming.EventId}", resetHref);
+        Assert.DoesNotContain("search=", resetHref);
+        Assert.DoesNotContain("status=", resetHref);
+        Assert.Contains(">Reset</a>", resettable);
         var filteredEvents = await client.GetStringAsync($"/Event?search=Upcoming&typeId={type.TypeId}", ct);
         Assert.Contains("Showing 1–1 of 1 matching event", filteredEvents);
         Assert.DoesNotContain("Review Completed Event", filteredEvents);

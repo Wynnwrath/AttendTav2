@@ -216,17 +216,21 @@ button, or a card with no outline is not part of this system.
   secondary information in a shared Show details dialog. No internal table scroll region.
   Below 640px, rows become labelled blocks with natural page scrolling.
 - **Search and filters:** each list declares appropriate fields through the shared Razor
-  toolbar. An applied search shows Clear; changing its text restores Search. Preserve
-  unrelated query criteria across filters, paging and native decisions.
+  toolbar. Search keeps its action label. One Reset control clears search and list filters,
+  preserving the selected event and history section. Preserve unrelated query criteria across
+  paging and native decisions.
   Search has the same visible label/field structure as dropdowns, so its top spacing does not
   change when filters are present. Use the shared 16px block spacing; loading feedback follows tabs.
 - **Count and pager:** one full-width footer directly below the table shows the actual
   range and filtered total, Auto size, page number, and visible disabled boundaries.
-  Zero results show a count without a fabricated page. Auto-fit targets five records,
-  reduces the page for short windows using measured rows/cards, and holds that size while
+  Zero results show a count without a fabricated page. Auto-fit starts at five records,
+  measures rows/cards to use the available viewport (1–25 records), and holds that size while
   paging until filters or viewport dimensions change. Never clip content to force a fit.
-  The event dossier uses stable five-row roster pages because its summary precedes the table;
+  The event dossier keeps a five-row minimum because its summary precedes the table;
   its count names the selected registration status. Small scrollbar-width changes do not refit.
+- **Account role changes:** reuse the shared record editor dialog, including its field spacing,
+  validation, loading/recovery states, unsaved-change protection, and focus restoration. Keep
+  the full-page form available as a fallback; both paths use the same fields and audited command.
 - **Filter scope:** Members and Membership Requests share BSCS/BSIT Course and Year choices.
   Event Management uses existing classification IDs in a dropdown; Registration Review chooses
   a specific event. Campus Events uses Search and Active/Completed tabs, with Active including

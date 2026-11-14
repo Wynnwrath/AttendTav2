@@ -4,6 +4,7 @@
 @using Microsoft.AspNetCore.Http.Extensions
 @{
     var autoFit = ViewData["ListControls"] as bool? == true && ViewData["AutoFit"] as bool? != false;
+    var pagingMode = autoFit ? ViewData["PagingMode"] as string ?? "auto" : "fixed";
     string PageUrl(int pageNumber)
     {
         var query = new QueryBuilder();
@@ -32,7 +33,7 @@
     var controller = ViewContext.RouteData.Values["controller"]?.ToString();
     var noun = ListPagingLabels.Noun(controller, ViewContext.RouteData.Values["action"]?.ToString(), Model.TotalCount, ViewData["ResultNoun"] as string);
     var filtered = ListPagingLabels.IsFiltered(Context.Request);
-    <nav class="pager" aria-label="Pagination" data-paging-size="@Model.PageSize" data-paging-page="@Model.PageNumber" data-paging-mode="@(autoFit ? "auto" : "fixed")">
+    <nav class="pager" aria-label="Pagination" data-paging-size="@Model.PageSize" data-paging-page="@Model.PageNumber" data-paging-mode="@pagingMode" data-paging-total="@Model.TotalCount">
         <p class="pagination-summary" aria-live="polite">Showing @Model.FirstItemNumber–@Model.LastItemNumber of @Model.TotalCount @(filtered ? "matching " : "")@noun</p>
         <span class="paging-mode muted">@(autoFit ? "Auto · " : "")@Model.PageSize per page</span>
         <div class="pager-actions">
