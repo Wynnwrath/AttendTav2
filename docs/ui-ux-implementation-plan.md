@@ -46,7 +46,7 @@ Visible information and details:
 | Page | Visible | Details |
 | --- | --- | --- |
 | Membership requests | Applicant/student number, course/year, requested date, status, actions | Email, mobile, section, remaining application information, recorded decline reason |
-| Members | Name/student number, course/year, status, actions | Email, mobile, section, membership type |
+| Members | Name/student number, course/year/section, status, actions | Email, mobile, membership type |
 | Events | Title/type, venue, start date/time, status, actions | Deadline, participant limit, description and secondary event information |
 | Registration review | Participant/student number, event, status, actions | Exact submission time and secondary registration information |
 | Dossier roster | Participant/student number, status, actions | Submission time and secondary registration information; event context remains above roster |
