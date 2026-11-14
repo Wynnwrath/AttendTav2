@@ -68,7 +68,7 @@
         <thead>
             <tr>
                 <th scope="col">Full Name</th>
-                <th scope="col">Course</th>
+                <th scope="col">Course / year</th>
                 <th scope="col">
                     <a href='@ListNavigation.Url(Context.Request, new Dictionary<string, string> { ["sort"] = Model.NextSort })'
                        aria-label="Sort by requested time, currently @(Model.Sort == "oldest" ? "oldest first" : "newest first")">
@@ -92,7 +92,7 @@
                 {
                     <tr data-request-id="@request.RequestId">
                         <td data-label="Full Name" class="cell-name"><span class="cell-strong">@request.FullName<small class="cell-meta">@request.StudentNumber</small></span></td>
-                        <td data-label="Course">@request.Course · Year @request.YearLevel</td>
+                        <td data-label="Course / year">@request.Course · @request.YearLevel</td>
                         <td data-label="Requested" class="numeric cell-date"><time datetime="@(DateTime.SpecifyKind(request.RequestedAt, DateTimeKind.Utc).ToString("O"))" aria-label="Requested at in Asia/Manila">@ManilaTimeFormatter.Format(request.RequestedAt)</time></td>
                         <td data-label="Status"><span class="@BadgeClass(request.Status)">@request.Status</span></td>
                         <td data-label="Actions" class="actions actions-wide">

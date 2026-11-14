@@ -11,5 +11,5 @@ public sealed record ListToolbarViewModel(string SearchLabel, IReadOnlyList<List
 {
     public static ListFilterField Status(params ListFilterOption[] options) => new("filter", "Status", Options: options);
     public static ListFilterField Course => new("course", "Course", Options: ASI.Basecode.Resources.Constants.ProfileOptions.Courses.Select(value => new ListFilterOption(value, value)).ToArray());
-    public static ListFilterField Year => new("year", "Year", Options: ASI.Basecode.Resources.Constants.ProfileOptions.YearLevels.Select(value => new ListFilterOption(value.ToString(), $"Year {value}")).ToArray());
+    public static ListFilterField Year => new("year", "Year", Options: ASI.Basecode.Resources.Constants.ProfileOptions.YearLevels.Select(value => new ListFilterOption(value.ToString(), value.ToString())).ToArray());
 }

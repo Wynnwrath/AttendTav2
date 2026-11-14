@@ -271,6 +271,9 @@ Per the user's latest scope, only frontend examples change: student number `2380
 `09171234567` without dashes, and email `name@gmail.com`. Signup and member editing share the
 same examples; login uses the same generic email example. These are hints, not new restrictions.
 No backend validation, schema, existing data, dropdown options or HTML input limits changed.
+Follow-up display cleanup removes "Year" from numeric option/table values, retaining the field label.
+Venue Capacity headings now align with their right-aligned numeric values in a compact column;
+Actions headings use the shared right alignment and compact action width in every table state.
 
 Pending backend work, not implemented: enforce year levels 1–4, exactly eight ASCII digits for
 student numbers, and exactly eleven ASCII digits for mobile numbers when supplied. Year choices

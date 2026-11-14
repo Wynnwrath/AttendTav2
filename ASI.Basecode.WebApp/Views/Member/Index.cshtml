@@ -104,7 +104,7 @@ else
                                 <span class="name-text">@member.FullName<small class="cell-meta">@member.StudentNumber</small></span>
                             </span>
                         </td>
-                        <td data-label="Course / year">@member.Course · Year @member.YearLevel</td>
+                        <td data-label="Course / year">@member.Course · @member.YearLevel</td>
                         <td data-label="Status"><span class="badge @(member.Status == "active" ? "badge-active" : "badge-inactive")">@(member.Status == "active" ? "Active" : "Inactive")</span></td>
                         <td data-label="Actions" class="actions">
                             <div class="row-actions">
