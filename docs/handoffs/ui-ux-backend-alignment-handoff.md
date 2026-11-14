@@ -164,9 +164,10 @@ course as `nvarchar(100)` and year level as an integer. The year CHECK constrain
 positive values. These columns can hold the proposed values without any structural migration.
 
 Application validation can therefore be implemented without changing column types or widths.
-If database CHECK constraints are later requested, first inventory legacy data and produce a
-separate reviewed migration and rollback plan. Update the canonical schema and relevant EF
-mapping together. Never run a reset script to make new validation tests pass.
+The user explicitly chose to keep the ERD and database schema unchanged. Do not add or change
+database CHECK constraints, columns, types, tables or EF schema mappings for this follow-up.
+Implement the agreed rules in application validation and matching form controls. Never run a
+reset script to make new validation tests pass.
 
 ## 4. List/query contracts already implemented
 
@@ -461,7 +462,7 @@ not a claim that the entire integration suite or Phase 7 visual coverage has bee
 2. Recheck Git state; preserve unrelated work. Do not reset to a branch tip over user changes.
 3. Resolve the legacy-record policy before enforcing new profile rules.
 4. Implement shared profile validation and matching form/filter changes together, in its own commit.
-5. Run meaningful boundary/flow tests and document any migration need before touching stored data.
+5. Run meaningful boundary/flow tests; keep the ERD/schema unchanged and preserve stored history.
 6. Resume Phase 3, then Phase 4, then the remaining phases in the agreed sequence.
 7. Commit and stop after each phase for review, as the user requested.
 
@@ -471,5 +472,5 @@ approved follow-ups. It must call out deferred validation, missing original cert
 remaining phases and limits of completed verification.
 
 Current configured remotes are origin `Wynnwrath/AttendTav2` and upstream `rainyDayssss/AttendTa`.
-Verify the intended PR repository/base when the PR step begins; this handoff does not assume a
-destination or grant a merge/deploy instruction. No PR has been created as part of delivering this file.
+The PR target for this delivery is `rainyDayssss/AttendTa:dev`, using the feature branch on the
+origin fork. Creating the PR does not authorize merging or deploying it.
