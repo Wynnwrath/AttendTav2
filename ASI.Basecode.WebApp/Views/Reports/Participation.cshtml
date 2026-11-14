@@ -126,7 +126,7 @@ else
                         {
                             <tr data-registration-id="@row.RegistrationId">
                                 <td data-label="Member">@row.MemberName<small class="cell-meta">@row.StudentNumber</small></td>
-                                <td data-label="Course / year">@row.Course · Year @row.YearLevel</td>
+                                <td data-label="Course / year">@row.Course · @row.YearLevel</td>
                                 <td data-label="Status"><span class="badge @row.StatusBadgeClass">@row.StatusLabel</span></td>
                                 <td data-label="Attendance">
                                     @if (string.IsNullOrEmpty(row.AttendanceBadgeClass))

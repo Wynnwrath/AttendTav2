@@ -9,7 +9,7 @@ Baseline last verified: local dev tracked upstream/dev at da1f048. Recheck Git s
 | Phase | Status | Commit |
 | --- | --- | --- |
 | 1. Shared layout and component foundations | Complete, including convention correction | `f3c8804`, `ba9bbbc` |
-| 2. Compact tables, search, filters and pagination | Complete, including approved review refinements | `bf315bf` plus refinement commit (see Git log) |
+| 2. Compact tables, search, filters and pagination | Implemented, including approved refinements; full integrated visual sign-off remains Phase 7 | `bf315bf`, `537110a`, `5b8cb9b`, `d834616`, `c673b05`, `1d7b3ea`, `f1998c9`, `040fd43`, plus final consistency cleanup |
 | 3. Draft events, publishing and cover management | Not started | — |
 | 4. Registration and certificate review, including bulk approval | Not started | — |
 | 5. Event detail hierarchy and reports | Not started | — |
@@ -280,5 +280,14 @@ student numbers, and exactly eleven ASCII digits for mobile numbers when supplie
 are still 1–5 and backend year validation still accepts any positive integer. BSCS/BSIT course
 handling already exists. Email already accepts valid ordinary addresses, without a domain restriction.
 Apply aligned form/filter choices and validation together when that follow-up is authorized.
+
+Phase 2 closeout review: checked the shared toolbar/Reset, declared filters, compact columns,
+details menus, context-preserving paging, adaptive row sizing and exact footer metadata against
+the phase checklist. Members now exposes Section in its existing academic column. Reports'
+remaining "Year" prefix was removed to match number-only year values elsewhere. No additional
+Phase 2 feature gap was identified in this source review. Full app-wide responsive/zoom/keyboard
+sign-off remains Phase 7; this review is not a claim that every live viewport has been inspected.
+Draft/publish/cover improvements, bulk approvals, report card/detail hierarchy and the remaining
+login/member journeys retain their assigned later phases. Deferred profile validation remains pending.
 
 No further user design decisions are presently required. Surface genuinely new business-rule conflicts with a concrete example if implementation reveals one.
