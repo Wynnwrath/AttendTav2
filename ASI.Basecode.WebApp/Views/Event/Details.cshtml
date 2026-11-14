@@ -118,7 +118,7 @@
                         </td>
                         <td data-label="Status"><span class="badge @(cutoffLabel ? "badge-closed" : RegistrationStatusDisplay.BadgeClass(row.Status, false))">@(cutoffLabel ? "Not confirmed before cutoff" : row.Status.ToString())</span></td>
                         <td data-label="Actions" class="actions"><div class="row-actions">
-<partial name="_DetailsButton" model='@(new RecordDetailsViewModel($"registration-details-{row.RegistrationId}", row.MemberName, new Dictionary<string, string> { ["Student number"] = row.StudentNumber, ["Event"] = item.Title, ["Submitted"] = ManilaTimeFormatter.Format(row.SubmittedAt), ["Status"] = row.Status.ToString() }, null))' />
+
                             @if (Model.CanReview && row.Status == RegistrationStatusCode.Pending)
                             {
                                 <button type="button" class="button button-primary button-small" data-dialog-open="approve" data-dialog-value-id="@row.RegistrationId" data-dialog-value-summary="Review @row.MemberName (@row.StudentNumber) for approval?">Approve</button>
@@ -129,6 +129,7 @@
                                 <button type="button" class="button button-secondary button-small button-quiet-danger" data-dialog-open="registration-cancel" data-dialog-value-id="@row.RegistrationId" data-dialog-value-summary="Cancel the registration for @row.MemberName (@row.StudentNumber)?">Cancel registration</button>
                             }
                             else { <span class="muted">No actions available</span> }
+                            <partial name="_DetailsButton" model='@(new RecordDetailsViewModel($"registration-details-{row.RegistrationId}", row.MemberName, new Dictionary<string, string> { ["Student number"] = row.StudentNumber, ["Event"] = item.Title, ["Submitted"] = ManilaTimeFormatter.Format(row.SubmittedAt), ["Status"] = row.Status.ToString() }, null))' />
                         </div></td>
                     </tr>
                 }

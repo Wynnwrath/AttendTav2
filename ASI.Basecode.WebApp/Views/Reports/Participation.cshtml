@@ -138,7 +138,7 @@ else
                                         <span class="badge @row.AttendanceBadgeClass">@row.AttendanceLabel</span>
                                     }
                                 </td>
-                            <td data-label="Actions" class="actions"><partial name="_DetailsButton" model='@(new RecordDetailsViewModel($"report-details-{row.RegistrationId}", row.MemberName, new Dictionary<string, string> { ["Student number"] = row.StudentNumber, ["Course"] = row.Course, ["Year"] = row.YearLevel.ToString(), ["Attendance"] = row.AttendanceLabel, ["Check-in time"] = row.CheckedInAt is null ? "Not recorded" : ManilaTimeFormatter.Format(row.CheckedInAt.Value) }, null))' /></td></tr>
+                            <td data-label="Actions" class="actions"><div class="row-actions"><partial name="_DetailsButton" model='@(new RecordDetailsViewModel($"report-details-{row.RegistrationId}", row.MemberName, new Dictionary<string, string> { ["Student number"] = row.StudentNumber, ["Course"] = row.Course, ["Year"] = row.YearLevel.ToString(), ["Attendance"] = row.AttendanceLabel, ["Check-in time"] = row.CheckedInAt is null ? "Not recorded" : ManilaTimeFormatter.Format(row.CheckedInAt.Value) }, null))' /></div></td></tr>
                         }
                     </tbody>
                 </table>

@@ -13,10 +13,13 @@
     {
         foreach (var value in pair.Value) { <input type="hidden" name="@pair.Key" value="@value" /> }
     }
-    <div class="search-group">
-        <input type="search" name="search" value="@search" class="field-control" aria-label="@Model.SearchLabel" placeholder="@Model.SearchLabel" />
-        <button type="submit" class="button button-secondary" data-search-submit hidden="@(!string.IsNullOrWhiteSpace(search))">Search</button>
-        <a href="@ListNavigation.Url(Context.Request, new Dictionary<string, string> { ["search"] = null })" class="button button-secondary" data-search-clear hidden="@(string.IsNullOrWhiteSpace(search))">Clear</a>
+    <div class="list-search-field">
+        <label for="list-search" class="field-label">Search</label>
+        <div class="search-group">
+            <input id="list-search" type="search" name="search" value="@search" class="field-control" aria-label="@Model.SearchLabel" placeholder="@Model.SearchLabel" />
+            <button type="submit" class="button button-secondary" data-search-submit hidden="@(!string.IsNullOrWhiteSpace(search))">Search</button>
+            <a href="@ListNavigation.Url(Context.Request, new Dictionary<string, string> { ["search"] = null })" class="button button-secondary" data-search-clear hidden="@(string.IsNullOrWhiteSpace(search))">Clear</a>
+        </div>
     </div>
     @foreach (var field in fields)
     {

@@ -225,6 +225,16 @@ live routes returned HTTP 200, including signup. Full integrated visual coverage
 
 Phase 3 has not started. Stop after this phase's refinement commit for user review.
 
+Final Phase 2 polish: row menus follow primary actions in DOM and visual order across requests,
+registration review, dossier, certificates and reports. The shared Search label aligns toolbars
+with and without dropdowns; live status follows tabs and the certificate table loses an extra
+margin. Completed event badges use muted blue (6.40:1 text contrast) and cancelled events use
+red (5.65:1), retaining visible labels. These are shared rules rather than page-specific offsets.
+Validation: Release build passed without warnings; 329 service and 22 JS checks passed. The compact
+list and certificate browser-flow integration tests passed, including DOM action ordering and shared
+Search labels. Desktop/phone certificate captures were regenerated; desktop alignment was inspected.
+Dual source review and the detector found no actionable issue. The port 5099 preview was restarted.
+
 Preserve the current visual identity and existing authorization, audit, date conversion, capacity and state rules. Add targeted backend support for agreed query/paging/approval capabilities. Do not introduce bulk declines, bulk issuance, a scheduled registration-opening feature, database resets or unrelated business-rule changes as part of UI refinement.
 
 No further user design decisions are presently required. Surface genuinely new business-rule conflicts with a concrete example if implementation reveals one.

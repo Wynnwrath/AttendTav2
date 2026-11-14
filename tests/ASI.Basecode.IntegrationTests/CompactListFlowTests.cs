@@ -90,6 +90,17 @@ public sealed class CompactListFlowTests(SqlServerDatabaseFixture fixture) : ICl
             var html = await response.Content.ReadAsStringAsync(ct);
             Assert.DoesNotContain(hash, html);
             Assert.Contains("features/list-controls.js", html);
+            Assert.Contains("<label for=\"list-search\" class=\"field-label\">Search</label>", html);
+            if (page.Key == "requests")
+            {
+                var row = Regex.Match(html, "<tr data-request-id=.*?</tr>", RegexOptions.Singleline).Value;
+                Assert.True(row.IndexOf("data-dialog-open=\"reject-dialog\"", StringComparison.Ordinal) < row.IndexOf("row-menu-trigger", StringComparison.Ordinal));
+            }
+            if (page.Key == "eligibility")
+            {
+                var row = Regex.Match(html, "<tr data-registration-id=.*?</tr>", RegexOptions.Singleline).Value;
+                Assert.True(row.IndexOf("data-certificate-open=\"decline-certificate\"", StringComparison.Ordinal) < row.IndexOf("row-menu-trigger", StringComparison.Ordinal));
+            }
             if (!string.IsNullOrWhiteSpace(capture)) await File.WriteAllTextAsync(Path.Combine(capture, page.Key + ".html"), html, ct);
         }
 

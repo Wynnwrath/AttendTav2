@@ -48,7 +48,6 @@
 }
 
 <partial name="_ListToolbar" model='@(new ListToolbarViewModel("Search name, email, or student number", new ListFilterField[] { ListToolbarViewModel.Course, ListToolbarViewModel.Year }))' />
-<p class="muted" data-list-status role="status" data-list-busy-label="Loading records…"></p>
 <div class="sheet-keys">
 
     <nav class="filter-tabs" aria-label="Request status">
@@ -62,6 +61,7 @@
         }
     </nav>
 </div>
+<p class="muted" data-list-status role="status" data-list-busy-label="Loading records…"></p>
 
 <div class="table-scroll" role="region" aria-label="Account request table" tabindex="0" data-list-region>
     <table class="data-table table-sticky request-table">
@@ -97,7 +97,7 @@
                         <td data-label="Status"><span class="@BadgeClass(request.Status)">@request.Status</span></td>
                         <td data-label="Actions" class="actions actions-wide">
                             <div class="row-actions">
-                                <partial name="_DetailsButton" model='@(new RecordDetailsViewModel($"request-details-{request.RequestId}", request.FullName, new Dictionary<string, string> { ["Student number"] = request.StudentNumber, ["Email"] = request.Email, ["Course"] = request.Course, ["Year"] = request.YearLevel.ToString(), ["Section"] = request.Section, ["Mobile"] = request.MobileNumber, ["Requested"] = ManilaTimeFormatter.Format(request.RequestedAt), ["Review notes"] = request.ReviewNotes }, null))' />
+
                             @if (request.Status == "Pending")
                             {
 
@@ -116,7 +116,8 @@
                                         Decline
                                     </button>
                             }
-                            </div>
+                                <partial name="_DetailsButton" model='@(new RecordDetailsViewModel($"request-details-{request.RequestId}", request.FullName, new Dictionary<string, string> { ["Student number"] = request.StudentNumber, ["Email"] = request.Email, ["Course"] = request.Course, ["Year"] = request.YearLevel.ToString(), ["Section"] = request.Section, ["Mobile"] = request.MobileNumber, ["Requested"] = ManilaTimeFormatter.Format(request.RequestedAt), ["Review notes"] = request.ReviewNotes }, null))' />
+                        </div>
                         </td>
                     </tr>
                 }

@@ -20,7 +20,7 @@
 @source "../Views/**/*.cshtml";
 @source "../wwwroot/js/**/*.js";
 /* Dynamic status and shell classes are enumerated so they survive source scanning. */
-@source inline("authenticated member-shell public-shell public-wide management-header notice-error notice-success badge-closed badge-open badge-inactive badge-completed badge-member badge-full badge-checkin-open badge-checkin-closed badge-active badge-approved badge-pending badge-rejected");
+@source inline("authenticated member-shell public-shell public-wide management-header notice-error notice-success badge-closed badge-open badge-inactive badge-completed badge-cancelled badge-member badge-full badge-checkin-open badge-checkin-closed badge-active badge-approved badge-pending badge-rejected");
 
 /* ---------------------------------------------------------------------------
    The Workspace Standard — a campus operations console (DESIGN.md, 2026-11-09).
@@ -53,6 +53,8 @@
   --color-pending-tint: #f7eedd;
   --color-declined: #b42318;
   --color-declined-tint: #fbeae8;
+  --color-completed: #245c76;
+  --color-completed-tint: #e8f1f7;
   --color-neutral-status: #6b6e74;
   --color-neutral-tint: #f1f2f4;
 
@@ -524,7 +526,10 @@
   .paging-mode { font-size: 12px; }
   .list-toolbar { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; margin: 0 0 16px; }
   .list-toolbar .field { flex: 0 1 160px; min-width: 110px; margin: 0; }
-  .list-toolbar .search-group { flex: 1 1 280px; max-width: 440px; margin: 0; }
+  .list-search-field { flex: 1 1 280px; min-width: 0; max-width: 440px; }
+  .list-toolbar .search-group { flex-wrap: nowrap; margin: 0; }
+  .list-toolbar .search-group input { flex: 1 1 auto; }
+  .list-toolbar .search-group .button { flex: 0 0 auto; }
   .list-toolbar [hidden] { display: none; }
   .cell-meta { display: block; margin-top: 3px; color: var(--color-ink-muted); font-size: 12px; font-weight: 400; }
   .dialog-body { padding: 16px 24px 0; }
@@ -822,6 +827,7 @@
   .data-table th.actions { width: 30%; text-align: right; }
   .data-table th.actions-tight { width: 140px; }
   .row-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; justify-content: flex-end; }
+  .row-actions > .row-menu-trigger { order: 1; flex: 0 0 auto; }
   .row-actions .button { min-height: 32px; padding: 0 10px; font-size: 12px; }
 
   /* Row overflow menu: one visible primary action plus a native popover. */
@@ -972,8 +978,8 @@
   .badge-cancelled { background: var(--color-declined-tint); color: var(--color-declined); }
   .badge-inactive,
   .badge-closed,
-  .badge-completed,
   .badge-checkin-closed { background: var(--color-neutral-tint); color: var(--color-neutral-status); }
+  .badge-completed { background: var(--color-completed-tint); color: var(--color-completed); }
   .badge-admin,
   .badge-officer,
   .badge-member { background: var(--color-neutral-tint); color: var(--color-ink-secondary); }

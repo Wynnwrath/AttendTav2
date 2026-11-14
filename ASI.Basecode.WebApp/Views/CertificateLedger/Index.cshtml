@@ -17,7 +17,6 @@
 
 <partial name="_EventSelector" model="Model.Selector" />
 <partial name="_ListToolbar" model='@(new ListToolbarViewModel("Search member, student number, or certificate", tab == "issued" ? null : new ListFilterField[] { ListToolbarViewModel.Status(new ListFilterOption("PendingApproval", "Pending review"), new ListFilterOption("Eligible", "Eligible"), new ListFilterOption("NotEligible", "Declined")) }))' />
-<p class="muted" data-list-status role="status" data-list-busy-label="Loading records…"></p>
 @if (ViewData["LedgerError"] is string error)
 {
     <div class="notice notice-error" role="alert">
@@ -36,6 +35,7 @@
         <span class="filter-tab-count numeric">@Model.IssuedCount</span>
     </a>
 </nav>
+<p class="muted" data-list-status role="status" data-list-busy-label="Loading records…"></p>
 
 @if (Model.Rows.Count == 0 && ViewData["LedgerError"] == null)
 {
@@ -82,7 +82,7 @@ else if (Model.Rows.Count > 0)
                     }
                     <td data-label="Actions" class="actions">
                         <div class="row-actions ledger-row-actions">
-<partial name="_DetailsButton" model='@(new RecordDetailsViewModel($"certificate-details-{row.RegistrationId}", row.MemberName, new Dictionary<string, string> { ["Student number"] = row.StudentNumber, ["Event"] = row.EventTitle, ["Attended"] = row.AttendedAt is null ? "Not recorded" : ManilaTimeFormatter.Format(row.AttendedAt.Value), ["Eligibility"] = row.StatusLabel, ["Reason"] = row.Reason, ["Certificate number"] = row.CertificateNumber, ["Issued"] = row.IssuedAt is null ? "Not issued" : ManilaTimeFormatter.Format(row.IssuedAt.Value) }, null))' />
+
                         @if (row.Status == CertificateStatusCode.PendingApproval)
                         {
                             <button type="button" class="button button-secondary button-small" data-certificate-open="approve-certificate" data-id="@row.RegistrationId" data-member="@row.MemberName" data-event="@row.EventTitle">Approve</button>
@@ -97,6 +97,7 @@ else if (Model.Rows.Count > 0)
                             <a class="button button-secondary button-small" asp-action="Viewer" asp-route-id="@row.RegistrationId">View PDF<span class="ledger-sr-only"> for @row.MemberName</span></a>
                         }
                         else { <span class="muted">Decision final</span> }
+                            <partial name="_DetailsButton" model='@(new RecordDetailsViewModel($"certificate-details-{row.RegistrationId}", row.MemberName, new Dictionary<string, string> { ["Student number"] = row.StudentNumber, ["Event"] = row.EventTitle, ["Attended"] = row.AttendedAt is null ? "Not recorded" : ManilaTimeFormatter.Format(row.AttendedAt.Value), ["Eligibility"] = row.StatusLabel, ["Reason"] = row.Reason, ["Certificate number"] = row.CertificateNumber, ["Issued"] = row.IssuedAt is null ? "Not issued" : ManilaTimeFormatter.Format(row.IssuedAt.Value) }, null))' />
                         </div>
                     </td>
                 </tr>

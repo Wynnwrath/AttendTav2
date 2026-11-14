@@ -39,7 +39,7 @@
                     <td data-label="Event"><a asp-controller="Event" asp-action="Details" asp-route-id="@row.EventId">@row.EventTitle</a></td>
                     <td data-label="Status"><span class="badge @RegistrationStatusDisplay.BadgeClass(row.Status, false)">@row.Status</span></td>
                     <td data-label="Actions" class="actions"><div class="row-actions">
-                        <partial name="_DetailsButton" model='@(new RecordDetailsViewModel($"registration-details-{row.RegistrationId}", row.MemberName, new Dictionary<string, string> { ["Student number"] = row.StudentNumber, ["Event"] = row.EventTitle, ["Submitted"] = ManilaTimeFormatter.Format(row.SubmittedAt), ["Status"] = row.Status.ToString(), ["Course"] = row.Course, ["Year"] = row.YearLevel.ToString() }))' />
+
                         @if (row.Status == RegistrationStatusCode.Pending)
                         {
                             <button type="button" class="button button-secondary button-small" data-dialog-open="approve" data-dialog-value-id="@row.RegistrationId" data-dialog-value-summary="Approve @row.MemberName (@row.StudentNumber) for @row.EventTitle?">Approve</button>
@@ -49,7 +49,8 @@
                         {
                             <button type="button" class="button button-quiet-danger button-small" data-dialog-open="registration-cancel" data-dialog-value-id="@row.RegistrationId" data-dialog-value-summary="Cancel the registration of @row.MemberName (@row.StudentNumber) for @row.EventTitle?">Cancel registration</button>
                         }
-                    </div></td>
+                        <partial name="_DetailsButton" model='@(new RecordDetailsViewModel($"registration-details-{row.RegistrationId}", row.MemberName, new Dictionary<string, string> { ["Student number"] = row.StudentNumber, ["Event"] = row.EventTitle, ["Submitted"] = ManilaTimeFormatter.Format(row.SubmittedAt), ["Status"] = row.Status.ToString(), ["Course"] = row.Course, ["Year"] = row.YearLevel.ToString() }))' />
+                        </div></td>
                 </tr>
             }
         </tbody>

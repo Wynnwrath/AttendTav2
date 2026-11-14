@@ -198,6 +198,7 @@ button, or a card with no outline is not part of this system.
 - **Pending / Waitlisted:** Pending Ochre on `#F7EEDD`.
 - **Declined / Cancelled:** Declined Red on `#FBEAE8`.
 - **Inactive / Draft:** Neutral Grey on `#F1F2F4`.
+- **Completed:** muted blue `#245C76` on `#E8F1F7`; event cancellation uses Declined Red.
 - **Rule:** the label is always present. Colour is never the only signal.
 
 ### Tables / Rosters
@@ -210,12 +211,15 @@ button, or a card with no outline is not part of this system.
 - **Record details:** Show details lives in the row's single three-dot menu. Reuse an existing
   menu where available. Keep frequent Edit, Approve, Decline and PDF actions visible. Close the
   popover before opening its dialog, and restore focus to the visible menu trigger on dismissal.
+  The menu is always the final action on the right, in both DOM and visual order.
 - **Density:** keep identity and decision facts visible; combine related fields and put
   secondary information in a shared Show details dialog. No internal table scroll region.
   Below 640px, rows become labelled blocks with natural page scrolling.
 - **Search and filters:** each list declares appropriate fields through the shared Razor
   toolbar. An applied search shows Clear; changing its text restores Search. Preserve
   unrelated query criteria across filters, paging and native decisions.
+  Search has the same visible label/field structure as dropdowns, so its top spacing does not
+  change when filters are present. Use the shared 16px block spacing; loading feedback follows tabs.
 - **Count and pager:** one full-width footer directly below the table shows the actual
   range and filtered total, Auto size, page number, and visible disabled boundaries.
   Zero results show a count without a fabricated page. Auto-fit targets five records,
