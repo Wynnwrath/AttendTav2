@@ -24,6 +24,11 @@ Used by a University of Cebu student organization on a laptop at the door and on
 
 ## Capabilities and Constraints
 
+- UI consistency implementation (2026-11-14): management content aligns to a shared 24px gutter
+  beside the sidebar (16px on small screens); bordered row/page/dialog controls share a common
+  vocabulary. Edited dialogs protect unsaved input with an inline discard choice. The phased
+  delivery plan is recorded in `docs/ui-ux-implementation-plan.md`.
+
 - Authentication by email and password with role-based access for administrator, officer, and member.
 - Membership requests are reviewed and approved or declined with a reason; decisions are audited.
 - Account-request tables lead with applicant identity and release both sticky edges below 1024px so every field remains horizontally readable. Fetched account/membership decisions and deactivation previews restore focus to the visible row-menu button when dismissed; impact previews include the server-read target name and email.

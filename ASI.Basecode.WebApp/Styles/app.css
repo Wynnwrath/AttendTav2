@@ -61,6 +61,8 @@
   --radius-panel: 8px;
   --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
   --shadow-dialog: 0 20px 48px -16px rgb(14 15 18 / 0.24);
+  --spacing-page-gutter: 24px;
+  --spacing-section-gap: 24px;
 }
 
 /* Self-hosted faces. No Google Fonts link: the app must render offline. */
@@ -285,7 +287,7 @@
     justify-content: space-between;
     gap: 16px;
     min-width: 0;
-    padding: 0 28px;
+    padding: 0 var(--spacing-page-gutter);
     background: var(--color-surface);
     border-bottom: 1px solid var(--color-border);
   }
@@ -424,10 +426,10 @@
   .main-content {
     grid-area: main;
     width: 100%;
-    max-width: 1440px;
+    max-width: none;
     min-width: 0;
-    margin: 0 auto;
-    padding: 28px;
+    margin: 0;
+    padding: var(--spacing-page-gutter);
   }
 
   .app-shell.public-shell {
@@ -435,7 +437,8 @@
     flex-direction: column;
     background: var(--color-ground);
   }
-  .public-shell .main-content { max-width: 448px; padding: 32px 16px; }
+  .public-shell .main-content { max-width: 448px; margin: 0 auto; padding: 32px 16px; }
+  .member-shell .main-content { max-width: 1440px; margin: 0 auto; }
   .public-shell.public-wide .main-content { max-width: 576px; }
   .public-band {
     background: var(--color-surface);
@@ -483,7 +486,7 @@
   .page-heading h2 { margin: 0; font-size: 22px; line-height: 1.25; letter-spacing: -0.015em; }
   .page-heading p { margin: 4px 0 0; max-width: 72ch; color: var(--color-ink-muted); font-size: 13.5px; }
   .page-heading .numeric { color: var(--color-ink-muted); font-size: 12px; }
-  /* Page-head actions are boxed buttons; only table row actions are text links. */
+  /* Page and row actions share the same bordered control vocabulary. */
   .page-actions {
     display: flex;
     flex-wrap: wrap;
@@ -543,7 +546,9 @@
     gap: 8px;
     min-height: 36px;
     padding: 0 14px;
-    border: 1px solid transparent;
+    border: 1px solid var(--color-border-strong);
+    background: var(--color-surface);
+    color: var(--color-ink-secondary);
     border-radius: var(--radius-control);
     font-family: var(--font-sans);
     font-size: 12.5px;
@@ -552,7 +557,7 @@
     text-decoration: none;
     cursor: pointer;
   }
-  .button:hover { text-decoration: none; }
+  .button:hover { background: var(--color-surface-subtle); color: var(--color-ink); text-decoration: none; }
   .button-primary { background: var(--color-cobalt); border-color: var(--color-cobalt); color: #fff; }
   .button-primary:hover { background: var(--color-cobalt-deep); border-color: var(--color-cobalt-deep); color: #fff; }
   .button-secondary { background: var(--color-surface); border-color: var(--color-border-strong); color: var(--color-ink-secondary); }
@@ -560,8 +565,10 @@
   .button-danger { background: var(--color-declined); border-color: var(--color-declined); color: #fff; }
   .button-danger:hover { background: #971d13; border-color: #971d13; color: #fff; }
   .button:focus-visible { outline: 2px solid var(--color-cobalt); outline-offset: 2px; }
-  .button:disabled { opacity: 0.55; cursor: not-allowed; text-decoration: none; }
-  .button-small { min-height: 30px; padding: 0 10px; font-size: 12px; }
+  .button:disabled, .button[aria-disabled="true"] { opacity: 0.55; cursor: not-allowed; text-decoration: none; }
+  .button-small { min-height: 32px; padding: 0 10px; font-size: 12px; }
+  .button-quiet-danger { background: var(--color-surface); color: var(--color-declined); border-color: var(--color-border-strong); }
+  .button-quiet-danger:hover { background: var(--color-declined-tint); color: var(--color-declined); }
 
   /* --- Panels, notices, identity ----------------------------------------- */
   .panel,
@@ -623,7 +630,7 @@
     display: block;
     margin-bottom: 6px;
     color: var(--color-ink-secondary);
-    font-size: 10.5px;
+    font-size: 11.5px;
     font-weight: 600;
     letter-spacing: 0.06em;
     text-transform: uppercase;
@@ -768,7 +775,7 @@
     height: 38px;
     background: var(--color-surface-subtle);
     color: var(--color-ink-muted);
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 600;
     letter-spacing: 0.07em;
     text-transform: uppercase;
@@ -810,21 +817,8 @@
   .data-table .numeric.cell-identifier { text-align: left; }
   .actions { min-width: 112px; white-space: nowrap; }
   .actions-wide { min-width: 150px; }
-  .row-actions { display: flex; flex-wrap: nowrap; align-items: center; gap: 10px; justify-content: flex-end; }
-  /* Row actions read as text links, not buttons. */
-  .row-actions .button {
-    min-height: 24px;
-    padding: 0;
-    border: 0;
-    background: transparent;
-    color: var(--color-cobalt);
-    font-size: 12.5px;
-    font-weight: 600;
-  }
-  .row-actions .button:hover { background: transparent; color: var(--color-cobalt-deep); text-decoration: underline; }
-  /* A decision that is not the affirmative one stays ink until hovered, so the row keeps one accent. */
-  .row-actions .button.button-quiet-danger { color: var(--color-ink-secondary); }
-  .row-actions .button.button-quiet-danger:hover { color: var(--color-declined); }
+  .row-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; justify-content: flex-end; }
+  .row-actions .button { min-height: 32px; padding: 0 10px; font-size: 12px; }
 
   /* Row overflow menu: one visible primary action plus a native popover. */
   .row-menu-trigger {
@@ -832,8 +826,8 @@
     flex: 0 0 auto;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
     padding: 0;
     border: 1px solid var(--color-border-strong);
     border-radius: var(--radius-control);
@@ -1092,6 +1086,14 @@
   .task-dialog form > .field { margin: 16px 24px 0; }
   .dialog-consequence { margin: 16px 24px 0; color: var(--color-ink-secondary); }
   .dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; padding: 16px 24px; border-top: 1px solid var(--color-border); }
+  .dialog-discard-notice { margin: 16px; padding: 16px; border: 1px solid var(--color-border-strong); border-radius: var(--radius-control); background: var(--color-surface-subtle); }
+  .dialog-discard-notice p { margin: 0 0 12px; }
+  .dialog-discard-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+  .record-dialog .dialog-discard-notice { margin: 16px 0 0; }
+  .details-list { margin: 0; }
+  .details-list > div { display: grid; grid-template-columns: minmax(100px, 1fr) minmax(0, 2fr); gap: 8px 16px; padding: 12px 0; border-bottom: 1px solid var(--color-border); }
+  .details-list dt { color: var(--color-ink-muted); font-size: 12px; }
+  .details-list dd { margin: 0; overflow-wrap: anywhere; white-space: pre-wrap; }
 
   .empty-state { padding: 32px 16px; color: var(--color-ink-muted); font-size: 13.5px; }
 
@@ -1200,6 +1202,7 @@
     .member-header .account-block { display: none; }
   }
   @media (max-width: 767px) {
+    :root { --spacing-page-gutter: 16px; }
     .main-content { padding: 16px; }
     .topbar { padding: 0 16px; }
     .public-band .brand-row { padding: 0 16px; }
@@ -1214,11 +1217,14 @@
     .sheet-keys .search-group { flex-basis: 100%; max-width: none; }
   }
   @media (max-width: 600px) {
+    .details-list > div { grid-template-columns: minmax(0, 1fr); gap: 4px; }
     .record-form-grid { grid-template-columns: minmax(0, 1fr); }
     .record-summary-row { grid-template-columns: minmax(0, 1fr); gap: 2px; }
   }
   @media (pointer: coarse) {
     .button,
+    .row-actions .button,
+    .check-in-control .button-small,
     .nav-logout,
     .filter-tab { min-height: 44px; }
     .nav-key { min-height: 44px; }

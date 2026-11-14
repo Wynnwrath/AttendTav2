@@ -42,8 +42,8 @@
     <div class="record-summary" role="group" aria-label="Locked event details">
         <p class="record-summary-row"><span class="record-summary-label">Event type:</span> <span class="record-summary-value">@Model.TypeName</span></p>
         <p class="record-summary-row"><span class="record-summary-label">Venue:</span> <span class="record-summary-value">@Model.VenueName</span></p>
-        <p class="record-summary-row"><span class="record-summary-label">Starts (Asia/Manila):</span> <span class="record-summary-value">@Model.StartsAt.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture)</span></p>
-        <p class="record-summary-row"><span class="record-summary-label">Signup deadline (Asia/Manila):</span> <span class="record-summary-value">@Model.RegistrationDeadline.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture)</span></p>
+        <p class="record-summary-row"><span class="record-summary-label">Event starts:</span> <span class="record-summary-value">@Model.StartsAt.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture)</span></p>
+        <p class="record-summary-row"><span class="record-summary-label">Registration closes:</span> <span class="record-summary-value">@Model.RegistrationDeadline.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture)</span></p>
         <p class="record-summary-row"><span class="record-summary-label">Participant limit:</span> <span class="record-summary-value">@Model.ParticipantLimit</span></p>
     </div>
     <input type="hidden" name="TypeId" value="@Model.TypeId" />
@@ -81,13 +81,13 @@ else
                 <span id="VenueId-validation" asp-validation-for="VenueId" class="field-error"></span>
             </div>
             <div class="field">
-                <label asp-for="StartsAt" class="field-label">Starts (Asia/Manila) <span class="required" aria-hidden="true">*</span></label>
+                <label asp-for="StartsAt" class="field-label">Event starts <span class="required" aria-hidden="true">*</span></label>
                 <input asp-for="StartsAt" type="datetime-local" value="@startsValue" aria-describedby="StartsAt-validation StartsAt-help" aria-required="true" aria-invalid="@(startsInvalid ? "true" : null)" class="field-control" required />
-                <small id="StartsAt-help" class="muted">Enter the start date and time in Asia/Manila.</small>
+                <small id="StartsAt-help" class="field-hint">When the event itself begins.</small>
                 <span id="StartsAt-validation" asp-validation-for="StartsAt" class="field-error"></span>
             </div>
             <div class="field">
-                <label asp-for="RegistrationDeadline" class="field-label">Signup deadline (Asia/Manila) <span class="required" aria-hidden="true">*</span></label>
+                <label asp-for="RegistrationDeadline" class="field-label">Registration closes <span class="required" aria-hidden="true">*</span></label>
                 <input asp-for="RegistrationDeadline" type="datetime-local" value="@deadlineValue" aria-describedby="RegistrationDeadline-validation RegistrationDeadline-help" aria-required="true" aria-invalid="@(deadlineInvalid ? "true" : null)" class="field-control" required />
                 <small id="RegistrationDeadline-help" class="muted">The signup deadline cannot be after the event start.</small>
                 <span id="RegistrationDeadline-validation" asp-validation-for="RegistrationDeadline" class="field-error"></span>

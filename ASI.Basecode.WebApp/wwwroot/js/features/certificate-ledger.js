@@ -16,7 +16,7 @@
             (dialog.querySelector('textarea') || dialog.querySelector('[data-certificate-close]'))?.focus();
         }
         const close = event.target.closest('[data-certificate-close]');
-        if (close) close.closest('dialog')?.close();
+        if (close) window.AttendTaDialogs?.requestClose(close.closest('dialog'));
     });
     document.querySelectorAll('.certificate-dialog form').forEach(function (form) {
         form.addEventListener('submit', function () {

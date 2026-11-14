@@ -28,7 +28,7 @@ $(function () {
         }
 
         const closer = event.target.closest('[data-dialog-close]');
-        if (closer) closer.closest('dialog')?.close();
+        if (closer) window.AttendTaDialogs?.requestClose(closer.closest('dialog'));
     });
 
     // A native dialog's own padding is part of the dialog element, so the event target alone
@@ -52,7 +52,7 @@ $(function () {
         pressedBackdrop = false;
         if (!(dialog instanceof HTMLDialogElement) || !fromBackdrop) return;
         if (dialog.getAttribute('aria-busy') === 'true') return;
-        dialog.close();
+        window.AttendTaDialogs?.requestClose(dialog);
     });
 
     document.addEventListener('submit', function (event) {

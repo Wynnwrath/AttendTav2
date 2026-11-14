@@ -67,6 +67,7 @@
             if (request !== current || !dialog.open) return;
             body.innerHTML = html;
             message.textContent = '';
+            window.AttendTaDialogs?.track(dialog, true);
             focusForm();
         } catch (error) {
             if (error.name === 'AbortError' || request !== current) return;
@@ -90,7 +91,7 @@
         load();
     });
     dialog.addEventListener('click', event => {
-        if (event.target.closest('[data-record-close]') && !busy) dialog.close();
+        if (event.target.closest('[data-record-close]') && !busy) window.AttendTaDialogs?.requestClose(dialog);
         if (event.target.closest('[data-record-retry]') && !busy) load();
     });
     dialog.addEventListener('cancel', event => { if (busy) event.preventDefault(); });

@@ -94,7 +94,6 @@
     </nav>
     <div class="table-scroll" role="region" aria-label="Registration roster" tabindex="0">
         <table class="data-table dossier-roster table-sticky">
-            @if (Model.Roster.Items.Count > 0) { <caption>Times shown in Asia/Manila.</caption> }
             <thead><tr><th scope="col">Participant</th><th scope="col">Student number</th><th scope="col">Submitted</th><th scope="col">Status</th><th scope="col" class="actions">Actions</th></tr></thead>
             <tbody>
                 @if (Model.Roster.Items.Count == 0) { <tr><td colspan="5" class="empty-state">No @Model.Status registrations for this event.</td></tr> }

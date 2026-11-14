@@ -118,8 +118,9 @@ family is drift, not a variation.
 
 ## Layout
 
-A fixed left rail (256px) and a top bar (64px) frame a full-width content area with 28px
-gutters and a 1440px working width. The content is a sheet of stacked sections, never a grid
+A fixed left rail (256px) and a top bar (64px) frame a full-width content area with 24px
+gutters. Management lists use the available width and align with the breadcrumb rather than
+centering a capped sheet away from the sidebar. The content is a sheet of stacked sections, never a grid
 of floating cards.
 
 Management (administrator and officer) works from the rail shell: the rail carries the brand,
@@ -185,8 +186,8 @@ button, or a card with no outline is not part of this system.
 - **Destructive:** Declined Red fill, white text. Requires a confirm dialog.
 - **Hover / Focus:** primary darkens to Cobalt Deep; focus is a 2px Cobalt outline at 2px
   offset, and a 2px white outline inside the rail.
-- **Placement:** page-head action groups use boxed buttons, including the event dossier.
-  The borderless text-link treatment is reserved for table row actions, not page headers.
+- **Placement:** page heads, table rows and dialogs use bordered buttons. Row controls use a
+  compact 32px height; touch surfaces use at least 44px. Ordinary inline navigation remains a link.
 
 ### Status Tags
 - **Style:** 4px radius, tinted background, 10.5px 600 uppercase at 0.06em, 22px height, 9px
@@ -203,7 +204,7 @@ button, or a card with no outline is not part of this system.
 - **Rows:** 48px, 1px Border between, hover Surface Subtle, no zebra striping.
 - **Cells:** 13px, Ink Secondary; the name cell is 600 Ink with a 26px initials tile.
 - **Numbers:** tabular figures, Ink, right-aligned where the column is numeric.
-- **Actions:** text links at 12.5px, cobalt, one per row plus Edit.
+- **Actions:** compact bordered buttons with 8px gaps. Use an overflow menu for secondary actions.
 - **Count and pager:** the pager sits directly below the table and the result count
   directly below the pager, both full-width under the panel. The count is one line
   of Micro type reading the real `PagedResult.TotalCount`; it is not a KPI card and
@@ -219,8 +220,8 @@ button, or a card with no outline is not part of this system.
 - **Check-in:** a row in the fact sheet carrying the state tag and a secondary control; the tag
   names the row. Complete event is the only primary, and only once the event has started;
   before that it is a disabled secondary.
-- **Roster:** status keys, table, pager, then the real count. The Asia/Manila note is the
-  table caption, not a second count line.
+- **Roster:** status keys, compact table and consistent pagination/count footer. Repeated timezone
+  captions are omitted; UTC storage and Manila display conversion remain unchanged.
 
 ### Inputs / Fields
 - **Style:** white ground, 1px Border Strong, 4px radius, 36px height, 13.5px.
@@ -259,6 +260,10 @@ The dossier's confirmed-capacity block is the Event details instance.
 8px radius, white, 1px Border, the single dialog shadow, 24px padding. Title at 16px 600,
 actions right-aligned with the primary last. Focus is contained, Escape closes, and the
 backdrop is `rgba(14, 15, 18, 0.36)`.
+
+Edited dialogs ask before discarding unsaved input. The discard prompt stays inside the existing
+dialog, with Keep editing and Discard changes actions; dialogs are never stacked for confirmation.
+Unchanged and read-only dialogs dismiss immediately. A busy save cannot be dismissed.
 
 ## Do's and Don'ts
 
