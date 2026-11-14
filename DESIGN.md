@@ -188,6 +188,8 @@ button, or a card with no outline is not part of this system.
   offset, and a 2px white outline inside the rail.
 - **Placement:** page heads, table rows and dialogs use bordered buttons. Row controls use a
   compact 32px height; touch surfaces use at least 44px. Ordinary inline navigation remains a link.
+- **Heading alignment:** page titles start at the same top edge. The heading row reserves at
+  least 36px whether or not a Create button is present; controls do not bottom-align the title.
 
 ### Status Tags
 - **Style:** 4px radius, tinted background, 10.5px 600 uppercase at 0.06em, 22px height, 9px
@@ -205,6 +207,9 @@ button, or a card with no outline is not part of this system.
 - **Cells:** 13px, Ink Secondary; the name cell is 600 Ink with a 26px initials tile.
 - **Numbers:** tabular figures, Ink, right-aligned where the column is numeric.
 - **Actions:** compact bordered buttons with 8px gaps. Use an overflow menu for secondary actions.
+- **Record details:** Show details lives in the row's single three-dot menu. Reuse an existing
+  menu where available. Keep frequent Edit, Approve, Decline and PDF actions visible. Close the
+  popover before opening its dialog, and restore focus to the visible menu trigger on dismissal.
 - **Density:** keep identity and decision facts visible; combine related fields and put
   secondary information in a shared Show details dialog. No internal table scroll region.
   Below 640px, rows become labelled blocks with natural page scrolling.
@@ -216,6 +221,13 @@ button, or a card with no outline is not part of this system.
   Zero results show a count without a fabricated page. Auto-fit targets five records,
   reduces the page for short windows using measured rows/cards, and holds that size while
   paging until filters or viewport dimensions change. Never clip content to force a fit.
+  The event dossier uses stable five-row roster pages because its summary precedes the table;
+  its count names the selected registration status. Small scrollbar-width changes do not refit.
+- **Filter scope:** Members and Membership Requests share BSCS/BSIT Course and Year choices.
+  Event Management uses existing classification IDs in a dropdown; Registration Review chooses
+  a specific event. Campus Events uses Search and Active/Completed tabs, with Active including
+  upcoming published events. Activity Log keeps Search and Action; personal history keeps Search
+  within its existing sections. Retired filters do not survive invisibly in links or forms.
 - **List spacing:** page heads end with 16px of space. Filter toolbars keep 16px of
   bottom padding; lists with loading feedback reserve one compact 16px live line before
   the table, without an additional blank paragraph margin.

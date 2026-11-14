@@ -31,14 +31,7 @@
     </div>
 </div>
 
-@{
-    var historyFilters = Model.ActiveTab switch {
-        MyEventsTab.Attendance => new[] { new ListFilterOption("valid", "Valid attendance"), new ListFilterOption("invalidated", "Invalidated") },
-        MyEventsTab.Certificates => new[] { new ListFilterOption("Pending", "Pending"), new ListFilterOption("Eligible", "Eligible"), new ListFilterOption("Declined", "Declined"), new ListFilterOption("Issued", "Issued"), new ListFilterOption("Unavailable", "Unavailable") },
-        _ => new[] { new ListFilterOption("Pending", "Pending"), new ListFilterOption("Confirmed", "Confirmed"), new ListFilterOption("Waitlisted", "Waitlisted"), new ListFilterOption("Cancelled", "Cancelled") }
-    };
-}
-<partial name="_ListToolbar" model='@(new ListToolbarViewModel("Search event title", new[] { ListToolbarViewModel.Status(historyFilters) }))' />
+<partial name="_ListToolbar" model='@(new ListToolbarViewModel("Search event title"))' />
 <p class="muted" data-list-status role="status" data-list-busy-label="Loading records…"></p>
 <div class="panel my-events-panel">
     <nav class="filter-tabs" aria-label="Participation history sections">

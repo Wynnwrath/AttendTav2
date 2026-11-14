@@ -72,7 +72,11 @@ namespace ASI.Basecode.Data.Repositories
         private IQueryable<MemberRecord> FilterMembers(string search, string status)
         {
             var query = GetMemberRecords();
-            if (!string.IsNullOrWhiteSpace(_readOptions?.Course)) query = query.Where(row => row.Course == _readOptions.Course);
+            if (!string.IsNullOrWhiteSpace(_readOptions?.Course)) {
+                var course = _readOptions.Course;
+                var legacy = course == "BSIT" ? "BS Information Technology" : course == "BSCS" ? "BS Computer Science" : course;
+                query = query.Where(row => row.Course == course || row.Course == legacy);
+            }
             if (_readOptions?.Year is int year) query = query.Where(row => row.YearLevel == year);
             if (!string.IsNullOrWhiteSpace(search))
             {

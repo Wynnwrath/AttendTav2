@@ -22,7 +22,7 @@
 </div>
 
 <partial name="_EventSelector" model="Model.Selector" />
-<partial name="_ListToolbar" model='@(new ListToolbarViewModel("Search member or student number", new ListFilterField[] { ListToolbarViewModel.Status(new ListFilterOption("Pending", "Pending"), new ListFilterOption("Confirmed", "Confirmed"), new ListFilterOption("Waitlisted", "Waitlisted"), new ListFilterOption("Cancelled", "Cancelled")), new ListFilterField("type", "Attendance", Options: new[] { new ListFilterOption("attended", "Attended"), new ListFilterOption("not-attended", "Not attended") }) }))' />
+<partial name="_ListToolbar" model='@(new ListToolbarViewModel("Search member or student number", new ListFilterField[] { new ListFilterField("type", "Attendance", Options: new[] { new ListFilterOption("attended", "Attended"), new ListFilterOption("not-attended", "Not attended") }) }))' />
 <p class="muted" data-list-status role="status" data-list-busy-label="Loading records…"></p>
 @if (Model.EventId is null)
 {

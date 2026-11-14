@@ -90,6 +90,7 @@ else
             <tbody>
                 @foreach (var venue in Model.Items)
                 {
+                    var details = new RecordDetailsViewModel($"venue-details-{venue.VenueId}", venue.RoomName, new Dictionary<string, string> { ["Location"] = venue.Location, ["Capacity"] = venue.Capacity.ToString(), ["Availability notes"] = venue.AvailabilityNotes, ["Contact person"] = venue.ContactPerson }, Url.Action("Photo", "Venue", new { id = venue.VenueId }));
                     <tr data-venue-id="@venue.VenueId">
                         <td data-label="Room Name" class="cell-name"><span class="cell-strong">@venue.RoomName</span></td>
                         <td data-label="Capacity" class="numeric">@venue.Capacity</td>
@@ -97,11 +98,12 @@ else
                         <td data-label="Status"><span class="badge @(venue.IsActive ? "badge-active" : "badge-inactive")">@(venue.IsActive ? "Active" : "Inactive")</span></td>
                         <td data-label="Actions" class="actions">
                             <div class="row-actions">
-<partial name="_DetailsButton" model='@(new RecordDetailsViewModel($"venue-details-{venue.VenueId}", venue.RoomName, new Dictionary<string, string> { ["Location"] = venue.Location, ["Capacity"] = venue.Capacity.ToString(), ["Availability notes"] = venue.AvailabilityNotes, ["Contact person"] = venue.ContactPerson }, Url.Action("Photo", "Venue", new { id = venue.VenueId })))' />
+
                                 <a asp-action="Edit" asp-route-id="@venue.VenueId" class="button button-small button-secondary" data-record-open="edit-venue-@venue.VenueId" data-record-title="Edit Venue">Edit</a>
                                 <partial name="_RowMenuTrigger" model="@($"row-menu-venue-{venue.VenueId}")" />
                             </div>
                             <div id="row-menu-venue-@venue.VenueId" popover class="row-menu">
+                                <partial name="_DetailsTrigger" model="details" />
                                 <form asp-action="ToggleActive" asp-route-id="@venue.VenueId" method="post">
                                     <input type="hidden" name="page" value="@Model.PageNumber" />
                                     <div class="@(venue.IsActive ? "row-menu-danger" : null)">
@@ -109,6 +111,7 @@ else
                                     </div>
                                 </form>
                             </div>
+                        <partial name="_DetailsDialog" model="details" />
                         </td>
                     </tr>
                 }

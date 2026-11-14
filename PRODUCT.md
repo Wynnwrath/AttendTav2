@@ -38,6 +38,13 @@ Used by a University of Cebu student organization on a laptop at the door and on
   labelled rows and retain natural page scrolling. One footer shows the real range, total
   and page boundaries. Fetched account/membership decisions and deactivation previews restore
   focus to the visible row-menu button; impact previews include the server-read target name and email.
+- Phase 2 review refinements: BSCS and BSIT are the offered courses for membership requests and
+  member edits, with the same choices in Course filters. Legacy long program names remain
+  searchable through those codes; historical registration snapshots are preserved. Event
+  classification filters use existing records. Campus Events defaults to Active (published,
+  including upcoming) with a separate Completed section and search. The dossier keeps five-row
+  pages and identifies the roster status in its footer. Secondary Show details actions use one
+  row menu, and certificate decisions retain compact visible controls.
 - Master data covers members, event types, and venues; records are deactivated rather than hard-deleted.
 - Master Data lists announce a loading state while a filter, pager, search or status toggle is in flight, and a failed read keeps the shell, tabs and table headers with an in-shell notice and a Try again link instead of an empty-state row.
 - Member, Event Type, Venue and Event create/edit use the same centered keyboard-operable record dialog with required markers, retained server validation, focus containment and restore, and a venue photo preview. Clicks on the dialog's own padding keep it open; only a backdrop click, Escape or Cancel dismisses it. Events open the same editor from the Events list and from the event dossier. Standalone form routes remain available.

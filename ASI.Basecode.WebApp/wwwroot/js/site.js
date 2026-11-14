@@ -84,6 +84,9 @@ $(function () {
             }
 
             dialog.querySelectorAll('textarea').forEach(function (textarea) { textarea.value = ''; });
+            const returnFocus = resolveDialogReturnFocus(opener);
+            opener.closest('[popover]')?.hidePopover();
+            dialog.addEventListener('close', () => restoreDialogFocus(returnFocus), { once: true });
             dialogs.track(dialog, true);
             dialog.showModal();
             dialog.querySelector('textarea, input:not([type="hidden"])')?.focus();

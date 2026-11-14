@@ -20,6 +20,6 @@ public static class ListPagingLabels
     }
 
     public static bool IsFiltered(HttpRequest request) => request.Query.Any(pair =>
-        pair.Key is "search" or "filter" or "status" or "course" or "year" or "type" or "role" or "from" or "to"
+        !ListReadOptionsFactory.IsRetiredFilter(request, pair.Key) && pair.Key is "search" or "filter" or "status" or "course" or "year" or "type" or "typeId" or "role" or "from" or "to"
         && !string.IsNullOrWhiteSpace(pair.Value) && !string.Equals(pair.Value, "all", StringComparison.OrdinalIgnoreCase));
 }

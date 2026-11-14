@@ -3,11 +3,13 @@
 @using System.Globalization
 @using Microsoft.AspNetCore.Http.Extensions
 @{
+    var autoFit = ViewData["ListControls"] as bool? == true && ViewData["AutoFit"] as bool? != false;
     string PageUrl(int pageNumber)
     {
         var query = new QueryBuilder();
         foreach (var parameter in Context.Request.Query)
         {
+            if (ListReadOptionsFactory.IsRetiredFilter(Context.Request, parameter.Key) || !autoFit && parameter.Key is "pageSize" or "fit") continue;
             if (string.Equals(parameter.Key, "page", StringComparison.OrdinalIgnoreCase))
             {
                 continue;
@@ -30,9 +32,9 @@
     var controller = ViewContext.RouteData.Values["controller"]?.ToString();
     var noun = ListPagingLabels.Noun(controller, ViewContext.RouteData.Values["action"]?.ToString(), Model.TotalCount, ViewData["ResultNoun"] as string);
     var filtered = ListPagingLabels.IsFiltered(Context.Request);
-    <nav class="pager" aria-label="Pagination" data-paging-size="@Model.PageSize" data-paging-page="@Model.PageNumber">
+    <nav class="pager" aria-label="Pagination" data-paging-size="@Model.PageSize" data-paging-page="@Model.PageNumber" data-paging-mode="@(autoFit ? "auto" : "fixed")">
         <p class="pagination-summary" aria-live="polite">Showing @Model.FirstItemNumber–@Model.LastItemNumber of @Model.TotalCount @(filtered ? "matching " : "")@noun</p>
-        <span class="paging-mode muted">@(ViewData["ListControls"] as bool? == true ? "Auto · " : "")@Model.PageSize per page</span>
+        <span class="paging-mode muted">@(autoFit ? "Auto · " : "")@Model.PageSize per page</span>
         <div class="pager-actions">
             @if (Model.HasPreviousPage)
             {

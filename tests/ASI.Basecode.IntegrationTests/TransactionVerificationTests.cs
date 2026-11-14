@@ -19,7 +19,7 @@ public class TransactionVerificationTests(SqlServerDatabaseFixture fixture) : IC
     private AsiBasecodeDBContext Context() => new(new DbContextOptionsBuilder<AsiBasecodeDBContext>().UseSqlServer(fixture.ConnectionString).Options);
     private static string Email() => $"{Guid.NewGuid():N}@example.invalid";
     private static User User(string email) => new() { Name = "Test", UserId = email, Password = "test", IsActive = true, RoleId = RoleCode.Member };
-    private static AccountRequest Request(string email) => new() { StudentNumber = Guid.NewGuid().ToString("N"), FullName = "Test", Email = email, PasswordHash = "test", Course = "Computing", YearLevel = 1, Section = "A", AccountRequestStatusId = AccountRequestStatusCode.Pending };
+    private static AccountRequest Request(string email) => new() { StudentNumber = Guid.NewGuid().ToString("N"), FullName = "Test", Email = email, PasswordHash = "test", Course = "BSIT", YearLevel = 1, Section = "A", AccountRequestStatusId = AccountRequestStatusCode.Pending };
     private sealed class Actor(int id, bool authenticated = true) : ICurrentActor { public bool IsAuthenticated => authenticated; public int UserId => id; public string Role => "member"; }
     private sealed class Clock : TimeProvider { public override DateTimeOffset GetUtcNow() => new(2026, 1, 2, 3, 4, 5, TimeSpan.Zero); }
     private sealed record Values(string Status, int Count) : IAuditValues;

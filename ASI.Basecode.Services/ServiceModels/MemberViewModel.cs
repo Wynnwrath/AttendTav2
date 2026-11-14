@@ -23,6 +23,7 @@ namespace ASI.Basecode.Services.ServiceModels
         public string StudentNumberCorrectionReason { get; set; }
 
         [Required(ErrorMessage = "Course is required.")]
+        [RegularExpression("^(BSCS|BSIT)$", ErrorMessage = "Choose BSCS or BSIT.")]
         [StringLength(100)]
         public string Course { get; set; }
 

@@ -11,6 +11,61 @@ namespace ASI.Basecode.IntegrationTests;
 
 public sealed class ListPresentationTests
 {
+    [Theory]
+    [InlineData(@"np:\\.\pipe\LOCALDB#7C5BE61C\tsql\query", true)]
+    [InlineData(@"np:\\remote\pipe\LOCALDB#7C5BE61C\tsql\query", false)]
+    [InlineData(@"np:\\.\pipe\LOCALDB#7C5BE61C\tsql\query\extra", false)]
+    public void IntegrationPipeSupportRemainsLocalOnly(string source, bool allowed) =>
+        Assert.Equal(allowed, SqlServerDatabaseFixture.IsLocalSqlServer(source));
+
+    [Fact]
+    public void DossierUsesStableFiveAndIgnoresPreviouslyFittedSize()
+    {
+        var context = new DefaultHttpContext();
+        context.Request.RouteValues["controller"] = "Event";
+        context.Request.RouteValues["action"] = "Details";
+        context.Request.QueryString = new("?pageSize=1&fit=1&search=Ana");
+        var options = ListReadOptionsFactory.From(context.Request);
+        Assert.Equal(5, options.PageSize);
+        Assert.Equal("Ana", options.Search);
+    }
+
+    [Fact]
+    public void BrowseDefaultsToActiveAndRetiredControlsCannotKeepFiltering()
+    {
+        var context = new DefaultHttpContext();
+        context.Request.RouteValues["controller"] = "MemberEvents";
+        context.Request.QueryString = new("?type=old&from=2026-01-01&to=2026-12-31");
+        var options = ListReadOptionsFactory.From(context.Request);
+        Assert.Equal("Published", options.Filter);
+        Assert.Null(options.Type);
+        Assert.Null(options.From);
+        Assert.Null(options.To);
+        Assert.False(ListPagingLabels.IsFiltered(context.Request));
+        var url = ListNavigation.Url(context.Request, new Dictionary<string, string> { ["filter"] = "Completed" });
+        Assert.DoesNotContain("from=", url);
+        Assert.DoesNotContain("type=", url);
+        context.Request.QueryString = new("?filter=Completed");
+        Assert.Equal("Completed", ListReadOptionsFactory.From(context.Request).Filter);
+    }
+
+    [Fact]
+    public void CourseChoicesRejectUnsupportedProgramsAtBothFormBoundaries()
+    {
+        foreach (var model in new object[] {
+            new ASI.Basecode.Services.ServiceModels.AccountRequestViewModel { Course = "BSIS" },
+            new ASI.Basecode.Services.ServiceModels.MemberViewModel { Course = "BSIS" }
+        })
+        {
+            var results = new List<System.ComponentModel.DataAnnotations.ValidationResult>();
+            System.ComponentModel.DataAnnotations.Validator.TryValidateObject(model, new(model), results, true);
+            Assert.Contains(results, result => result.MemberNames.Contains("Course"));
+        }
+        Assert.Equal("BSIT", ASI.Basecode.Resources.Constants.ProfileOptions.NormalizeCourse(" BS Information Technology "));
+        Assert.Equal("BSCS", ASI.Basecode.Resources.Constants.ProfileOptions.NormalizeCourse("bscs"));
+        Assert.Equal(new[] { "BSCS", "BSIT" }, ListToolbarViewModel.Course.Options!.Select(item => item.Value));
+    }
+
     [Fact]
     public void QueryBindingTrimsFiltersBoundsSizeAndUsesManilaCalendarDays()
     {

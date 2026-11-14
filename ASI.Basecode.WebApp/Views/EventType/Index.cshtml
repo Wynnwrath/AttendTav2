@@ -87,17 +87,19 @@ else
             <tbody>
                 @foreach (var eventType in Model.Items)
                 {
+                    var details = new RecordDetailsViewModel($"type-details-{eventType.TypeId}", eventType.TypeName, new Dictionary<string, string> { ["Description"] = eventType.Description }, null);
                     <tr data-type-id="@eventType.TypeId">
                         <td data-label="Type Name" class="cell-name"><span class="cell-strong">@eventType.TypeName</span></td>
                         <td data-label="Description" class="cell-description"><span class="line-clamp-two">@eventType.Description</span></td>
                         <td data-label="Status"><span class="badge @(eventType.IsActive ? "badge-active" : "badge-inactive")">@(eventType.IsActive ? "Active" : "Inactive")</span></td>
                         <td data-label="Actions" class="actions">
                             <div class="row-actions">
-<partial name="_DetailsButton" model='@(new RecordDetailsViewModel($"type-details-{eventType.TypeId}", eventType.TypeName, new Dictionary<string, string> { ["Description"] = eventType.Description }, null))' />
+
                                 <a asp-action="Edit" asp-route-id="@eventType.TypeId" class="button button-small button-secondary" data-record-open="edit-event-type-@eventType.TypeId" data-record-title="Edit Event Type">Edit</a>
                                 <partial name="_RowMenuTrigger" model="@($"row-menu-event-type-{eventType.TypeId}")" />
                             </div>
                             <div id="row-menu-event-type-@eventType.TypeId" popover class="row-menu">
+                                <partial name="_DetailsTrigger" model="details" />
                                 <form asp-action="ToggleActive" asp-route-id="@eventType.TypeId" method="post">
                                     <input type="hidden" name="page" value="@Model.PageNumber" />
                                     <div class="@(eventType.IsActive ? "row-menu-danger" : null)">
@@ -105,6 +107,7 @@ else
                                     </div>
                                 </form>
                             </div>
+                        <partial name="_DetailsDialog" model="details" />
                         </td>
                     </tr>
                 }

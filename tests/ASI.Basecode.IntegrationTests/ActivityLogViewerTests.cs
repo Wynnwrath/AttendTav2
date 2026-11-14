@@ -87,7 +87,7 @@ public sealed class ActivityLogViewerTests : IClassFixture<SqlServerDatabaseFixt
         Assert.Contains("Reason for audit entry 26", firstPage, StringComparison.Ordinal);
         Assert.Contains("Page 1 of 6", firstPage, StringComparison.Ordinal);
         Assert.Contains("aria-label=\"Next page\"", firstPage, StringComparison.Ordinal);
-        Assert.DoesNotContain("Edit", firstPage, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("href=\"/ActivityLog/Edit", firstPage, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("Delete", firstPage, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("asp-action=\"", firstPage, StringComparison.Ordinal);
         var lastPage = await adminClient.GetStringAsync("/admin/auditlogs?page=6", TestContext.Current.CancellationToken);

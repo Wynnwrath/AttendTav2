@@ -25,6 +25,7 @@ namespace ASI.Basecode.Services.ServiceModels
         public string Email { get; set; }
 
         [Required(ErrorMessage = "Course is required.")]
+        [RegularExpression("^(BSCS|BSIT)$", ErrorMessage = "Choose BSCS or BSIT.")]
         [StringLength(100, ErrorMessage = "Course cannot exceed 100 characters.")]
         [Display(Name = "Course")]
         public string Course { get; set; }

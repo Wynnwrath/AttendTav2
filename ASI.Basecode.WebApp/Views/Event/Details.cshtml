@@ -5,6 +5,8 @@
 @{
     var item = Model.Event;
     ViewData["ListControls"] = true;
+    ViewData["AutoFit"] = false;
+    ViewData["ResultNoun"] = $"{Model.Status} registration";
     ViewData["Title"] = item.Title;
     ViewData["Feature"] = "record-dialog";
     var mutable = item.EventStatusId is EventStatusCode.Draft or EventStatusCode.Published;
@@ -134,7 +136,7 @@
         </table>
     </div>
     <partial name="_Pager" model="Model.Roster" />
-    <partial name="_ResultCount" model="Model.Roster" view-data="@(new ViewDataDictionary(ViewData) { ["ResultNoun"] = "registration" })" />
+    <partial name="_ResultCount" model="Model.Roster" />
 </section>
 
 @foreach (var decision in new[] { ("approve", "Approve registration", "Approve", false), ("decline", "Decline registration", "Decline", true), ("registration-cancel", "Cancel registration", "Cancel", true), ("promote", "Promote next eligible participant", "Promote", false), ("event-cancel", "Cancel event", "CancelFromDossier", true), ("complete", "Mark event as completed?", "Complete", false) })

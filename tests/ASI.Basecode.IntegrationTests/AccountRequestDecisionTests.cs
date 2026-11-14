@@ -242,7 +242,7 @@ public sealed class AccountRequestDecisionTests(SqlServerDatabaseFixture fixture
             {
                 UserId = actor.Id,
                 StudentNumber = candidate.StudentNumber,
-                Course = "Computing",
+                Course = "BSIT",
                 YearLevel = 1,
                 Section = "RACE",
                 MembershipStatusId = MembershipStatusCode.Inactive,

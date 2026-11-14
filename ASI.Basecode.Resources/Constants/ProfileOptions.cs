@@ -1,18 +1,17 @@
 namespace ASI.Basecode.Resources.Constants
 {
-    /// <summary>
-    /// Suggested and bounded values for the profile fields that the membership request and the
-    /// member editor collect. Course stays free text (the specification keeps it open) but is
-    /// offered as a suggestion list; year level, section and membership type are true dropdowns.
-    /// </summary>
+    /// <summary>Shared program choices and profile field options.</summary>
     public static class ProfileOptions
     {
         /// <summary>The organization's current program list; add a program here when it changes.</summary>
-        public static readonly IReadOnlyList<string> Courses = new[]
+        public static readonly IReadOnlyList<string> Courses = new[] { "BSCS", "BSIT" };
+
+        // Recognize legacy long labels without rewriting historical registration snapshots.
+        public static string? NormalizeCourse(string? course) => course?.Trim().ToUpperInvariant() switch
         {
-            "BS Information Technology",
-            "BS Computer Science",
-            "BS Information Systems"
+            "BSIT" or "BS INFORMATION TECHNOLOGY" => "BSIT",
+            "BSCS" or "BS COMPUTER SCIENCE" => "BSCS",
+            _ => course?.Trim()
         };
 
         /// <summary>Positive year levels offered by the form.</summary>

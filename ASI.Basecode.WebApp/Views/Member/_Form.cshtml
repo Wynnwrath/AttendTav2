@@ -30,13 +30,13 @@
     <div class="record-form-grid">
         <div class="field field-span-2">
             <label asp-for="Course" class="field-label">Course <span class="required" aria-hidden="true">*</span></label>
-            <input asp-for="Course" aria-describedby="Course-validation" class="field-control" required aria-required="true" list="member-course-options" placeholder="e.g. BS Information Technology" />
-            <datalist id="member-course-options">
+            <select asp-for="Course" aria-describedby="Course-validation" class="field-control" required>
+                <option value="">Select course</option>
                 @foreach (var course in ProfileOptions.Courses)
                 {
-                    <option value="@course"></option>
+                    <option value="@course" selected="@(ProfileOptions.NormalizeCourse(Model.Course) == course)">@course</option>
                 }
-            </datalist>
+            </select>
             <span id="Course-validation" asp-validation-for="Course" class="field-error"></span>
         </div>
         <div class="field">

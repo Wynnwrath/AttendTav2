@@ -47,7 +47,7 @@ public sealed class AccountRequestQueueService(IAccountRequestRepository account
             StudentNumber = record.StudentNumber,
             FullName = record.FullName,
             Email = record.Email,
-            Course = record.Course,
+            Course = ASI.Basecode.Resources.Constants.ProfileOptions.NormalizeCourse(record.Course),
             YearLevel = record.YearLevel,
             Section = record.Section,
             MobileNumber = record.MobileNumber,

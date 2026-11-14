@@ -33,8 +33,9 @@
     }, true);
 
     const footer = document.querySelector('[data-paging-size]');
-    if (!footer) return;
+    if (!footer || footer.dataset.pagingMode === 'fixed') return;
     let resized = false, timer;
+    let viewportWidth = window.innerWidth, viewportHeight = window.innerHeight;
     function fitRows() {
         if (document.querySelector('dialog[open]') || document.activeElement?.matches('input, select, textarea')) return;
         if (searches.some(form => form.querySelector('[name="search"]').value.trim() !== form.dataset.appliedSearch.trim())) return;
@@ -62,6 +63,10 @@
         window.location.replace(url.toString());
     }
     window.addEventListener('resize', () => {
+        // Scrollbar appearance and small panel jitter must not restart the paging fit.
+        if (Math.abs(window.innerWidth - viewportWidth) < 32 && Math.abs(window.innerHeight - viewportHeight) < 32) return;
+        viewportWidth = window.innerWidth;
+        viewportHeight = window.innerHeight;
         resized = true;
         clearTimeout(timer);
         timer = setTimeout(fitRows, 400);

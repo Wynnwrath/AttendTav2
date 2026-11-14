@@ -1,7 +1,8 @@
 /* Certificate eligibility ledger and PDF viewer. */
 @layer components {
   .ledger-table { margin-top: 16px; position: relative; }
-  .ledger-table .row-actions { align-items: center; flex-wrap: wrap; }
+  .ledger-row-actions { align-items: center; flex-wrap: wrap; }
+  .ledger-row-actions > .row-menu-trigger { order: 1; }
   .ledger-issued-at { margin: .4rem 0 0; font-size: .8rem; }
   .ledger-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
   .certificate-dialog { margin: auto; color: var(--color-ink); background: var(--color-surface); }

@@ -16,7 +16,7 @@
 </div>
 
 <partial name="_EventSelector" model="Model.Selector" />
-<partial name="_ListToolbar" model='@(new ListToolbarViewModel("Search member, student number, or certificate", new ListFilterField[] { ListToolbarViewModel.Status(new ListFilterOption("PendingApproval", "Pending review"), new ListFilterOption("Eligible", "Eligible"), new ListFilterOption("NotEligible", "Declined"), new ListFilterOption("Issued", "Issued")) }))' />
+<partial name="_ListToolbar" model='@(new ListToolbarViewModel("Search member, student number, or certificate", tab == "issued" ? null : new ListFilterField[] { ListToolbarViewModel.Status(new ListFilterOption("PendingApproval", "Pending review"), new ListFilterOption("Eligible", "Eligible"), new ListFilterOption("NotEligible", "Declined")) }))' />
 <p class="muted" data-list-status role="status" data-list-busy-label="Loading records…"></p>
 @if (ViewData["LedgerError"] is string error)
 {
@@ -81,20 +81,20 @@ else if (Model.Rows.Count > 0)
                     </td>
                     }
                     <td data-label="Actions" class="actions">
-                        <div class="row-actions">
+                        <div class="row-actions ledger-row-actions">
 <partial name="_DetailsButton" model='@(new RecordDetailsViewModel($"certificate-details-{row.RegistrationId}", row.MemberName, new Dictionary<string, string> { ["Student number"] = row.StudentNumber, ["Event"] = row.EventTitle, ["Attended"] = row.AttendedAt is null ? "Not recorded" : ManilaTimeFormatter.Format(row.AttendedAt.Value), ["Eligibility"] = row.StatusLabel, ["Reason"] = row.Reason, ["Certificate number"] = row.CertificateNumber, ["Issued"] = row.IssuedAt is null ? "Not issued" : ManilaTimeFormatter.Format(row.IssuedAt.Value) }, null))' />
                         @if (row.Status == CertificateStatusCode.PendingApproval)
                         {
-                            <button type="button" class="button" data-certificate-open="approve-certificate" data-id="@row.RegistrationId" data-member="@row.MemberName" data-event="@row.EventTitle">Approve</button>
-                            <button type="button" class="button button-quiet-danger" data-certificate-open="decline-certificate" data-id="@row.RegistrationId" data-member="@row.MemberName" data-event="@row.EventTitle">Decline</button>
+                            <button type="button" class="button button-secondary button-small" data-certificate-open="approve-certificate" data-id="@row.RegistrationId" data-member="@row.MemberName" data-event="@row.EventTitle">Approve</button>
+                            <button type="button" class="button button-quiet-danger button-small" data-certificate-open="decline-certificate" data-id="@row.RegistrationId" data-member="@row.MemberName" data-event="@row.EventTitle">Decline</button>
                         }
                         else if (row.Status == CertificateStatusCode.Eligible)
                         {
-                            <button type="button" class="button" data-certificate-open="issue-certificate" data-id="@row.RegistrationId" data-member="@row.MemberName" data-event="@row.EventTitle">Issue certificate</button>
+                            <button type="button" class="button button-secondary button-small" data-certificate-open="issue-certificate" data-id="@row.RegistrationId" data-member="@row.MemberName" data-event="@row.EventTitle">Issue certificate</button>
                         }
                         else if (row.Status == CertificateStatusCode.Issued)
                         {
-                            <a class="button" asp-action="Viewer" asp-route-id="@row.RegistrationId">View PDF<span class="ledger-sr-only"> for @row.MemberName</span></a>
+                            <a class="button button-secondary button-small" asp-action="Viewer" asp-route-id="@row.RegistrationId">View PDF<span class="ledger-sr-only"> for @row.MemberName</span></a>
                         }
                         else { <span class="muted">Decision final</span> }
                         </div>

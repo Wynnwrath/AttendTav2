@@ -104,7 +104,11 @@ public sealed class AccountRequestRepository(IUnitOfWork unitOfWork, ListReadOpt
     private IQueryable<AccountRequest> FilterByStatus(AccountRequestStatusCode? status, string search)
     {
         var query = GetDbSet<AccountRequest>().AsNoTracking();
-        if (!string.IsNullOrWhiteSpace(readOptions?.Course)) query = query.Where(row => row.Course == readOptions.Course);
+        if (!string.IsNullOrWhiteSpace(readOptions?.Course)) {
+            var course = readOptions.Course;
+            var legacy = course == "BSIT" ? "BS Information Technology" : course == "BSCS" ? "BS Computer Science" : course;
+            query = query.Where(row => row.Course == course || row.Course == legacy);
+        }
         if (readOptions?.Year is int year) query = query.Where(row => row.YearLevel == year);
         if (status is not null)
         {

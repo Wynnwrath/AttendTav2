@@ -9,7 +9,7 @@ Baseline last verified: local dev tracked upstream/dev at da1f048. Recheck Git s
 | Phase | Status | Commit |
 | --- | --- | --- |
 | 1. Shared layout and component foundations | Complete, including convention correction | `f3c8804`, `ba9bbbc` |
-| 2. Compact tables, search, filters and pagination | Implemented; committed for review with integration limitation below | Phase 2 commit (see Git log) |
+| 2. Compact tables, search, filters and pagination | Complete, including approved review refinements | `bf315bf` plus refinement commit (see Git log) |
 | 3. Draft events, publishing and cover management | Not started | — |
 | 4. Registration and certificate review, including bulk approval | Not started | — |
 | 5. Event detail hierarchy and reports | Not started | — |
@@ -60,7 +60,7 @@ Visible information and details:
 
 - Add/standardize server-backed search and relevant filters. Search becomes Clear for the applied query; editing allows a new search. Clear search preserves unrelated filters. A separate clear-filters action resets the relevant filters explicitly.
 - Preserve search/filter/sort/event context across pagination and actions. Changed search/filter resets to page 1.
-- Replace fixed 25-row paging with validated server-backed page sizing and Auto-fit, targeting five records where space permits and fewer on short screens. Larger choices only appear when they fit; unrestricted 10/25 choices are superseded by this agreement.
+- Replace fixed 25-row paging with validated server-backed page sizing and Auto-fit, targeting five records where space permits and fewer on short screens. The event dossier uses stable five-row roster pages with normal page scrolling so its summary cannot reduce the roster to one person per page. Larger choices only appear when they fit; unrestricted 10/25 choices are superseded by this agreement.
 - Measure available content space, not monitor height. Keep page/count metadata synchronized with fetched rows. Avoid unstable resize/refetch loops; page-size changes preserve a meaningful position where possible and clear selection.
 - Standardize footer: 'Showing 1–5 of 42 members', filtered totals, exact last-page ranges, 'Page 1 of 1', visible disabled boundary navigation and useful zero-result states. No fabricated totals or pagination when there are zero pages.
 - Remove desktop horizontal scrolling through column reduction and wrapping. Use a labelled stacked presentation for narrow screens when necessary. Do not shrink essential text to force a fit.
@@ -190,7 +190,40 @@ could not initialize SQL Server LocalDB (instance startup failure), so complete 
 issuance verification remains outstanding. Do not treat Phase 2 as a fully green integration
 run. The integrated responsive/long-content/accessibility pass remains Phase 7.
 
-Phase 3 has not started. Stop after this phase's commit for user review.
+### Approved Phase 2 review refinements
+
+- Keep Course and Year on Members and Membership Requests. Course choices are BSCS/BSIT,
+  shared with signup/member editing and enforced at the service boundary. Match existing long
+  program labels in the two directory filters without rewriting stored registration history.
+- Keep Search, Status and an existing-data Event type dropdown on Event Management; remove
+  date fields. Event selection on Registration Review names a specific event, not its type.
+- Campus Events keeps Search and Active/Completed tabs, defaulting to Active. Active means
+  published and not completed, including upcoming events; a separate Upcoming tab would overlap.
+- Use stable five-row dossier pagination, name the selected roster status in its count, and
+  preserve status/search across pages. Avoid resize/refetch churn from small viewport changes.
+- Put Show details inside one three-dot menu per row. Keep frequent actions visible; align
+  compact certificate decisions and return keyboard focus to the menu trigger after details close.
+- Issued Registry keeps Event/Search; Accounts keeps Search/Role/Status. Activity Log loses its
+  redundant caption and keeps Search/Action only. Reports keeps Event/Search/Attendance; My Events
+  keeps Search within Registrations/Attendance/Certificates. Removed controls do not keep filtering
+  through old URLs or hidden fields.
+- Align page-title tops and heading-row heights with and without Create buttons, using shared CSS.
+
+Refinement validation: Release build passed with 0 warnings/0 errors; all 329 service tests and
+22 JavaScript tests passed. The 75 affected integration cases passed across the main run and a
+focused rerun after correcting the empty roster's selected-status label. These include canonical
+course validation, legacy course filtering, Active/Completed feed separation, type-ID filtering,
+fixed dossier sizing, transaction/audit preservation and individual certificate issuance/PDF access.
+The earlier certificate verification limitation is resolved. Tests connect through the verified
+local LocalDB pipe; the fixture still accepts only local servers and creates/drops generated
+AttendTa_IT_<guid> databases. Additional tests reject remote and malformed pipe targets.
+
+Independent source review found no actionable regression in menu composition, focus return,
+course choices or filter scope; the detector and JS syntax checks passed. Existing browser-flow
+tests produced desktop/phone certificate screenshots, inspected during polish. The nine refreshed
+live routes returned HTTP 200, including signup. Full integrated visual coverage remains Phase 7.
+
+Phase 3 has not started. Stop after this phase's refinement commit for user review.
 
 Preserve the current visual identity and existing authorization, audit, date conversion, capacity and state rules. Add targeted backend support for agreed query/paging/approval capabilities. Do not introduce bulk declines, bulk issuance, a scheduled registration-opening feature, database resets or unrelated business-rule changes as part of UI refinement.
 

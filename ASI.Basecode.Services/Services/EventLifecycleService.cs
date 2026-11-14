@@ -95,6 +95,14 @@ namespace ASI.Basecode.Services.Services
             return model;
         }
 
+        public async Task<IReadOnlyList<EventTypeOption>> GetTypeFilterOptionsAsync(CancellationToken cancellationToken = default)
+        {
+            var count = await _eventTypes.CountEventTypesAsync(null, cancellationToken);
+            if (count == 0) return Array.Empty<EventTypeOption>();
+            return (await _eventTypes.GetEventTypesPageAsync(null, 0, count, cancellationToken))
+                .Select(item => new EventTypeOption(item.TypeId, item.TypeName)).ToList();
+        }
+
         public async Task<EventFormOptions> GetFormOptionsAsync(CancellationToken cancellationToken = default)
         {
             var eventTypes = await _eventTypes.GetActiveEventTypesAsync(cancellationToken);

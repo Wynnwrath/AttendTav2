@@ -16,6 +16,7 @@ public static class ListNavigation
         var query = new QueryBuilder();
         foreach (var pair in request.Query)
         {
+            if (ListReadOptionsFactory.IsRetiredFilter(request, pair.Key)) continue;
             if (pair.Key.Equals("page", StringComparison.OrdinalIgnoreCase) || pair.Key.Equals("fit", StringComparison.OrdinalIgnoreCase) || changes.ContainsKey(pair.Key)) continue;
             foreach (var value in pair.Value) query.Add(pair.Key, value);
         }

@@ -119,7 +119,7 @@ public sealed class MemberManagementTests(SqlServerDatabaseFixture fixture) : IC
                 Email = "tampered@example.invalid",
                 StudentNumber = correctedNumber,
                 StudentNumberCorrectionReason = "Verified against the registrar's record.",
-                Course = "Updated Computing",
+                Course = "BSCS",
                 YearLevel = 3,
                 Section = "NEW-B",
                 MobileNumber = "555-0111",
@@ -139,7 +139,7 @@ public sealed class MemberManagementTests(SqlServerDatabaseFixture fixture) : IC
         Assert.Equal(seeded.MemberEmail, user.UserId);
         Assert.Equal(seeded.PasswordHash, user.Password);
         Assert.Equal(correctedNumber, member.StudentNumber);
-        Assert.Equal("Updated Computing", member.Course);
+        Assert.Equal("BSCS", member.Course);
         Assert.Equal(3, member.YearLevel);
         Assert.Equal("NEW-B", member.Section);
         Assert.Equal("555-0111", member.MobileNumber);
@@ -175,7 +175,7 @@ public sealed class MemberManagementTests(SqlServerDatabaseFixture fixture) : IC
                 MemberId = seeded.MemberId,
                 FullName = "Renamed Member",
                 StudentNumber = seeded.StudentNumber,
-                Course = "Computing",
+                Course = "BSIT",
                 YearLevel = 2,
                 Section = "A",
                 MembershipType = "Regular"
@@ -211,7 +211,7 @@ public sealed class MemberManagementTests(SqlServerDatabaseFixture fixture) : IC
             FullName = "Attempted change",
             StudentNumber = candidateNumber,
             StudentNumberCorrectionReason = "Correction evidence",
-            Course = "Computing",
+            Course = "BSIT",
             YearLevel = 2,
             Section = "A"
         }, ct));
@@ -241,7 +241,7 @@ public sealed class MemberManagementTests(SqlServerDatabaseFixture fixture) : IC
             FullName = "Must not change",
             StudentNumber = other.StudentNumber,
             StudentNumberCorrectionReason = "Incorrect duplicate correction",
-            Course = "Must not change",
+            Course = "BSCS",
             YearLevel = 2,
             Section = "A"
         }, ct));
@@ -270,7 +270,7 @@ public sealed class MemberManagementTests(SqlServerDatabaseFixture fixture) : IC
             MemberId = seeded.MemberId,
             FullName = "Should roll back",
             StudentNumber = seeded.StudentNumber,
-            Course = "Changed course",
+            Course = "BSCS",
             YearLevel = 4,
             Section = "ROLLBACK"
         }, ct));
@@ -302,7 +302,7 @@ public sealed class MemberManagementTests(SqlServerDatabaseFixture fixture) : IC
             MemberId = seeded.MemberId,
             FullName = "After lock release",
             StudentNumber = seeded.StudentNumber,
-            Course = "Original course",
+            Course = "BSIT",
             YearLevel = 2,
             Section = "A"
         }, ct);
@@ -362,7 +362,7 @@ public sealed class MemberManagementTests(SqlServerDatabaseFixture fixture) : IC
             ["Email"] = "attacker@example.invalid",
             ["StudentNumber"] = UniqueStudentNumber(),
             ["StudentNumberCorrectionReason"] = " ",
-            ["Course"] = "Changed course",
+            ["Course"] = "BSCS",
             ["YearLevel"] = "3",
             ["Section"] = "B",
             ["Status"] = "active"

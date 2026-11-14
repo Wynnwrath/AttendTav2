@@ -92,7 +92,7 @@ public class MasterDataTransactionTests(SqlServerDatabaseFixture fixture) : ICla
     {
         FullName = "Linked Member",
         StudentNumber = studentNumber,
-        Course = "Computing",
+        Course = "BSIT",
         YearLevel = 1,
         Section = "A",
         MobileNumber = "555-0100",
@@ -378,7 +378,7 @@ public class MasterDataTransactionTests(SqlServerDatabaseFixture fixture) : ICla
         var unauthenticated = MemberWriter(new MemberRepository(unitOfWork), unitOfWork, new TestActor(actorId, authenticated: false));
         Assert.Equal(OutcomeCode.Forbidden, (await Assert.ThrowsAsync<DomainException>(() => unauthenticated.CreateMemberFromApprovedAccountRequestAsync(linkedUserId, MemberModel(studentNumber), ct))).Outcome);
         Assert.Equal(OutcomeCode.Invalid, (await Assert.ThrowsAsync<DomainException>(() => service.CreateMemberFromApprovedAccountRequestAsync(0, MemberModel(studentNumber), ct))).Outcome);
-        Assert.Equal(OutcomeCode.NotFound, (await Assert.ThrowsAsync<DomainException>(() => service.UpdateMemberAsync(new MemberViewModel { MemberId = int.MaxValue, StudentNumber = studentNumber, Course = "Computing", YearLevel = 1, Section = "A", Status = "active" }, ct))).Outcome);
+        Assert.Equal(OutcomeCode.NotFound, (await Assert.ThrowsAsync<DomainException>(() => service.UpdateMemberAsync(new MemberViewModel { MemberId = int.MaxValue, StudentNumber = studentNumber, Course = "BSIT", YearLevel = 1, Section = "A", Status = "active" }, ct))).Outcome);
         Assert.False(await observer.Members.AnyAsync(m => m.StudentNumber == studentNumber, ct));
 
         await service.CreateMemberFromApprovedAccountRequestAsync(linkedUserId, MemberModel(studentNumber), ct);

@@ -26,7 +26,7 @@ public sealed class CompactListFlowTests(SqlServerDatabaseFixture fixture) : ICl
         var users = Enumerable.Range(1, 8).Select(i => new User { UserId = $"ui-member-{i}@attendta.test", Name = $"Review Member {i:D2}", Password = hash, RoleId = RoleCode.Member, IsActive = true }).ToArray();
         db.Users.AddRange(users);
         await db.SaveChangesAsync(ct);
-        var members = users.Select((user, index) => new Member { UserId = user.Id, StudentNumber = $"UI-{index + 1:D4}", Course = index < 6 ? "BSIT" : "BSCS", YearLevel = 2, Section = "A", MobileNumber = "09000000000", MembershipStatusId = MembershipStatusCode.Active, CreatedBy = officer.Id, CreatedAt = now }).ToArray();
+        var members = users.Select((user, index) => new Member { UserId = user.Id, StudentNumber = $"UI-{index + 1:D4}", Course = index == 0 ? "BS Information Technology" : index < 6 ? "BSIT" : "BSCS", YearLevel = 2, Section = "A", MobileNumber = "09000000000", MembershipStatusId = MembershipStatusCode.Active, CreatedBy = officer.Id, CreatedAt = now }).ToArray();
         db.Members.AddRange(members);
         var type = new EventType { TypeName = "Review Workshop", Description = "A longer description retained in Show details.", IsActive = true, CreatedBy = officer.Id, CreatedAt = now };
         var venue = new Venue { RoomName = "Review Hall", Location = "Campus building A", Capacity = 50, AvailabilityNotes = "Contact the officer before setup.", ContactPerson = "Sample contact", ImagePath = "uploads/venues/review.png", IsActive = true, CreatedBy = officer.Id, CreatedAt = now };
@@ -66,6 +66,11 @@ public sealed class CompactListFlowTests(SqlServerDatabaseFixture fixture) : ICl
         Assert.Contains("Show details", filtered);
         Assert.Contains("<dialog", filtered);
         Assert.DoesNotContain(hash, filtered);
+        Assert.Contains("popover class=\"row-menu\"", filtered);
+        Assert.Contains("data-dialog-open=\"member-details-", filtered);
+        Assert.Contains("name=\"course\"", filtered);
+        Assert.Contains("value=\"BSCS\"", filtered);
+        Assert.Contains("value=\"BSIT\"", filtered);
         var empty = await client.GetStringAsync("/Member?search=nobody-matches", ct);
         Assert.Contains("0 matching members", empty);
         Assert.DoesNotContain("aria-label=\"Pagination\"", empty);
@@ -91,9 +96,22 @@ public sealed class CompactListFlowTests(SqlServerDatabaseFixture fixture) : ICl
         var filteredRegistrations = await client.GetStringAsync($"/RegistrationReview/Index?eventId={upcoming.EventId}&search=Review%20Member%2001", ct);
         Assert.Single(Regex.Matches(filteredRegistrations, "data-registration-id="));
         Assert.Contains("Showing 1–1 of 1 matching registration", filteredRegistrations);
-        var filteredEvents = await client.GetStringAsync("/Event?search=Upcoming&type=Workshop", ct);
+        var dossier = await client.GetStringAsync($"/Event/{upcoming.EventId}?pageSize=1&status=pending", ct);
+        Assert.Equal(5, Regex.Matches(dossier, "data-registration-id=").Count);
+        Assert.Contains("data-paging-mode=\"fixed\"", dossier);
+        Assert.Contains("pending registrations", dossier);
+        var filteredEvents = await client.GetStringAsync($"/Event?search=Upcoming&typeId={type.TypeId}", ct);
         Assert.Contains("Showing 1–1 of 1 matching event", filteredEvents);
         Assert.DoesNotContain("Review Completed Event", filteredEvents);
+        Assert.Contains($"value=\"{type.TypeId}\"", filteredEvents);
+        var noTypeMatches = await client.GetStringAsync("/Event?typeId=2147483647", ct);
+        Assert.Contains("0 matching events", noTypeMatches);
+        var activeEvents = await client.GetStringAsync("/Events", ct);
+        Assert.Contains("Review Upcoming Event", activeEvents);
+        Assert.DoesNotContain("Review Completed Event", activeEvents);
+        var completedEvents = await client.GetStringAsync("/Events?filter=Completed", ct);
+        Assert.Contains("Review Completed Event", completedEvents);
+        Assert.DoesNotContain("Review Upcoming Event", completedEvents);
         var filteredCertificates = await client.GetStringAsync($"/Certificates?eventId={completed.EventId}&search=UI-0001", ct);
         Assert.Contains("Showing 1–1 of 1 matching review", filteredCertificates);
 

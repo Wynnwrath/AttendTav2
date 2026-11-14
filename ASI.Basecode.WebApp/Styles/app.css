@@ -475,9 +475,10 @@
   .page-heading {
     display: flex;
     flex-wrap: wrap;
-    align-items: flex-end;
+    align-items: flex-start;
     justify-content: space-between;
     gap: 16px 24px;
+    min-height: 36px;
     margin: 0 0 16px;
     padding: 0;
     border: 0;

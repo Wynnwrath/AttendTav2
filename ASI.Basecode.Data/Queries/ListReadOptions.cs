@@ -12,6 +12,7 @@ public sealed record ListReadOptions
     public string Course { get; init; }
     public int? Year { get; init; }
     public string Type { get; init; }
+    public int? TypeId { get; init; }
     public string Role { get; init; }
     public DateTime? From { get; init; }
     public DateTime? To { get; init; }

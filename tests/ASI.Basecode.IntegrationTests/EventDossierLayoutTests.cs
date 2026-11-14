@@ -61,7 +61,7 @@ public sealed class EventDossierLayoutTests(SqlServerDatabaseFixture fixture)
         var html = await client.GetStringAsync($"/Event/Details?id={eventId}&status=confirmed", ct);
 
         Assert.DoesNotContain("Asia/Manila", html, StringComparison.Ordinal);
-        Assert.Contains("Showing 1–1 of 1 matching registration", html, StringComparison.Ordinal);
+        Assert.Contains("Showing 1–1 of 1 matching confirmed registration", html, StringComparison.Ordinal);
 
         var checkInButton = Regex.Match(html, "<button[^>]*data-dialog-open=\"check-in-[0-9]+\"[^>]*>").Value;
         Assert.Contains("button-secondary", checkInButton, StringComparison.Ordinal);
@@ -75,7 +75,7 @@ public sealed class EventDossierLayoutTests(SqlServerDatabaseFixture fixture)
         var html = await client.GetStringAsync($"/Event/Details?id={eventId}&status=waitlisted", ct);
 
         Assert.DoesNotContain("<caption>", html, StringComparison.Ordinal);
-        Assert.Contains("0 matching registrations", html, StringComparison.Ordinal);
+        Assert.Contains("0 matching waitlisted registrations", html, StringComparison.Ordinal);
         Assert.DoesNotContain("aria-label=\"Pagination\"", html, StringComparison.Ordinal);
     }
 }

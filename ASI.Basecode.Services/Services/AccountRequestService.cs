@@ -278,7 +278,7 @@ namespace ASI.Basecode.Services.Services
             model.StudentNumber = model.StudentNumber?.Trim();
             model.FullName = model.FullName?.Trim();
             model.Email = model.Email?.Trim();
-            model.Course = model.Course?.Trim();
+            model.Course = ProfileOptions.NormalizeCourse(model.Course);
             model.Section = model.Section?.Trim();
             model.MobileNumber = string.IsNullOrWhiteSpace(model.MobileNumber) ? null : model.MobileNumber.Trim();
         }

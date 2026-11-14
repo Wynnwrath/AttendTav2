@@ -95,6 +95,25 @@ function clickEvent(trigger) {
 
 const flush = () => new Promise(resolve => setImmediate(resolve));
 
+test('row details close their menu and restore focus to its visible invoker', () => {
+    const body = createElement('body'), dialog = createElement('dialog'), invoker = createElement('button');
+    const menu = { id: 'row-menu-test', hidePopover() { this.hidden = true; } };
+    const trigger = { dataset: { dialogOpen: 'details-test' }, closest: selector => selector === '[popover]' ? menu : null };
+    const document = {
+        body, clickHandlers: [], createElement,
+        querySelector: selector => selector === '[popovertarget="row-menu-test"]' ? invoker : null,
+        getElementById: id => id === 'details-test' ? dialog : null,
+        addEventListener(type, handler) { if (type === 'click') this.clickHandlers.push(handler); }
+    };
+    runSite(document, () => Promise.reject(new Error('No fetch expected')));
+    document.clickHandlers[0]({ target: { closest: selector => selector === '[data-dialog-open]' ? trigger : null } });
+    assert.equal(menu.hidden, true);
+    assert.equal(dialog.open, true);
+    dialog.listeners.close[0]();
+    assert.equal(invoker.focused, true);
+    assert.equal(invoker.focusOptions.preventScroll, true);
+});
+
 test('a failed preview fetch shows an error notice and no dialog', async () => {
     const body = createElement('body');
     const main = createElement('main');

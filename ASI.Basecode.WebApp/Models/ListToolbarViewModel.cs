@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ASI.Basecode.WebApp.Models;
 
@@ -9,7 +10,6 @@ public sealed record ListFilterField(string Name, string Label, string Type = "t
 public sealed record ListToolbarViewModel(string SearchLabel, IReadOnlyList<ListFilterField> Fields = null)
 {
     public static ListFilterField Status(params ListFilterOption[] options) => new("filter", "Status", Options: options);
-    public static ListFilterField Year => new("year", "Year", Options: new[] {
-        new ListFilterOption("1", "Year 1"), new("2", "Year 2"), new("3", "Year 3"),
-        new("4", "Year 4"), new("5", "Year 5"), new("6", "Year 6") });
+    public static ListFilterField Course => new("course", "Course", Options: ASI.Basecode.Resources.Constants.ProfileOptions.Courses.Select(value => new ListFilterOption(value, value)).ToArray());
+    public static ListFilterField Year => new("year", "Year", Options: ASI.Basecode.Resources.Constants.ProfileOptions.YearLevels.Select(value => new ListFilterOption(value.ToString(), $"Year {value}")).ToArray());
 }

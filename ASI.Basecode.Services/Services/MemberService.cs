@@ -228,7 +228,7 @@ namespace ASI.Basecode.Services.Services
         {
             model.FullName = model.FullName?.Trim();
             model.StudentNumber = model.StudentNumber?.Trim();
-            model.Course = model.Course?.Trim();
+            model.Course = ProfileOptions.NormalizeCourse(model.Course);
             model.Section = model.Section?.Trim();
             model.MobileNumber = string.IsNullOrWhiteSpace(model.MobileNumber) ? null : model.MobileNumber.Trim();
             model.MembershipType = string.IsNullOrWhiteSpace(model.MembershipType) ? null : model.MembershipType.Trim();
@@ -279,7 +279,7 @@ namespace ASI.Basecode.Services.Services
                 FullName = member.FullName,
                 Email = member.Email,
                 StudentNumber = member.StudentNumber,
-                Course = member.Course,
+                Course = ProfileOptions.NormalizeCourse(member.Course),
                 YearLevel = member.YearLevel,
                 Section = member.Section,
                 MobileNumber = member.MobileNumber,

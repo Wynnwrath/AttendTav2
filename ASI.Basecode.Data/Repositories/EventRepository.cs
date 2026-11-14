@@ -187,6 +187,7 @@ namespace ASI.Basecode.Data.Repositories
             var query = GetDbSet<Event>().AsNoTracking();
             if (_readOptions?.IsSurface("Event", "MemberEvents") != true) return query;
             if (!string.IsNullOrWhiteSpace(_readOptions.Search)) query = query.Where(row => row.Title.Contains(_readOptions.Search));
+            if (_readOptions.TypeId is int typeId) query = query.Where(row => row.TypeId == typeId);
             if (Enum.TryParse<EventStatusCode>(_readOptions.Filter, true, out var status) && Enum.IsDefined(status)) query = query.Where(row => row.EventStatusId == status);
             if (!string.IsNullOrWhiteSpace(_readOptions.Type)) {
                 var ids = GetDbSet<EventType>().Where(type => type.TypeName.Contains(_readOptions.Type)).Select(type => type.TypeId);

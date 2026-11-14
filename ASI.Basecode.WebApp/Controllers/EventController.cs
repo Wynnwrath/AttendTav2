@@ -53,8 +53,11 @@ namespace ASI.Basecode.WebApp.Controllers
         [HttpGet]
         [Route("Event", Name = EventIndexRoute)]
         [Route("Event/Index")]
-        public async Task<IActionResult> Index(int? page, CancellationToken cancellationToken) =>
-            View(await _eventService.GetPageAsync(page, cancellationToken));
+        public async Task<IActionResult> Index(int? page, CancellationToken cancellationToken)
+        {
+            ViewData["EventTypeFilters"] = await _eventService.GetTypeFilterOptionsAsync(cancellationToken);
+            return View(await _eventService.GetPageAsync(page, cancellationToken));
+        }
 
         [HttpGet]
         [Route("Event/Details")]

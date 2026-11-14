@@ -47,7 +47,7 @@
     }
 }
 
-<partial name="_ListToolbar" model='@(new ListToolbarViewModel("Search name, email, or student number", new ListFilterField[] { new ListFilterField("course", "Course"), ListToolbarViewModel.Year }))' />
+<partial name="_ListToolbar" model='@(new ListToolbarViewModel("Search name, email, or student number", new ListFilterField[] { ListToolbarViewModel.Course, ListToolbarViewModel.Year }))' />
 <p class="muted" data-list-status role="status" data-list-busy-label="Loading records…"></p>
 <div class="sheet-keys">
 

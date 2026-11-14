@@ -9,7 +9,7 @@
     clearFilters["status"] = null;
 }
 <form method="get" action="@(ListNavigation.Url(Context.Request, new Dictionary<string, string>()).Split('?')[0])" class="list-toolbar" role="search" data-list-search data-applied-search="@search">
-    @foreach (var pair in query.Where(pair => !managed.Contains(pair.Key)))
+    @foreach (var pair in query.Where(pair => !managed.Contains(pair.Key) && !ListReadOptionsFactory.IsRetiredFilter(Context.Request, pair.Key)))
     {
         foreach (var value in pair.Value) { <input type="hidden" name="@pair.Key" value="@value" /> }
     }

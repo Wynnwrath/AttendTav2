@@ -50,7 +50,7 @@ namespace ASI.Basecode.Data.Repositories
         private IQueryable<EventType> FilterEventTypes(string status)
         {
             var query = this.GetDbSet<EventType>().AsNoTracking();
-            if (!string.IsNullOrWhiteSpace(_readOptions?.Search)) {
+            if (_readOptions?.IsSurface("EventType") == true && !string.IsNullOrWhiteSpace(_readOptions.Search)) {
                 var term = _readOptions.Search;
                 query = query.Where(row => row.TypeName.Contains(term) || (row.Description != null && row.Description.Contains(term)));
             }
