@@ -265,4 +265,17 @@ Expanded regression checks cover both signup choices, both legacy approvals, pos
 course filtering on Requests and Members, and member management. All 34 affected integration
 tests passed with a clean Release build.
 
+### Deferred profile validation — placeholders only for now
+
+Per the user's latest scope, only frontend examples change: student number `23807613`, mobile
+`09171234567` without dashes, and email `name@gmail.com`. Signup and member editing share the
+same examples; login uses the same generic email example. These are hints, not new restrictions.
+No backend validation, schema, existing data, dropdown options or HTML input limits changed.
+
+Pending backend work, not implemented: enforce year levels 1–4, exactly eight ASCII digits for
+student numbers, and exactly eleven ASCII digits for mobile numbers when supplied. Year choices
+are still 1–5 and backend year validation still accepts any positive integer. BSCS/BSIT course
+handling already exists. Email already accepts valid ordinary addresses, without a domain restriction.
+Apply aligned form/filter choices and validation together when that follow-up is authorized.
+
 No further user design decisions are presently required. Surface genuinely new business-rule conflicts with a concrete example if implementation reveals one.
