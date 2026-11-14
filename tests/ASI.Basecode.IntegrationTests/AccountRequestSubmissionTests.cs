@@ -79,6 +79,11 @@ public class AccountRequestSubmissionTests : IClassFixture<SqlServerDatabaseFixt
         Assert.Contains("name=\"FullName\"", html, StringComparison.Ordinal);
         Assert.Contains("name=\"Email\"", html, StringComparison.Ordinal);
         Assert.Contains("name=\"Course\"", html, StringComparison.Ordinal);
+        var courseSelect = Regex.Match(html, "<select[^>]*name=\"Course\"[^>]*>.*?</select>", RegexOptions.IgnoreCase | RegexOptions.Singleline).Value;
+        Assert.Contains("value=\"BSCS\"", courseSelect);
+        Assert.Contains("value=\"BSIT\"", courseSelect);
+        Assert.DoesNotContain("value=\"BS Computer Science\"", courseSelect);
+        Assert.DoesNotContain("value=\"BS Information Technology\"", courseSelect);
         Assert.Contains("name=\"YearLevel\"", html, StringComparison.Ordinal);
         Assert.Contains("name=\"Section\"", html, StringComparison.Ordinal);
         Assert.Contains("name=\"MobileNumber\"", html, StringComparison.Ordinal);
@@ -102,8 +107,10 @@ public class AccountRequestSubmissionTests : IClassFixture<SqlServerDatabaseFixt
         Assert.Contains("/AccountRequest/Request", html, StringComparison.Ordinal);
     }
 
-    [Fact]
-    public async Task ValidSubmissionCreatesOnePendingRequestWithAnArgon2idHashAndNoAccount()
+    [Theory]
+    [InlineData("BSCS")]
+    [InlineData("BSIT")]
+    public async Task ValidSubmissionCreatesOnePendingRequestWithAnArgon2idHashAndNoAccount(string course)
     {
         var email = NewEmail();
         var studentNumber = NewStudentNumber();
@@ -111,7 +118,9 @@ public class AccountRequestSubmissionTests : IClassFixture<SqlServerDatabaseFixt
         var beforeMembers = await CountMembersAsync();
         var token = await GetAntiforgeryTokenAsync();
 
-        var response = await SubmitAsync(ValidFields(email, studentNumber), token);
+        var fields = ValidFields(email, studentNumber);
+        fields["Course"] = course;
+        var response = await SubmitAsync(fields, token);
 
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
         Assert.Equal("/AccountRequest/Submitted", GetLocationPath(response));
@@ -123,7 +132,7 @@ public class AccountRequestSubmissionTests : IClassFixture<SqlServerDatabaseFixt
         Assert.Equal(AccountRequestStatusCode.Pending, request.AccountRequestStatusId);
         Assert.Equal(studentNumber, request.StudentNumber);
         Assert.Equal("Ana Reyes", request.FullName);
-        Assert.Equal("BSIT", request.Course);
+        Assert.Equal(course, request.Course);
         Assert.Equal(2, request.YearLevel);
         Assert.Equal("A", request.Section);
         Assert.Equal("09171234567", request.MobileNumber);

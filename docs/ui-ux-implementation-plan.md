@@ -256,4 +256,13 @@ port 5099 preview returned HTTP 200 for Accounts and the modal partial. Phase 3 
 
 Preserve the current visual identity and existing authorization, audit, date conversion, capacity and state rules. Add targeted backend support for agreed query/paging/approval capabilities. Do not introduce bulk declines, bulk issuance, a scheduled registration-opening feature, database resets or unrelated business-rule changes as part of UI refinement.
 
+Course flow verification: signup, member editing and filters use BSCS/BSIT as both option
+labels and submitted values. New requests store those codes; approval creates a member with
+the same code. Legacy request values "BS Computer Science" and "BS Information Technology"
+remain readable/filterable and normalize to BSCS/BSIT when creating the member. Original
+requests and historical registration snapshots are preserved. No application change was needed.
+Expanded regression checks cover both signup choices, both legacy approvals, positive/negative
+course filtering on Requests and Members, and member management. All 34 affected integration
+tests passed with a clean Release build.
+
 No further user design decisions are presently required. Surface genuinely new business-rule conflicts with a concrete example if implementation reveals one.

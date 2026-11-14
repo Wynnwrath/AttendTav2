@@ -27,14 +27,18 @@ public sealed class AccountRequestDecisionTests(SqlServerDatabaseFixture fixture
     private const string ActorPassword = "ManagementDecision#2026";
     private readonly Argon2PasswordHasher hasher = new();
 
-    [Fact]
-    public async Task ApprovalCreatesLinkedMemberAndOriginalPasswordCanSignIn()
+    [Theory]
+    [InlineData("BSCS", "BSCS")]
+    [InlineData("BSIT", "BSIT")]
+    [InlineData("BS Computer Science", "BSCS")]
+    [InlineData("BS Information Technology", "BSIT")]
+    public async Task ApprovalCreatesLinkedMemberAndOriginalPasswordCanSignIn(string savedCourse, string expectedCourse)
     {
         var ct = TestContext.Current.CancellationToken;
         var actor = await SeedUserAsync(RoleCode.Officer, "approval-actor", ActorPassword, ct);
         var applicantEmail = UniqueEmail("approval-applicant");
         var studentNumber = UniqueStudentNumber();
-        var (requestId, originalHash) = await SeedRequestAsync(applicantEmail, studentNumber, ct);
+        var (requestId, originalHash) = await SeedRequestAsync(applicantEmail, studentNumber, ct, savedCourse);
 
         await using (var writer = Context())
         {
@@ -63,7 +67,8 @@ public sealed class AccountRequestDecisionTests(SqlServerDatabaseFixture fixture
             Assert.True(user.IsActive);
             Assert.Equal(actor.Id, user.CreatedById);
             Assert.Equal(studentNumber, member.StudentNumber);
-            Assert.Equal("BSIT", member.Course);
+            Assert.Equal(savedCourse, request.Course);
+            Assert.Equal(expectedCourse, member.Course);
             Assert.Equal(2, member.YearLevel);
             Assert.Equal("A", member.Section);
             Assert.Equal("09171234567", member.MobileNumber);
@@ -85,6 +90,18 @@ public sealed class AccountRequestDecisionTests(SqlServerDatabaseFixture fixture
         Assert.Equal(RoleCodes.Member, authenticated.RoleCode);
 
         using var factory = new AttendTaWebApplicationFactory(fixture.ConnectionString);
+        using var management = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false, HandleCookies = true });
+        await SignInAsync(management, actor.Email, ActorPassword, ct);
+        var search = Uri.EscapeDataString(applicantEmail);
+        var matchingRequests = await management.GetStringAsync($"/AccountRequest?status=approved&search={search}&course={expectedCourse}", ct);
+        Assert.Contains($"data-request-id=\"{requestId}\"", matchingRequests);
+        var matchingMembers = await management.GetStringAsync($"/Member?search={search}&course={expectedCourse}", ct);
+        Assert.Contains(studentNumber, matchingMembers);
+        var otherCourse = expectedCourse == "BSCS" ? "BSIT" : "BSCS";
+        var otherRequests = await management.GetStringAsync($"/AccountRequest?status=approved&search={search}&course={otherCourse}", ct);
+        Assert.DoesNotContain($"data-request-id=\"{requestId}\"", otherRequests);
+        var otherMembers = await management.GetStringAsync($"/Member?search={search}&course={otherCourse}", ct);
+        Assert.DoesNotContain(studentNumber, otherMembers);
         using var client = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false, HandleCookies = true });
         await SignInAsync(client, applicantEmail, ApplicantPassword, ct);
     }
@@ -477,7 +494,7 @@ public sealed class AccountRequestDecisionTests(SqlServerDatabaseFixture fixture
         return new UserSeed(user.Id, email);
     }
 
-    private async Task<(int RequestId, string PasswordHash)> SeedRequestAsync(string email, string studentNumber, CancellationToken cancellationToken)
+    private async Task<(int RequestId, string PasswordHash)> SeedRequestAsync(string email, string studentNumber, CancellationToken cancellationToken, string course = "BSIT")
     {
         await using var context = Context();
         var hash = hasher.Hash(ApplicantPassword);
@@ -487,7 +504,7 @@ public sealed class AccountRequestDecisionTests(SqlServerDatabaseFixture fixture
             StudentNumber = studentNumber,
             FullName = "Ana Reyes",
             PasswordHash = hash,
-            Course = "BSIT",
+            Course = course,
             YearLevel = 2,
             Section = "A",
             MobileNumber = "09171234567",
